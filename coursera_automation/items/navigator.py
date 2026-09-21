@@ -31,10 +31,10 @@ def click_resume(page: Page, cfg: Settings) -> None:
 def click_next_item(page: Page, cfg: Settings) -> bool:
     """Locate and click 'Next item' or 'Go to next item' progression button."""
     sel = (
-        '[data-testid="TopBannerCTAButton"], [data-testid="next-item"], [data-testid*="next-item"], '
-        'button:has(span.cds-button-label:has-text("Go to next item")), '
+        '[data-testid="TopBannerCTAButton"], [data-testid*="next-item"], '
+        'a[role="button"]:has-text("Next item"), a:has-text("Next item"), '
         'button:has(span.cds-button-label:has-text("Next item")), '
-        'button:has-text("Go to next item"), button:has-text("Next item")'
+        'button:has-text("Next item"), button:has-text("Go to next item")'
     )
     for _ in range(5):
         dismiss_dialogs(page)

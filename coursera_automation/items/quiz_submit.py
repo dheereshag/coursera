@@ -33,7 +33,13 @@ def submit_quiz(page: Page, cfg: Settings) -> None:
             )
         except Error as exc:
             logger.debug("Modal dismissal wait: %s", exc)
-    page.wait_for_timeout(3000)
+    try:
+        page.locator('[data-testid="TopBannerCTAButton"], [data-testid="assignment-view-tunnel-vision"]').first.wait_for(
+            state="visible", timeout=cfg.timeout_ms
+        )
+    except Error:
+        pass
+    page.wait_for_timeout(2000)
 
 
 

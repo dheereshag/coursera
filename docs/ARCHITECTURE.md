@@ -55,7 +55,9 @@ sequenceDiagram
 - `coursera_automation/items/discussion.py`: Discussion response input.
 - `coursera_automation/items/quiz_solver.py`: NVIDIA LLM API integration.
 - `coursera_automation/items/quiz_parser.py`: Question DOM extraction and classification.
-- `coursera_automation/items/quiz.py`: Quiz interaction, honor code, submit, and modal confirmation.
+- `coursera_automation/items/quiz_status.py`: Completed/passed quiz detection and progression readiness.
+- `coursera_automation/items/quiz_submit.py`: Quiz submission and confirmation modal interaction.
+- `coursera_automation/items/quiz.py`: Quiz lifecycle coordination and question solving execution.
 - `coursera_automation/items/dialogs.py`: Pendo guide and transient dialog dismissal.
 - `coursera_automation/items/navigator.py`: Resume and next item navigation.
 - `coursera_automation/items/dispatcher.py`: Item detection and iteration loop.
