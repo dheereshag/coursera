@@ -7,11 +7,11 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 | Item | Automated Behavior |
 |---|---|
 | **Video** | Checks if already $2\times$ speed before switching; handles in-video questions by clicking "Skip"; waits exact `duration / 2.0` seconds plus a 6-second completion buffer |
-| **Lab** | Checks "I agree" checkbox, clicks "Launch app/lab" in background tab without switching focus |
+| **Lab** | Scrolls to bottom, checks Honor Code agreement checkbox (`[aria-label="Coursera Honor Code"]`), launches app if available in background, and clicks "Mark as completed" (`data-testid="mark-complete"`) |
 | **Reading** | Scrolls through content, clicks "Mark as completed" (`data-testid="mark-complete"`), skips if already completed, and advances |
 | **Dialogue** | Clicks "Start dialogue" $\to$ "End dialogue" $\to$ confirms "Yes, end the Dialogue" modal and advances |
 | **Discussion** | Types `"ok"` into chatbox, clicks "Reply", and advances |
-| **Quiz** | Queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, confirms modal, polls up to 5 min for server-side evaluation, and advances |
+| **Quiz** | Waits 10s for page/CTA reloads, queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, confirms modal, polls up to 5 min for server-side evaluation, and advances |
 
 ## Anti-Bot Stealth & Evasion
 

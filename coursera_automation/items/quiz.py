@@ -18,6 +18,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     """Handle complete quiz lifecycle: launch, solve, agree, and submit."""
     logger.info("Handling quiz assignment...")
     page.wait_for_load_state("domcontentloaded")
+    page.wait_for_timeout(2000)
     dismiss_dialogs(page)
     if is_quiz_completed(page):
         logger.info("Quiz already completed or passed. Ready for next item.")
@@ -31,10 +32,10 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
             cta.click(force=True, timeout=5000)
         except Error as exc:
             logger.warning("Quiz CTA click bypassed (%s); checking questions...", exc)
-        logger.info("Clicked quiz CTA. Waiting for quiz questions to load...")
-        page.wait_for_timeout(2000)
+        logger.info("Clicked quiz CTA. Waiting 10s for quiz questions to load...")
+        page.wait_for_timeout(5000)
         dismiss_dialogs(page)
-        page.wait_for_timeout(3000)
+        page.wait_for_timeout(5000)
 
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     logger.info("Extracted %d quiz question(s).", len(questions))
@@ -47,7 +48,6 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     for idx, q_loc in enumerate(q_locs):
         for opt in answers.get(idx, []):
             if (btn := q_loc.locator("label").filter(has_text=opt).first).is_visible():
-                btn.scroll_into_view_if_needed()
                 btn.click(force=True)
                 page.wait_for_timeout(300)
 

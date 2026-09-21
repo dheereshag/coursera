@@ -21,16 +21,15 @@ def run_instance(inst: InstanceConfig) -> None:
     cfg = inst.to_settings()
     name = f"{cfg.email.split('@')[0]}_{cfg.course_url.rstrip('/').split('/')[-1]}"
     logger.info("Starting automation for %s (%s)...", cfg.email, cfg.course_url)
-    user_dir = Path(f".browser_data/{name}")
-    user_dir.mkdir(parents=True, exist_ok=True)
+    (user_dir := Path(f".browser_data/{name}")).mkdir(parents=True, exist_ok=True)
     for lk in user_dir.glob("Singleton*"):
         lk.unlink(missing_ok=True)
     with sync_playwright() as p:
+        args = ["--disable-blink-features=AutomationControlled", "--disable-session-crashed-bubble"]
         context = p.chromium.launch_persistent_context(
             user_data_dir=str(user_dir), headless=cfg.headless,
             viewport={"width": 1280, "height": 800},
-            ignore_default_args=["--enable-automation"],
-            args=["--disable-blink-features=AutomationControlled"],
+            ignore_default_args=["--enable-automation"], args=args,
         )
         Stealth().apply_stealth_sync(context)
         page = context.pages[0] if context.pages else context.new_page()
@@ -51,7 +50,8 @@ def run(instances_path: str = "instances.json") -> None:
     with ThreadPoolExecutor(max_workers=max(1, len(instances))) as ex:
         futs = [ex.submit(run_instance, inst) for inst in instances]
         for fut in as_completed(futs):
-            try: fut.result()
+            try:
+                fut.result()
             except (Error, OSError, RuntimeError, TimeoutError) as exc:
                 logger.error("Automation instance failed: %s", exc)
 

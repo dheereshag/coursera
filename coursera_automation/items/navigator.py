@@ -39,7 +39,7 @@ def click_resume(page: Page, cfg: Settings) -> None:
     logger.info("Clicking course resume/start CTA...")
     btn.click(force=True)
     page.wait_for_load_state("domcontentloaded")
-    page.wait_for_timeout(3000)
+    page.wait_for_timeout(10000)
     dismiss_dialogs(page)
 
 
@@ -51,7 +51,7 @@ def click_next_item(page: Page, cfg: Settings) -> bool:
             logger.info("Advancing via next item button...")
             btn.click(force=True)
             page.wait_for_load_state("domcontentloaded")
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(10000)
             dismiss_dialogs(page)
             return True
         page.mouse.wheel(0, 400)

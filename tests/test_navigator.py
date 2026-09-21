@@ -23,6 +23,7 @@ def test_click_resume_when_resume_present() -> None:
     with patch("coursera_automation.items.navigator.dismiss_dialogs"):
         click_resume(page, cfg)
     res_btn.click.assert_called_once_with(force=True)
+    page.wait_for_timeout.assert_any_call(10000)
     start_btn.click.assert_not_called()
 
 
@@ -54,3 +55,4 @@ def test_click_next_item_advances() -> None:
     with patch("coursera_automation.items.navigator.dismiss_dialogs"):
         assert click_next_item(page, cfg) is True
     btn.first.click.assert_called_once_with(force=True)
+    page.wait_for_timeout.assert_any_call(10000)

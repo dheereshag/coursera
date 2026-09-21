@@ -1,7 +1,6 @@
 """Item dispatcher: identifies item type and coordinates sequential execution."""
 
 import logging
-import re
 
 from playwright.sync_api import Page
 
@@ -20,31 +19,32 @@ logger = logging.getLogger(__name__)
 def dispatch_item(page: Page, cfg: Settings) -> None:
     """Detect current item type and execute corresponding handler."""
     dismiss_dialogs(page)
-    is_vid = any(k in page.url for k in ("/lecture", "/video")) or page.locator(
+    dial = 'button:has-text("Start dialogue"), button:has-text("End dialogue"), button[aria-label="End Dialogue"]'
+    is_vid = any(k in page.url for k in ("/lecture/", "/video/")) or page.locator(
         "video, .rc-VideoPlayer, [data-testid*='video']"
     ).first.is_visible(timeout=2500)
+    is_lab = any(k in page.url for k in ("/lab/", "/ungradedLab/", "/programming/")) or page.locator(
+        'form[data-testid="lti-launch-form"], [aria-label="Coursera Honor Code"], button:has-text("Launch App")'
+    ).first.is_visible(timeout=1000)
+    is_quiz = any(k in page.url for k in ("/exam/", "/quiz/", "/assignment")) or page.locator(
+        '[data-testid="CoverPageActionButton"], button:has-text("Try again")'
+    ).first.is_visible(timeout=2000)
     is_reading = "/supplement" in page.url or page.locator(
         '[data-testid="mark-complete"], button:has-text("Mark as completed")'
     ).first.is_visible(timeout=1000)
-    is_lab = any(k in page.url for k in ("/lab", "/ungradedLab", "/programming"))
-    is_lab = is_lab or page.locator('button, a, [role="button"]').filter(
-        has_text=re.compile(r"launch (app|lab)", re.IGNORECASE)
-    ).first.is_visible(timeout=1500)
 
     if is_vid:
         handle_video(page, cfg)
-    elif is_reading:
-        handle_reading(page, cfg)
     elif is_lab:
         handle_lab(page, cfg)
-    elif page.locator(
-        'button:has-text("Start dialogue"), button:has-text("End dialogue"), button[aria-label="End Dialogue"]'
-    ).first.is_visible(timeout=1000):
+    elif is_quiz:
+        handle_quiz(page, cfg)
+    elif is_reading:
+        handle_reading(page, cfg)
+    elif page.locator(dial).first.is_visible(timeout=1000):
         handle_dialogue(page, cfg)
     elif page.locator('button:has-text("Reply")').first.is_visible(timeout=1000):
         handle_discussion(page, cfg)
-    elif page.locator('button:has-text("assignment"), button:has-text("Try again")').first.is_visible(timeout=1000):
-        handle_quiz(page, cfg)
     else:
         handle_reading(page, cfg)
 

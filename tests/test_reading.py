@@ -41,6 +41,7 @@ def test_dispatch_item_reading_supplement_url() -> None:
     page, cfg = MagicMock(), Settings()
     page.url = "https://www.coursera.org/learn/example/supplement/abc"
     page.locator.return_value.first.is_visible.return_value = False
+    page.locator.return_value.filter.return_value.first.is_visible.return_value = False
 
     with (
         patch("coursera_automation.items.dispatcher.dismiss_dialogs"),
