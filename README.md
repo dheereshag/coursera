@@ -15,7 +15,7 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 
 ## Multi-Instance Execution
 
-Support for multiple concurrent/sequential instances via `instances.json`:
+Support for running multiple instances concurrently in parallel via `instances.json`:
 ```json
 [
   {
@@ -28,12 +28,11 @@ Support for multiple concurrent/sequential instances via `instances.json`:
 ]
 ```
 
-
-If `instances.json` is omitted, the automation falls back to the single default instance in `.env` / `config.py`. See `instances.example.json`.
+All instances execute concurrently in parallel using Python's `ThreadPoolExecutor`. If `instances.json` is omitted, the automation falls back to the single default instance in `.env` / `config.py`. See `instances.example.json`.
 
 ## Persistent Browser Sessions
 
-Automation uses Playwright's `launch_persistent_context` stored in `.browser_data/<user>/`. Cookies, local storage, and authentication tokens are preserved across runs, allowing subsequent executions to bypass the login modal and Arkose puzzle verification entirely.
+Automation uses Playwright's `launch_persistent_context` stored in `.browser_data/<user>_<course_slug>/`. Each concurrent instance maintains an isolated profile directory, ensuring no lock contention or session clashes. Cookies, local storage, and authentication tokens are preserved across runs, allowing subsequent executions to bypass the login modal and Arkose puzzle verification entirely.
 
 ## Dialog & Popup Management
 

@@ -19,7 +19,7 @@ sequenceDiagram
 
     Main->>Inst: load_instances("instances.json")
     Inst-->>Main: list[InstanceConfig]
-    loop Each Instance
+    par Concurrent Execution (ThreadPoolExecutor)
         Main->>Dial: register_dialog_handlers(page)
         Main->>Auth: login(page, config)
         Main->>Course: open_course(page, config)
@@ -61,5 +61,5 @@ sequenceDiagram
 - `coursera_automation/items/dialogs.py`: Pendo guide and transient dialog dismissal.
 - `coursera_automation/items/navigator.py`: Resume and next item navigation.
 - `coursera_automation/items/dispatcher.py`: Item detection and iteration loop.
-- `coursera_automation/main.py`: Browser lifecycle management across single and multi-instance executions.
+- `coursera_automation/main.py`: Concurrent multi-instance browser orchestration via ThreadPoolExecutor.
 

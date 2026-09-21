@@ -3,7 +3,7 @@
 import logging
 import re
 
-from playwright.sync_api import Page
+from playwright.sync_api import Error, Page
 
 from coursera_automation.config import Settings
 
@@ -15,11 +15,8 @@ def wait_for_auth_complete(page: Page) -> None:
     logger.info("Please solve the puzzle in the browser window if shown...")
     for _ in range(180):
         cookies = {c["name"]: c["value"] for c in page.context.cookies()}
-        has_cauth = bool(cookies.get("CAUTH"))
         prof = page.locator('button[data-e2e="header-profile-menu"]').first
-        dialog = page.locator('div[role="dialog"]').first
-
-        if (has_cauth or prof.is_visible()) and not dialog.is_visible():
+        if (bool(cookies.get("CAUTH")) or prof.is_visible()) and not page.locator('div[role="dialog"]').first.is_visible():
             logger.info("Authentication verified! Proceeding to course...")
             return
         page.wait_for_timeout(1000)
@@ -29,7 +26,12 @@ def wait_for_auth_complete(page: Page) -> None:
 def login(page: Page, cfg: Settings) -> None:
     """Navigate to coursera.org and authenticate only if not already logged in."""
     logger.info("Opening home URL: %s", cfg.login_url)
-    page.goto(cfg.login_url, wait_until="domcontentloaded")
+    try:
+        page.goto(cfg.login_url, wait_until="domcontentloaded")
+    except Error as exc:
+        logger.warning("Initial navigation failed (%s). Retrying...", exc)
+        page.wait_for_timeout(1000)
+        page.goto(cfg.login_url, wait_until="domcontentloaded")
 
     login_btn = (
         page.get_by_role("button", name=re.compile(r"^log in$", re.IGNORECASE))

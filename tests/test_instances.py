@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from unittest.mock import patch
 
 from coursera_automation.instances import InstanceConfig, load_instances
 
@@ -43,3 +44,17 @@ def test_load_instances_from_json(tmp_path: Path) -> None:
     settings = instances[0].to_settings()
     assert settings.email == "test1@cuchd.in"
     assert settings.headless is True
+
+
+def test_run_parallel(tmp_path: Path) -> None:
+    """Verify run() executes instances concurrently via run_instance."""
+    from coursera_automation.main import run
+
+    p = tmp_path / "parallel.json"
+    p.write_text(json.dumps([
+        {"email": "a@x.com", "password": "p", "course_url": "https://c.org/c1"},
+        {"email": "b@x.com", "password": "p", "course_url": "https://c.org/c2"},
+    ]))
+    with patch("coursera_automation.main.run_instance") as mock_run:
+        run(str(p))
+        assert mock_run.call_count == 2

@@ -1,9 +1,10 @@
-"""Entry point for single and multi-instance Coursera automation."""
+"""Entry point for parallel multi-instance Coursera automation."""
 
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import Error, sync_playwright
 
 from coursera_automation.auth import login
 from coursera_automation.course import open_course
@@ -17,18 +18,16 @@ logger = logging.getLogger(__name__)
 def run_instance(inst: InstanceConfig) -> None:
     """Execute complete automation workflow for a single instance."""
     cfg = inst.to_settings()
+    name = f"{cfg.email.split('@')[0]}_{cfg.course_url.rstrip('/').split('/')[-1]}"
     logger.info("Starting automation for %s (%s)...", cfg.email, cfg.course_url)
-    user_dir = Path(f".browser_data/{cfg.email.split('@')[0]}")
+    user_dir = Path(f".browser_data/{name}")
     user_dir.mkdir(parents=True, exist_ok=True)
     for lk in user_dir.glob("Singleton*"):
-        try:
-            lk.unlink(missing_ok=True)
-        except OSError:
-            pass
+        try: lk.unlink(missing_ok=True)
+        except OSError: pass
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
-            user_data_dir=str(user_dir),
-            headless=cfg.headless,
+            user_data_dir=str(user_dir), headless=cfg.headless,
             viewport={"width": 1280, "height": 800},
             args=["--disable-blink-features=AutomationControlled"],
         )
@@ -38,20 +37,23 @@ def run_instance(inst: InstanceConfig) -> None:
         try:
             login(page, cfg)
             open_course(page, cfg)
-            out_name = f"coursera_{cfg.email.split('@')[0]}.png"
-            page.screenshot(path=out_name)
-            logger.info("Saved final state to %s", out_name)
+            page.screenshot(path=f"coursera_{name}.png")
+            logger.info("Saved final state to coursera_%s.png", name)
         finally:
             context.close()
 
 
 def run(instances_path: str = "instances.json") -> None:
-    """Load all configured instances and execute them."""
+    """Load all configured instances and execute them in parallel."""
     instances = load_instances(instances_path)
-    logger.info("Executing %d automation instance(s)...", len(instances))
-    for idx, inst in enumerate(instances, 1):
-        logger.info("--- Running instance %d/%d: %s ---", idx, len(instances), inst.email)
-        run_instance(inst)
+    logger.info("Executing %d automation instance(s) in parallel...", len(instances))
+    with ThreadPoolExecutor(max_workers=max(1, len(instances))) as ex:
+        futs = [ex.submit(run_instance, inst) for inst in instances]
+        for fut in as_completed(futs):
+            try:
+                fut.result()
+            except (Error, OSError, RuntimeError, TimeoutError) as exc:
+                logger.error("Automation instance failed: %s", exc)
 
 
 if __name__ == "__main__":

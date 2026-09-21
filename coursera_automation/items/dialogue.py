@@ -22,11 +22,23 @@ def handle_dialogue(page: Page, cfg: Settings) -> None:
         page.wait_for_timeout(2000)
 
     end_btn = page.locator(
+        'button[aria-label="End Dialogue"], '
         'button:has(span.cds-button-label:has-text("End Dialogue")), '
         'button:has-text("End dialogue")'
     ).first
     if end_btn.is_visible(timeout=cfg.timeout_ms):
         end_btn.click()
         logger.info("Clicked 'End dialogue'.")
+        page.wait_for_timeout(1000)
+
+    confirm_sel = (
+        'button:has(span.cds-button-label:has-text("Yes, end the Dialogue")), '
+        'button:has-text("Yes, end the Dialogue"), '
+        'button:has-text("Yes, end")'
+    )
+    confirm_btn = page.locator(confirm_sel).first
+    if confirm_btn.is_visible(timeout=5000):
+        confirm_btn.click(force=True)
+        logger.info("Confirmed 'Yes, end the Dialogue' in modal.")
         page.wait_for_timeout(2000)
 
