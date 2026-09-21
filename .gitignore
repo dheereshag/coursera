@@ -10,4 +10,5 @@ wheels/
 .venv
 .browser_data/
 .env
+instances.json
 
