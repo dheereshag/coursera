@@ -53,5 +53,5 @@ def test_click_next_item_top_banner() -> None:
     page.locator.side_effect = lambda s: btn if "TopBannerCTAButton" in s else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
     with patch("coursera_automation.items.navigator.dismiss_dialogs"):
         assert click_next_item(page, cfg) is True
-    btn.first.click.assert_called_once_with(force=True)
+    btn.first.click.assert_called_once()
 

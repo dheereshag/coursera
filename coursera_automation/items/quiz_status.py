@@ -9,11 +9,12 @@ logger = logging.getLogger(__name__)
 
 def is_quiz_completed(page: Page) -> bool:
     """Check if quiz is already passed or in review mode without retry."""
+    if page.locator('[data-testid="TopBannerCTAButton"]').first.is_visible(timeout=500):
+        return True
     if page.locator('button:has-text("Try again")').first.is_visible(timeout=500):
         return False
     has_passed = page.locator(
-        '[data-testid="TopBannerCTAButton"], :text("Your grade:"), '
-        ':text("Passed"), :text("Grade received"), :text("You passed")'
+        ':text("Your grade:"), :text("Passed"), :text("Grade received"), :text("You passed")'
     ).first.is_visible(timeout=500)
     if has_passed:
         return True

@@ -29,7 +29,7 @@ def test_is_quiz_completed_false_when_retry_available() -> None:
     """Verify is_quiz_completed returns False when Try again button is visible."""
     page = MagicMock()
     page.locator.side_effect = lambda s: MagicMock(
-        first=MagicMock(is_visible=MagicMock(return_value=True))
+        first=MagicMock(is_visible=MagicMock(return_value="Try again" in s))
     )
     assert is_quiz_completed(page) is False
 
