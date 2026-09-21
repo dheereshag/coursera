@@ -38,11 +38,12 @@ def test_dismiss_pendo_evaluates_fallback() -> None:
 
 
 def test_dismiss_dialogs_orchestrates_all() -> None:
-    """Verify dismiss_dialogs checks pendo, sound effects, and honor code."""
-    page = MagicMock()
-    page.locator.return_value.first.is_visible.return_value = False
+    """Verify dismiss_dialogs clicks Continue on StartAttemptModal."""
+    page, att = MagicMock(), MagicMock()
+    att.first.is_visible.return_value = True
+    page.locator.side_effect = lambda s: att if "StartAttemptModal" in s else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
     dismiss_dialogs(page)
-    assert page.locator.call_count >= 3
+    att.first.click.assert_called_once_with(force=True)
 
 
 def test_register_dialog_handlers() -> None:

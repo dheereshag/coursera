@@ -34,9 +34,10 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
             cta.click(force=True, timeout=5000)
         except Error as exc:
             logger.warning("Quiz CTA click bypassed (%s); checking questions...", exc)
-        logger.info("Clicked quiz CTA. Waiting 5s for quiz questions to load...")
-        page.wait_for_timeout(5000)
+        logger.info("Clicked quiz CTA. Waiting for quiz questions to load...")
+        page.wait_for_timeout(2000)
         dismiss_dialogs(page)
+        page.wait_for_timeout(3000)
 
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     logger.info("Extracted %d quiz question(s):\n%s", len(questions), json.dumps(questions, indent=2, default=str))
@@ -52,9 +53,8 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
                 btn.scroll_into_view_if_needed()
                 btn.click()
 
-    if (agree := page.locator('#agreement-checkbox-base, label:has-text(", understand and agree.")').first).is_visible(
-        timeout=cfg.timeout_ms
-    ):
+    agree_sel = '#agreement-checkbox-base, label:has-text(", understand and agree.")'
+    if (agree := page.locator(agree_sel).first).is_visible(timeout=cfg.timeout_ms):
         agree.click(force=True)
 
     submit_quiz(page, cfg)

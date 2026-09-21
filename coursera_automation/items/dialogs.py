@@ -37,6 +37,9 @@ def dismiss_dialogs(page: Page) -> None:
         btn = btn if btn.is_visible(timeout=200) else page.locator('button:has(span.cds-button-label:has-text("Continue"))').first
         if btn.is_visible(timeout=300):
             btn.click(force=True)
+    if (att := page.locator('[data-testid="StartAttemptModal__primary-button"]').first).is_visible(timeout=400):
+        logger.info("Dismissing attempt warning modal (Continue)...")
+        att.click(force=True)
     for sel in ('.ab-close-button', 'button[aria-label*="close" i]', 'button:has-text("Got it")'):
         if (btn := page.locator(sel).first).is_visible(timeout=300):
             btn.click(force=True)
