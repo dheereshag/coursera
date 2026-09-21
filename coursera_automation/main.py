@@ -5,6 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from playwright.sync_api import Error, sync_playwright
+from playwright_stealth import Stealth
 
 from coursera_automation.auth import login
 from coursera_automation.course import open_course
@@ -23,14 +24,15 @@ def run_instance(inst: InstanceConfig) -> None:
     user_dir = Path(f".browser_data/{name}")
     user_dir.mkdir(parents=True, exist_ok=True)
     for lk in user_dir.glob("Singleton*"):
-        try: lk.unlink(missing_ok=True)
-        except OSError: pass
+        lk.unlink(missing_ok=True)
     with sync_playwright() as p:
         context = p.chromium.launch_persistent_context(
             user_data_dir=str(user_dir), headless=cfg.headless,
             viewport={"width": 1280, "height": 800},
+            ignore_default_args=["--enable-automation"],
             args=["--disable-blink-features=AutomationControlled"],
         )
+        Stealth().apply_stealth_sync(context)
         page = context.pages[0] if context.pages else context.new_page()
         register_dialog_handlers(page)
         context.on("page", register_dialog_handlers)
@@ -38,7 +40,6 @@ def run_instance(inst: InstanceConfig) -> None:
             login(page, cfg)
             open_course(page, cfg)
             page.screenshot(path=f"coursera_{name}.png")
-            logger.info("Saved final state to coursera_%s.png", name)
         finally:
             context.close()
 
@@ -50,8 +51,7 @@ def run(instances_path: str = "instances.json") -> None:
     with ThreadPoolExecutor(max_workers=max(1, len(instances))) as ex:
         futs = [ex.submit(run_instance, inst) for inst in instances]
         for fut in as_completed(futs):
-            try:
-                fut.result()
+            try: fut.result()
             except (Error, OSError, RuntimeError, TimeoutError) as exc:
                 logger.error("Automation instance failed: %s", exc)
 

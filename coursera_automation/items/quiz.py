@@ -38,8 +38,8 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
 
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     logger.info("Extracted %d quiz question(s).", len(questions))
-    if not questions:
-        logger.warning("No quiz questions found after waiting. Skipping submission.")
+    if not questions or not any(q.locator('input:not([disabled])').count() for q in q_locs):
+        logger.info("No active/unsubmitted quiz questions found. Skipping.")
         return
 
     answers = solve_quiz_with_llm(questions, cfg)
@@ -48,7 +48,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         for opt in answers.get(idx, []):
             if (btn := q_loc.locator("label").filter(has_text=opt).first).is_visible():
                 btn.scroll_into_view_if_needed()
-                btn.click()
+                btn.click(force=True)
                 page.wait_for_timeout(300)
 
     agree_sel = '#agreement-checkbox-base, label:has-text(", understand and agree.")'

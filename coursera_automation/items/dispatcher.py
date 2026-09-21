@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 def dispatch_item(page: Page, cfg: Settings) -> None:
     """Detect current item type and execute corresponding handler."""
     dismiss_dialogs(page)
+    is_vid = any(k in page.url for k in ("/lecture", "/video")) or page.locator(
+        "video, .rc-VideoPlayer, [data-testid*='video']"
+    ).first.is_visible(timeout=2500)
     is_reading = "/supplement" in page.url or page.locator(
         '[data-testid="mark-complete"], button:has-text("Mark as completed")'
     ).first.is_visible(timeout=1000)
@@ -28,7 +31,7 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
         has_text=re.compile(r"launch (app|lab)", re.IGNORECASE)
     ).first.is_visible(timeout=1500)
 
-    if page.locator("video").first.is_visible(timeout=2000):
+    if is_vid:
         handle_video(page, cfg)
     elif is_reading:
         handle_reading(page, cfg)
@@ -40,9 +43,7 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
         handle_dialogue(page, cfg)
     elif page.locator('button:has-text("Reply")').first.is_visible(timeout=1000):
         handle_discussion(page, cfg)
-    elif page.locator('button:has-text("assignment"), button:has-text("Try again")').first.is_visible(
-        timeout=1000
-    ):
+    elif page.locator('button:has-text("assignment"), button:has-text("Try again")').first.is_visible(timeout=1000):
         handle_quiz(page, cfg)
     else:
         handle_reading(page, cfg)
@@ -54,5 +55,4 @@ def process_items(page: Page, cfg: Settings) -> None:
         logger.info("Processing learning item %d of %d...", step + 1, cfg.max_items)
         dispatch_item(page, cfg)
         if not click_next_item(page, cfg):
-            logger.info("Item sequence concluded.")
             break

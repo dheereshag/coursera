@@ -11,7 +11,11 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 | **Reading** | Scrolls through content, clicks "Mark as completed" (`data-testid="mark-complete"`), skips if already completed, and advances |
 | **Dialogue** | Clicks "Start dialogue" $\to$ "End dialogue" $\to$ confirms "Yes, end the Dialogue" modal and advances |
 | **Discussion** | Types `"ok"` into chatbox, clicks "Reply", and advances |
-| **Quiz** | Queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, confirms modal, and advances |
+| **Quiz** | Queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, confirms modal, polls up to 5 min for server-side evaluation, and advances |
+
+## Anti-Bot Stealth & Evasion
+
+Integrates `playwright-stealth` and Chromium flags (`--disable-blink-features=AutomationControlled`, `ignore_default_args=["--enable-automation"]`) across all persistent browser contexts to mask automation fingerprints, avoid Arkose challenge escalation, and maintain clean browser sessions.
 
 ## Multi-Instance Execution
 

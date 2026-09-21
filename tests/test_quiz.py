@@ -30,21 +30,21 @@ def test_handle_quiz_flow() -> None:
     page, cfg = MagicMock(), Settings()
     q_loc, opt = MagicMock(), MagicMock()
     q_loc.inner_text.return_value, opt.inner_text.return_value = "What is 2+2?", "4"
-    q_loc.locator.return_value.all.return_value, q_loc.locator.return_value.count.return_value = [opt], 0
-    q_loc.locator.return_value.first.is_visible.return_value = False
-    agree_mock, submit_mock, modal_sub_mock = MagicMock(is_visible=MagicMock(return_value=True)), MagicMock(is_visible=MagicMock(return_value=True)), MagicMock(is_visible=MagicMock(return_value=True))
-
-    page.locator.side_effect = lambda s: MagicMock(first=agree_mock) if "understand and agree" in s else (
-        MagicMock(first=modal_sub_mock, last=modal_sub_mock) if any(k in s for k in ("cds-button-label", "dialog-submit-button")) else MagicMock(all=lambda: [q_loc], first=MagicMock(is_visible=lambda timeout=0: False))
+    q_loc.locator.side_effect = lambda s: MagicMock(
+        count=MagicMock(return_value=0 if "agreement" in s else 1), all=MagicMock(return_value=[opt]),
+        first=MagicMock(is_visible=MagicMock(return_value="label" in s)),
     )
-    page.get_by_role.side_effect = lambda r, **kw: MagicMock(first=submit_mock) if "submit" in str(kw.get("name", "")).lower() else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
+    agree, sub, modal = MagicMock(is_visible=lambda timeout=0: True), MagicMock(is_visible=lambda timeout=0: True), MagicMock(is_visible=lambda timeout=0: True)
+
+    page.locator.side_effect = lambda s: MagicMock(first=agree) if "understand and agree" in s else (
+        MagicMock(first=modal, last=modal) if any(k in s for k in ("cds-button-label", "dialog-submit-button")) else MagicMock(all=lambda: [q_loc], first=MagicMock(is_visible=lambda timeout=0: False))
+    )
+    page.get_by_role.side_effect = lambda r, **kw: MagicMock(first=sub) if "submit" in str(kw.get("name", "")).lower() else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
 
     with patch("coursera_automation.items.quiz.solve_quiz_with_llm", return_value={0: ["4"]}):
         handle_quiz(page, cfg)
 
-    agree_mock.click.assert_called_once_with(force=True)
-    submit_mock.click.assert_called_once()
-    modal_sub_mock.click.assert_called_once()
+    assert agree.click.call_count == 1 and sub.click.call_count == 1 and modal.click.call_count == 1
 
 
 def test_handle_quiz_empty_skips() -> None:
@@ -56,5 +56,4 @@ def test_handle_quiz_empty_skips() -> None:
         patch("coursera_automation.items.quiz.submit_quiz") as mock_submit,
     ):
         handle_quiz(page, cfg)
-        mock_solve.assert_not_called()
-        mock_submit.assert_not_called()
+        assert not mock_solve.called and not mock_submit.called

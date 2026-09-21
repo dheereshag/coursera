@@ -5,21 +5,24 @@ from unittest.mock import MagicMock, patch
 from coursera_automation.config import Settings
 from coursera_automation.items.dispatcher import dispatch_item
 from coursera_automation.items.navigator import click_next_item, dismiss_dialogs
-from coursera_automation.items.video import calculate_video_wait
 
 
-def test_video_duration_exact() -> None:
-    """Verify video wait calculation uses exact duration / 2.0 without ceiling."""
-    assert calculate_video_wait(420.0) == 210.0
-    assert calculate_video_wait(300.0) == 150.0
-    assert calculate_video_wait(75.0) == 37.5
-    assert calculate_video_wait(0.5) == 1.0
+def test_dispatch_item_video() -> None:
+    """Verify dispatch_item detects lecture URL and delegates to handle_video."""
+    mock_page, cfg = MagicMock(), Settings()
+    mock_page.url = "https://www.coursera.org/learn/example/lecture/abc"
+    with (
+        patch("coursera_automation.items.dispatcher.dismiss_dialogs"),
+        patch("coursera_automation.items.dispatcher.handle_video") as mock_vid,
+    ):
+        dispatch_item(mock_page, cfg)
+        mock_vid.assert_called_once_with(mock_page, cfg)
 
 
 def test_dispatch_item_assignment() -> None:
     """Verify dispatch_item identifies assignment via .first and delegates to handle_quiz."""
     mock_page, cfg = MagicMock(), Settings()
-    mock_page.url = "https://www.coursera.org/learn/example/lecture/abc"
+    mock_page.url = "https://www.coursera.org/learn/example/exam/abc"
     mock_page.locator.side_effect = lambda s: MagicMock(
         first=MagicMock(is_visible=MagicMock(return_value="assignment" in s)),
         filter=MagicMock(return_value=MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)))),

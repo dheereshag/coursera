@@ -1,4 +1,4 @@
-"""Quiz submission handling including confirmation modal interactions."""
+"""Quiz submission handling and post-submission evaluation waiting."""
 
 import logging
 import re
@@ -10,8 +10,28 @@ from coursera_automation.config import Settings
 logger = logging.getLogger(__name__)
 
 
+def _wait_for_evaluation(page: Page, max_wait_sec: int = 300) -> None:
+    """Poll up to max_wait_sec for Coursera quiz grading to complete."""
+    logger.info("Waiting for quiz evaluation (up to %ds)...", max_wait_sec)
+    done_sel = (
+        'text=Passed, text="Grade received", text="You passed", '
+        'button:has-text("Try again"), [data-testid="TopBannerCTAButton"]'
+    )
+    for cycle in range(max_wait_sec // 5):
+        if page.locator(done_sel).first.is_visible(timeout=1000):
+            logger.info("Quiz evaluation completed.")
+            return
+        if cycle > 0 and cycle % 9 == 0:
+            logger.info("Evaluation in progress; reloading page to refresh grade...")
+            page.reload(wait_until="domcontentloaded")
+            page.wait_for_timeout(2000)
+        else:
+            page.wait_for_timeout(5000)
+    logger.warning("Quiz evaluation wait reached %ds timeout.", max_wait_sec)
+
+
 def submit_quiz(page: Page, cfg: Settings) -> None:
-    """Click submit button and confirm in submission modal if present."""
+    """Click submit button, confirm in modal, and wait for grading."""
     sub = page.get_by_role("button", name=re.compile(r"^submit", re.IGNORECASE)).first
     if not sub.is_visible(timeout=cfg.timeout_ms):
         return
@@ -33,13 +53,5 @@ def submit_quiz(page: Page, cfg: Settings) -> None:
             )
         except Error as exc:
             logger.debug("Modal dismissal wait: %s", exc)
-    try:
-        page.locator('[data-testid="TopBannerCTAButton"], [data-testid="assignment-view-tunnel-vision"]').first.wait_for(
-            state="visible", timeout=cfg.timeout_ms
-        )
-    except Error:
-        pass
-    page.wait_for_timeout(3000)
-
-
-
+    _wait_for_evaluation(page, max_wait_sec=300)
+    page.wait_for_timeout(2000)

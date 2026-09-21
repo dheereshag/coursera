@@ -7,11 +7,11 @@ from coursera_automation.items.quiz import handle_quiz
 from coursera_automation.items.quiz_status import is_quiz_completed
 
 
-def test_is_quiz_completed_true_when_passed_without_retry() -> None:
-    """Verify is_quiz_completed returns True when Next item and Passed are present without Try again."""
+def test_is_quiz_completed_true_when_passed() -> None:
+    """Verify is_quiz_completed returns True when Passed is present without Try again."""
     page = MagicMock()
     page.locator.side_effect = lambda s: MagicMock(
-        first=MagicMock(is_visible=MagicMock(return_value="Try again" not in s))
+        first=MagicMock(is_visible=MagicMock(return_value="Passed" in s))
     )
     assert is_quiz_completed(page) is True
 
@@ -25,13 +25,13 @@ def test_is_quiz_completed_false_when_retry_available() -> None:
     assert is_quiz_completed(page) is False
 
 
-def test_is_quiz_completed_false_without_next() -> None:
-    """Verify is_quiz_completed returns False when Next item button is absent."""
+def test_is_quiz_completed_true_when_review_mode() -> None:
+    """Verify is_quiz_completed returns True when inputs are disabled in review mode."""
     page = MagicMock()
     page.locator.side_effect = lambda s: MagicMock(
-        first=MagicMock(is_visible=MagicMock(return_value="Next item" not in s and "Try again" not in s))
+        first=MagicMock(is_visible=MagicMock(return_value="disabled" in s and "not([disabled])" not in s))
     )
-    assert is_quiz_completed(page) is False
+    assert is_quiz_completed(page) is True
 
 
 def test_handle_quiz_skips_when_completed() -> None:

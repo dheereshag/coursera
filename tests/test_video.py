@@ -4,16 +4,21 @@ from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
 from coursera_automation.items.video import (
+    _get_duration,
     _wait_video,
     calculate_video_wait,
     handle_video,
 )
 
 
-def test_calculate_video_wait() -> None:
-    """Verify video wait calculation uses duration / 2.0 with 1.0s floor."""
+def test_calculate_and_duration() -> None:
+    """Verify video wait calculation and duration retrieval with fallback."""
     assert calculate_video_wait(100.0) == 50.0
     assert calculate_video_wait(0.5) == 1.0
+    p1 = MagicMock(evaluate=MagicMock(side_effect=[0, 120.0]))
+    assert _get_duration(p1) == 120.0
+    p2 = MagicMock(evaluate=MagicMock(return_value=0))
+    assert _get_duration(p2) == 30.0
 
 
 def test_wait_video_clicks_skip() -> None:

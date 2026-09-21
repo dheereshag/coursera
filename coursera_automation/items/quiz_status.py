@@ -8,15 +8,15 @@ logger = logging.getLogger(__name__)
 
 
 def is_quiz_completed(page: Page) -> bool:
-    """Check if quiz is already passed and ready to advance without retry."""
-    has_retry = page.locator('button:has-text("Try again")').first.is_visible(timeout=500)
-    if has_retry:
+    """Check if quiz is already passed or in review mode without retry."""
+    if page.locator('button:has-text("Try again")').first.is_visible(timeout=500):
         return False
-    next_btn = page.locator(
-        '[data-testid="TopBannerCTAButton"], a[role="button"]:has-text("Next item"), button:has-text("Next item")'
-    ).first
-    has_next = next_btn.is_visible(timeout=1000)
     has_passed = page.locator(
         'text=Passed, text="Grade received", text="You passed", text="Congratulations"'
     ).first.is_visible(timeout=500)
-    return bool(has_next and has_passed)
+    if has_passed:
+        return True
+    has_eval = page.locator('text="Grading in progress", text="Evaluating"').first.is_visible(timeout=300)
+    has_disabled = page.locator('input[disabled], [aria-disabled="true"]').first.is_visible(timeout=300)
+    has_active = page.locator('input:not([disabled]):not([type="hidden"])').first.is_visible(timeout=300)
+    return bool(has_eval or (has_disabled and not has_active))
