@@ -18,7 +18,7 @@ def submit_quiz(page: Page, cfg: Settings) -> None:
 
     sub.scroll_into_view_if_needed()
     sub.click()
-    page.wait_for_timeout(1000)
+    page.wait_for_timeout(1500)
     modal_btn = page.locator(
         'button[data-testid="dialog-submit-button"], '
         '[role="alertdialog"] button:has(span.cds-button-label:has-text("Submit")), '
@@ -39,7 +39,7 @@ def submit_quiz(page: Page, cfg: Settings) -> None:
         )
     except Error:
         pass
-    page.wait_for_timeout(2000)
+    page.wait_for_timeout(3000)
 
 
 

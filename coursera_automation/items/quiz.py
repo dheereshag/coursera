@@ -1,6 +1,5 @@
 """Quiz interaction: extract questions, apply LLM answers, agree, and submit."""
 
-import json
 import logging
 
 from playwright.sync_api import Error, Page
@@ -24,10 +23,8 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         logger.info("Quiz already completed or passed. Ready for next item.")
         return
 
-    cta_sel = (
-        '[data-testid="CoverPageActionButton"], button:has-text("Try again"), '
-        'button:has-text("Start"), button:has-text("Resume"), button:has-text("assignment")'
-    )
+    cta_sel = ('[data-testid="CoverPageActionButton"], button:has-text("Try again"), '
+               'button:has-text("Start"), button:has-text("Resume"), button:has-text("assignment")')
     if (cta := page.locator(cta_sel).first).is_visible(timeout=4000):
         logger.info("Clicking quiz CTA (Start / Try again / Resume)...")
         try:
@@ -40,7 +37,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         page.wait_for_timeout(3000)
 
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
-    logger.info("Extracted %d quiz question(s):\n%s", len(questions), json.dumps(questions, indent=2, default=str))
+    logger.info("Extracted %d quiz question(s).", len(questions))
     if not questions:
         logger.warning("No quiz questions found after waiting. Skipping submission.")
         return
@@ -52,9 +49,11 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
             if (btn := q_loc.locator("label").filter(has_text=opt).first).is_visible():
                 btn.scroll_into_view_if_needed()
                 btn.click()
+                page.wait_for_timeout(300)
 
     agree_sel = '#agreement-checkbox-base, label:has-text(", understand and agree.")'
     if (agree := page.locator(agree_sel).first).is_visible(timeout=cfg.timeout_ms):
         agree.click(force=True)
+        page.wait_for_timeout(1000)
 
     submit_quiz(page, cfg)

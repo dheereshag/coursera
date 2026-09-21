@@ -32,7 +32,9 @@ def open_course(page: Page, cfg: Settings) -> None:
         except Error:
             dismiss_dialogs(page)
             cta.click(force=True)
+        page.wait_for_load_state("domcontentloaded")
         page.wait_for_timeout(3000)
+        dismiss_dialogs(page)
     else:
         logger.info("No 'Go to course' CTA visible; proceeding directly to Resume...")
 

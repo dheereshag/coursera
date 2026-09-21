@@ -29,7 +29,7 @@ def handle_dialogue(page: Page, cfg: Settings) -> None:
     if end_btn.is_visible(timeout=cfg.timeout_ms):
         end_btn.click()
         logger.info("Clicked 'End dialogue'.")
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(1500)
 
     confirm_sel = (
         'button:has(span.cds-button-label:has-text("Yes, end the Dialogue")), '
@@ -40,5 +40,5 @@ def handle_dialogue(page: Page, cfg: Settings) -> None:
     if confirm_btn.is_visible(timeout=5000):
         confirm_btn.click(force=True)
         logger.info("Confirmed 'Yes, end the Dialogue' in modal.")
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(2500)
 

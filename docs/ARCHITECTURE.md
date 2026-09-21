@@ -51,7 +51,7 @@ sequenceDiagram
 - `coursera_automation/items/video.py`: Conditional 2x speed, exact duration calculation, and 6s buffer.
 - `coursera_automation/items/lab.py`: Lab agreement and background app launch (`bring_to_front`).
 - `coursera_automation/items/reading.py`: Reading completion via progressive scroll and `data-testid="mark-complete"` click.
-- `coursera_automation/items/dialogue.py`: Dialogue start and finish.
+- `coursera_automation/items/dialogue.py`: Dialogue start, finish, and modal confirmation.
 - `coursera_automation/items/discussion.py`: Discussion response input.
 - `coursera_automation/items/quiz_solver.py`: NVIDIA LLM API integration.
 - `coursera_automation/items/quiz_parser.py`: Question DOM extraction and classification.

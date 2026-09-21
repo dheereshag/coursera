@@ -23,7 +23,8 @@ def click_resume(page: Page, cfg: Settings) -> None:
         page.wait_for_timeout(400)
     btn.wait_for(state="visible", timeout=cfg.timeout_ms)
     logger.info("Clicking course resume/start CTA...")
-    btn.click()
+    btn.click(force=True)
+    page.wait_for_load_state("domcontentloaded")
     page.wait_for_timeout(3000)
     dismiss_dialogs(page)
 
@@ -41,7 +42,9 @@ def click_next_item(page: Page, cfg: Settings) -> bool:
         if (btn := page.locator(sel).first).is_visible(timeout=1000):
             logger.info("Advancing via next item button...")
             btn.click(force=True)
+            page.wait_for_load_state("domcontentloaded")
             page.wait_for_timeout(3000)
+            dismiss_dialogs(page)
             return True
         page.mouse.wheel(0, 400)
         page.wait_for_timeout(1000)

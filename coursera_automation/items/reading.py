@@ -39,6 +39,6 @@ def handle_reading(page: Page, cfg: Settings) -> None:
         mark_btn.scroll_into_view_if_needed()
         mark_btn.click(force=True)
         logger.info("Clicked 'Mark as completed'.")
-        page.wait_for_timeout(2000)
+        page.wait_for_timeout(2500)
     else:
         logger.info("'Mark as completed' button already completed or not present.")
