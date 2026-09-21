@@ -54,3 +54,5 @@ def load_instances(path: str = "instances.json") -> list[InstanceConfig]:
             max_items=config.max_items, timeout_ms=config.timeout_ms,
         )
     ]
+
+

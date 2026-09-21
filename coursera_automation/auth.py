@@ -29,7 +29,7 @@ def wait_for_auth_complete(page: Page) -> None:
 def login(page: Page, cfg: Settings) -> None:
     """Navigate to coursera.org and authenticate only if not already logged in."""
     logger.info("Opening home URL: %s", cfg.login_url)
-    page.goto(cfg.login_url, wait_until="networkidle")
+    page.goto(cfg.login_url, wait_until="domcontentloaded")
 
     login_btn = (
         page.get_by_role("button", name=re.compile(r"^log in$", re.IGNORECASE))

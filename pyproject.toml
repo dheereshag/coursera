@@ -8,6 +8,7 @@ dependencies = [
     "openai>=3.16.2",
     "playwright>=1.63.0",
     "pytest>=9.1.1",
+    "python-dotenv>=1.2.3",
     "ruff>=0.16.8",
     "ty>=0.0.82",
 ]

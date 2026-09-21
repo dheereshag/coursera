@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 def open_course(page: Page, cfg: Settings) -> None:
     """Navigate to specialization, click Go to course, resume, and process items."""
     logger.info("Navigating to course page: %s", cfg.course_url)
-    page.goto(cfg.course_url, wait_until="networkidle")
+    page.goto(cfg.course_url, wait_until="domcontentloaded")
+    page.wait_for_timeout(2000)
     dismiss_dialogs(page)
 
     cta = (
@@ -24,15 +25,16 @@ def open_course(page: Page, cfg: Settings) -> None:
         .or_(page.get_by_role("button", name=re.compile(r"enroll", re.IGNORECASE)))
         .first
     )
+    if cta.is_visible(timeout=5000):
+        logger.info("Clicking course CTA: %s", cta.inner_text().strip())
+        try:
+            cta.click(timeout=5000)
+        except Error:
+            dismiss_dialogs(page)
+            cta.click(force=True)
+        page.wait_for_timeout(3000)
+    else:
+        logger.info("No 'Go to course' CTA visible; proceeding directly to Resume...")
 
-    cta.wait_for(state="visible", timeout=cfg.timeout_ms)
-    logger.info("Clicking course CTA: %s", cta.inner_text().strip())
-    try:
-        cta.click(timeout=5000)
-    except Error:
-        dismiss_dialogs(page)
-        cta.click(force=True)
-
-    page.wait_for_timeout(3000)
     click_resume(page, cfg)
     process_items(page, cfg)

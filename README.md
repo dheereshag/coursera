@@ -11,7 +11,7 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 | **Reading** | Clicks "Mark as completed" and advances |
 | **Dialogue** | Clicks "Start dialogue" $\to$ "End dialogue" and advances |
 | **Discussion** | Types `"ok"` into chatbox, clicks "Reply", and advances |
-| **Quiz** | Queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, and advances |
+| **Quiz** | Queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, confirms modal, and advances |
 
 ## Multi-Instance Execution
 
@@ -27,13 +27,20 @@ Support for multiple concurrent/sequential instances via `instances.json`:
   }
 ]
 ```
+
+
 If `instances.json` is omitted, the automation falls back to the single default instance in `.env` / `config.py`. See `instances.example.json`.
+
+## Persistent Browser Sessions
+
+Automation uses Playwright's `launch_persistent_context` stored in `.browser_data/<user>/`. Cookies, local storage, and authentication tokens are preserved across runs, allowing subsequent executions to bypass the login modal and Arkose puzzle verification entirely.
 
 ## Dialog & Popup Management
 
 `coursera_automation/items/navigator.py` automatically dismisses:
 - Transient marketing/help dialogues (`Got it`, close icons)
 - Feature announcements (e.g. "We added sound effects" popup cross icon)
+- Coursera Honor Code modal (`HonorCodeModal` with "Continue" button)
 - End-screen video cards and bottom-bar next buttons
 
 ## Architecture Overview

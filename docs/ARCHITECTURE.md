@@ -32,8 +32,9 @@ sequenceDiagram
             opt Quiz Item
                 Item->>LLM: solve_quiz_with_llm(questions)
                 LLM-->>Item: JSON answers
-                Item->>Item: Check honor code & submit
+                Item->>Item: Check honor code, submit & confirm modal
             end
+
             Disp->>Nav: click_next_item(page, config)
         end
     end
@@ -51,7 +52,9 @@ sequenceDiagram
 - `coursera_automation/items/dialogue.py`: Dialogue start and finish.
 - `coursera_automation/items/discussion.py`: Discussion response input.
 - `coursera_automation/items/quiz_solver.py`: NVIDIA LLM API integration.
-- `coursera_automation/items/quiz.py`: Quiz interaction, type classification, honor code, submission.
-- `coursera_automation/items/navigator.py`: Dialog dismissal (including sound effects popup), resume, and next item navigation.
+- `coursera_automation/items/quiz_parser.py`: Question DOM extraction and classification.
+- `coursera_automation/items/quiz.py`: Quiz interaction, honor code, submit, and modal confirmation.
+- `coursera_automation/items/navigator.py`: Dialog dismissal, resume, and next item navigation.
 - `coursera_automation/items/dispatcher.py`: Item detection and iteration loop.
 - `coursera_automation/main.py`: Browser lifecycle management across single and multi-instance executions.
+

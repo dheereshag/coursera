@@ -3,6 +3,11 @@
 import os
 from dataclasses import dataclass
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -22,12 +27,16 @@ class Settings:
     max_items: int = int(os.getenv("COURSERA_MAX_ITEMS", "25"))
     nvidia_api_key: str = os.getenv(
         "NVIDIA_API_KEY",
-        "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",
+        "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",
     )
     nvidia_base_url: str = os.getenv(
         "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
     )
-    nvidia_model: str = os.getenv("NVIDIA_MODEL", "z-ai/glm-5.3")
+    nvidia_model: str = os.getenv(
+        "NVIDIA_MODEL", "nvidia/nemotron-3-ultra-550b-a55b"
+    )
 
 
 config = Settings()
+
+
