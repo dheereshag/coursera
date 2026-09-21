@@ -35,12 +35,13 @@ def click_resume(page: Page, cfg: Settings) -> None:
 def click_next_item(page: Page, cfg: Settings) -> bool:
     """Locate and click 'Next item' or navigate directly via href."""
     orig = page.url
-    for _ in range(5):
+    for _ in range(8):
         dismiss_dialogs(page)
         if page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible(timeout=300):
             page.wait_for_timeout(3000)
             continue
-        if (btn := page.locator(NEXT_SEL).first).is_visible(timeout=1000):
+        locs = page.locator(NEXT_SEL)
+        if (btn := next((l for l in locs.all() if l.is_visible()), None) or (locs.first if locs.first.is_visible() else None)):
             logger.info("Advancing via next item button...")
             href = btn.get_attribute("href")
             try:

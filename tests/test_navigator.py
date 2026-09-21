@@ -43,10 +43,11 @@ def test_click_next_item_advances() -> None:
     """Verify click_next_item locates progression button and navigates href if url unchanged."""
     page, cfg, btn = MagicMock(), Settings(), MagicMock()
     page.url = "https://www.coursera.org/learn/quiz"
-    btn.first.is_visible.return_value = True
-    btn.first.get_attribute.return_value = "/learn/next"
-    page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False))) if "Reviewing" in s else btn
+    btn.is_visible.return_value = True
+    btn.get_attribute.return_value = "/learn/next"
+    loc = MagicMock(all=MagicMock(return_value=[btn]))
+    page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False))) if "Reviewing" in s else loc
     with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs"):
         assert click_next_item(page, cfg) is True
-    btn.first.click.assert_called_once()
+    btn.click.assert_called_once()
     page.goto.assert_called_once_with("https://www.coursera.org/learn/next", wait_until="domcontentloaded")
