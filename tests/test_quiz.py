@@ -8,11 +8,9 @@ from coursera_automation.items.quiz import _detect_type, _extract_prompt, handle
 
 def test_detect_type() -> None:
     """Verify _detect_type returns multiselect for checkboxes, single otherwise."""
-    mock_multi = MagicMock()
+    mock_multi, mock_single = MagicMock(), MagicMock()
     mock_multi.locator.return_value.count.return_value = 2
     assert _detect_type(mock_multi) == "multiselect"
-
-    mock_single = MagicMock()
     mock_single.locator.return_value.count.return_value = 0
     assert _detect_type(mock_single) == "single"
 
@@ -38,7 +36,6 @@ def test_handle_quiz_flow() -> None:
     page.locator.side_effect = lambda s: MagicMock(first=agree_mock) if "understand and agree" in s else (
         MagicMock(first=modal_sub_mock, last=modal_sub_mock) if any(k in s for k in ("cds-button-label", "dialog-submit-button")) else MagicMock(all=lambda: [q_loc], first=MagicMock(is_visible=lambda timeout=0: False))
     )
-
     page.get_by_role.side_effect = lambda r, **kw: MagicMock(first=submit_mock) if "submit" in str(kw.get("name", "")).lower() else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
 
     with patch("coursera_automation.items.quiz.solve_quiz_with_llm", return_value={0: ["4"]}):
@@ -48,3 +45,15 @@ def test_handle_quiz_flow() -> None:
     submit_mock.click.assert_called_once()
     modal_sub_mock.click.assert_called_once()
 
+
+def test_handle_quiz_empty_skips() -> None:
+    """Verify handle_quiz skips LLM query and submission when 0 questions found."""
+    page, cfg = MagicMock(), Settings()
+    with (
+        patch("coursera_automation.items.quiz.wait_and_extract_questions", return_value=([], [])),
+        patch("coursera_automation.items.quiz.solve_quiz_with_llm") as mock_solve,
+        patch("coursera_automation.items.quiz.submit_quiz") as mock_submit,
+    ):
+        handle_quiz(page, cfg)
+        mock_solve.assert_not_called()
+        mock_submit.assert_not_called()
