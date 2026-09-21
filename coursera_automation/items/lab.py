@@ -6,6 +6,7 @@ import re
 from playwright.sync_api import Page
 
 from coursera_automation.config import Settings
+from coursera_automation.items.dialogs import dismiss_dialogs
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ def handle_lab(page: Page, cfg: Settings) -> None:
     """Check I agree, launch app in background, and prepare for next item."""
     logger.info("Handling lab item...")
     page.wait_for_load_state("domcontentloaded")
+    dismiss_dialogs(page)
 
     # Locate 'I agree' checkbox
     agree = (
@@ -44,6 +46,7 @@ def handle_lab(page: Page, cfg: Settings) -> None:
         page.mouse.wheel(0, 300)
         page.wait_for_timeout(300)
 
+    dismiss_dialogs(page)
     launch.wait_for(state="visible", timeout=cfg.timeout_ms)
     launch.scroll_into_view_if_needed()
     launch.click(force=True)

@@ -14,17 +14,19 @@ sequenceDiagram
     participant Disp as items.dispatcher
     participant Item as Video/Lab/Reading/Quiz/Dialogue/Discussion
     participant LLM as NVIDIA GLM-5.3
+    participant Dial as items.dialogs
     participant Nav as items.navigator
 
     Main->>Inst: load_instances("instances.json")
     Inst-->>Main: list[InstanceConfig]
     loop Each Instance
+        Main->>Dial: register_dialog_handlers(page)
         Main->>Auth: login(page, config)
         Main->>Course: open_course(page, config)
         Course->>Nav: click_resume(page, config)
         Course->>Disp: process_items(page, config)
         loop Up to max_items
-            Disp->>Nav: dismiss_dialogs(page)
+            Disp->>Dial: dismiss_dialogs(page)
             Disp->>Item: dispatch_item(page, config)
             opt Video Item
                 Item->>Item: 2x speed playback & 6s post-buffer
@@ -54,7 +56,8 @@ sequenceDiagram
 - `coursera_automation/items/quiz_solver.py`: NVIDIA LLM API integration.
 - `coursera_automation/items/quiz_parser.py`: Question DOM extraction and classification.
 - `coursera_automation/items/quiz.py`: Quiz interaction, honor code, submit, and modal confirmation.
-- `coursera_automation/items/navigator.py`: Dialog dismissal, resume, and next item navigation.
+- `coursera_automation/items/dialogs.py`: Pendo guide and transient dialog dismissal.
+- `coursera_automation/items/navigator.py`: Resume and next item navigation.
 - `coursera_automation/items/dispatcher.py`: Item detection and iteration loop.
 - `coursera_automation/main.py`: Browser lifecycle management across single and multi-instance executions.
 

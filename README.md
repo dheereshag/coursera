@@ -37,7 +37,8 @@ Automation uses Playwright's `launch_persistent_context` stored in `.browser_dat
 
 ## Dialog & Popup Management
 
-`coursera_automation/items/navigator.py` automatically dismisses:
+`coursera_automation/items/dialogs.py` automatically dismisses:
+- Pendo guides and modals (e.g. "Today's Goals have moved" popup) via `add_locator_handler` and close/confirm triggers
 - Transient marketing/help dialogues (`Got it`, close icons)
 - Feature announcements (e.g. "We added sound effects" popup cross icon)
 - Coursera Honor Code modal (`HonorCodeModal` with "Continue" button)
@@ -57,7 +58,8 @@ Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module):
 - `coursera_automation/items/discussion.py`: Discussion response input.
 - `coursera_automation/items/quiz_solver.py`: NVIDIA LLM API integration.
 - `coursera_automation/items/quiz.py`: Quiz interaction, type classification, and submission.
-- `coursera_automation/items/navigator.py`: Dialog dismissal, resume, and next item navigation.
+- `coursera_automation/items/dialogs.py`: Pendo guide and transient dialog dismissal.
+- `coursera_automation/items/navigator.py`: Resume and next item progression navigation.
 - `coursera_automation/items/dispatcher.py`: Item detection and iteration loop.
 - `coursera_automation/main.py`: Browser orchestration for single and multi-instance runs.
 

@@ -6,25 +6,9 @@ import re
 from playwright.sync_api import Page
 
 from coursera_automation.config import Settings
+from coursera_automation.items.dialogs import dismiss_dialogs
 
 logger = logging.getLogger(__name__)
-
-
-def dismiss_dialogs(page: Page) -> None:
-    """Dismiss transient modals, popups, and sound effects prompts."""
-    if (s := page.locator('div:has-text("sound effects") button').first).is_visible(timeout=400):
-        s.click(force=True)
-    if (honor := page.locator('[data-testid="HonorCodeModal"]').first).is_visible(timeout=400):
-        if (c := honor.locator('input[type="checkbox"]').first).is_visible(timeout=200) and not c.is_checked():
-            c.check(force=True)
-        btn = honor.locator('button:has(span.cds-button-label:has-text("Continue")), button[aria-label*="close" i]').first
-        btn = btn if btn.is_visible(timeout=200) else page.locator('button:has(span.cds-button-label:has-text("Continue"))').first
-        if btn.is_visible(timeout=300):
-            btn.click(force=True)
-    for sel in ('.ab-close-button', 'button[aria-label*="close" i]', 'button:has-text("Got it")'):
-        if (btn := page.locator(sel).first).is_visible(timeout=300):
-            btn.click(force=True)
-            break
 
 
 def click_resume(page: Page, cfg: Settings) -> None:

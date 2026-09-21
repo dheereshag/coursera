@@ -8,6 +8,7 @@ from playwright.sync_api import sync_playwright
 from coursera_automation.auth import login
 from coursera_automation.course import open_course
 from coursera_automation.instances import InstanceConfig, load_instances
+from coursera_automation.items.dialogs import register_dialog_handlers
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -32,6 +33,8 @@ def run_instance(inst: InstanceConfig) -> None:
             args=["--disable-blink-features=AutomationControlled"],
         )
         page = context.pages[0] if context.pages else context.new_page()
+        register_dialog_handlers(page)
+        context.on("page", register_dialog_handlers)
         try:
             login(page, cfg)
             open_course(page, cfg)
