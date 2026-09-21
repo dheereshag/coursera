@@ -27,7 +27,8 @@ def test_wait_video_skips_and_ends() -> None:
     skip_btn = MagicMock(is_visible=MagicMock(side_effect=[True, False]))
     page.locator.return_value.first = skip_btn
     page.evaluate.side_effect = lambda s: True if "ended" in s else None
-    _wait_video(page, wait_secs=5.0)
+    with patch("time.time", side_effect=[0.0, 1.0, 6.0, 7.0, 8.0, 9.0]):
+        _wait_video(page, wait_secs=10.0)
     skip_btn.click.assert_called_once_with(force=True)
 
 
@@ -37,11 +38,10 @@ def test_handle_video_flow_and_mute() -> None:
     play_btn = MagicMock(is_visible=MagicMock(return_value=True))
     mute_btn = MagicMock(is_visible=MagicMock(return_value=True))
     speed_btn = MagicMock(is_visible=MagicMock(return_value=True), inner_text=MagicMock(return_value="1x"))
+    page.evaluate.side_effect = lambda s: True if "paused" in s else 100.0 if "duration" in s else None
     page.locator.side_effect = lambda s: (
-        MagicMock(first=mute_btn) if s == 'button[aria-label="Mute"]'
-        else MagicMock(first=speed_btn) if "playback rate" in s
-        else MagicMock(first=play_btn) if "rc-VideoControlsContainer" in s
-        else MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)))
+        MagicMock(first=mute_btn) if "Mute" in s else MagicMock(first=speed_btn) if "playback rate" in s
+        else MagicMock(first=play_btn) if any(k in s for k in ("Play", "play")) else MagicMock(first=MagicMock(is_visible=lambda: False))
     )
     with patch("coursera_automation.items.content.video._wait_video") as mock_wait:
         handle_video(page, cfg)

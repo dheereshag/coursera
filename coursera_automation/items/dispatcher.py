@@ -49,7 +49,7 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
 def process_items(page: Page, cfg: Settings) -> None:
     """Iterate through course items up to max_items limit."""
     for step in range(cfg.max_items):
-        logger.info("Processing learning item %d of %d...", step + 1, cfg.max_items)
+        orig_url = page.url
         dispatch_item(page, cfg)
-        if not click_next_item(page, cfg):
+        if page.url == orig_url and not click_next_item(page, cfg):
             break
