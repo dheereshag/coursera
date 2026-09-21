@@ -14,8 +14,9 @@ def _wait_for_evaluation(page: Page, max_wait_sec: int = 300) -> None:
     """Poll up to max_wait_sec for Coursera quiz grading to complete."""
     logger.info("Waiting for quiz evaluation (up to %ds)...", max_wait_sec)
     done_sel = (
-        'text=Passed, text="Grade received", text="You passed", '
-        'button:has-text("Try again"), [data-testid="TopBannerCTAButton"]'
+        '[data-testid="TopBannerCTAButton"], button:has-text("Next item"), '
+        'a:has-text("Next item"), button:has-text("Try again"), '
+        ':text("Your grade:"), :text("Passed"), :text("Grade received")'
     )
     for cycle in range(max_wait_sec // 5):
         if page.locator(done_sel).first.is_visible(timeout=1000):

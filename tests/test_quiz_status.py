@@ -16,6 +16,15 @@ def test_is_quiz_completed_true_when_passed() -> None:
     assert is_quiz_completed(page) is True
 
 
+def test_is_quiz_completed_true_when_top_banner_cta() -> None:
+    """Verify is_quiz_completed returns True when TopBannerCTAButton is present."""
+    page = MagicMock()
+    page.locator.side_effect = lambda s: MagicMock(
+        first=MagicMock(is_visible=MagicMock(return_value="TopBannerCTAButton" in s))
+    )
+    assert is_quiz_completed(page) is True
+
+
 def test_is_quiz_completed_false_when_retry_available() -> None:
     """Verify is_quiz_completed returns False when Try again button is visible."""
     page = MagicMock()

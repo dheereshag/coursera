@@ -12,6 +12,9 @@ def test_wait_for_evaluation_immediate_done() -> None:
     page.locator.return_value.first.is_visible.return_value = True
     _wait_for_evaluation(page, max_wait_sec=10)
     page.reload.assert_not_called()
+    called_sel = page.locator.call_args[0][0]
+    assert "TopBannerCTAButton" in called_sel
+    assert ':text("Your grade:")' in called_sel
 
 
 def test_wait_for_evaluation_reloads_when_pending() -> None:
