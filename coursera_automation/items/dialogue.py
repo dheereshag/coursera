@@ -10,8 +10,16 @@ logger = logging.getLogger(__name__)
 
 
 def handle_dialogue(page: Page, cfg: Settings) -> None:
-    """Handle dialogue item: Start dialogue -> End dialogue."""
+    """Handle dialogue/roleplay: Use text chat -> Start dialogue -> End dialogue."""
     logger.info("Handling dialogue item...")
+    text_chat = page.locator(
+        'button[data-testid="use-text-chat-button"], button:has-text("Use text chat")'
+    ).first
+    if text_chat.is_visible(timeout=2000):
+        text_chat.click()
+        logger.info("Clicked 'Use text chat' button.")
+        page.wait_for_timeout(2000)
+
     start_btn = page.locator(
         'button:has(span.cds-button-label:has-text("Start Dialogue")), '
         'button:has-text("Start dialogue")'

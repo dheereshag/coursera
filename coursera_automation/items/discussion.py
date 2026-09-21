@@ -28,5 +28,5 @@ def handle_discussion(page: Page, cfg: Settings) -> None:
 
         if reply_btn.is_visible(timeout=cfg.timeout_ms):
             reply_btn.click()
-            logger.info("Clicked 'Reply' button.")
-            page.wait_for_timeout(2000)
+            logger.info("Clicked 'Reply' button. Waiting 10s for post to register...")
+            page.wait_for_timeout(10000)

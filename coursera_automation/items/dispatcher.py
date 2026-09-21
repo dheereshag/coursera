@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def dispatch_item(page: Page, cfg: Settings) -> None:
     """Detect current item type and execute corresponding handler."""
     dismiss_dialogs(page)
-    dial = 'button:has-text("Start dialogue"), button:has-text("End dialogue"), button[aria-label="End Dialogue"]'
+    dial = '[data-testid="use-text-chat-button"], button:has-text("Use text chat"), button:has-text("Start dialogue")'
     is_vid = any(k in page.url for k in ("/lecture/", "/video/")) or page.locator(
         "video, .rc-VideoPlayer, [data-testid*='video']"
     ).first.is_visible(timeout=2500)
@@ -41,7 +41,7 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
         handle_quiz(page, cfg)
     elif is_reading:
         handle_reading(page, cfg)
-    elif page.locator(dial).first.is_visible(timeout=1000):
+    elif any(k in page.url for k in ("/roleplay/", "/dialogue/")) or page.locator(dial).first.is_visible(timeout=1000):
         handle_dialogue(page, cfg)
     elif page.locator('button:has-text("Reply")').first.is_visible(timeout=1000):
         handle_discussion(page, cfg)
