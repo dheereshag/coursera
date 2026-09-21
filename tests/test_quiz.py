@@ -41,7 +41,7 @@ def test_handle_quiz_flow() -> None:
     )
     page.get_by_role.side_effect = lambda r, **kw: MagicMock(first=sub) if "submit" in str(kw.get("name", "")).lower() else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
 
-    with patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["4"]}):
+    with patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["4"]}), patch("coursera_automation.items.quiz.submit._wait_for_evaluation"):
         handle_quiz(page, cfg)
 
     assert agree.click.call_count == 1 and sub.click.call_count == 1 and modal.click.call_count == 1

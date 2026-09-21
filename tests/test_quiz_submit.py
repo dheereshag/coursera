@@ -7,20 +7,22 @@ from coursera_automation.items.quiz.submit import _wait_for_evaluation, submit_q
 
 
 def test_wait_for_evaluation_immediate_done() -> None:
-    """Verify _wait_for_evaluation returns quickly when evaluation completes."""
+    """Verify _wait_for_evaluation returns when Your grade is present and review done."""
     page = MagicMock()
-    page.locator.return_value.first.is_visible.return_value = True
+    page.locator.side_effect = lambda s: MagicMock(
+        first=MagicMock(is_visible=MagicMock(return_value="Reviewing" not in s))
+    )
     _wait_for_evaluation(page, max_wait_sec=10)
     page.reload.assert_not_called()
-    called_sel = page.locator.call_args[0][0]
-    assert "TopBannerCTAButton" in called_sel
-    assert ':text("Your grade:")' in called_sel
+    calls = [c[0][0] for c in page.locator.call_args_list]
+    assert any(':text("Your grade:")' in s for s in calls)
+    assert any(':text("Reviewing your submission")' in s for s in calls)
 
 
 def test_wait_for_evaluation_reloads_when_pending() -> None:
-    """Verify _wait_for_evaluation reloads page to refresh grade."""
+    """Verify _wait_for_evaluation reloads page when review is pending."""
     page = MagicMock()
-    page.locator.return_value.first.is_visible.side_effect = [False] * 10 + [True]
+    page.locator.return_value.first.is_visible.side_effect = ([True, False] * 10) + [False, True]
     _wait_for_evaluation(page, max_wait_sec=60)
     page.reload.assert_called_once()
 

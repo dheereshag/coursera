@@ -13,19 +13,20 @@ logger = logging.getLogger(__name__)
 def _wait_for_evaluation(page: Page, max_wait_sec: int = 300) -> None:
     """Poll up to max_wait_sec for Coursera quiz grading to complete."""
     logger.info("Waiting for quiz evaluation (up to %ds)...", max_wait_sec)
-    done_sel = (
-        '[data-testid="TopBannerCTAButton"], button:has-text("Next item"), '
-        'a:has-text("Next item"), button:has-text("Try again"), '
-        ':text("Your grade:"), :text("Passed"), :text("Grade received")'
-    )
+    rev_sel = ':text("Reviewing your submission"), :text("hang tight")'
+    grade_sel = ':text("Your grade:"), :text("Passed"), :text("Grade received"), button:has-text("Try again")'
     for cycle in range(max_wait_sec // 5):
-        if page.locator(done_sel).first.is_visible(timeout=1000):
-            logger.info("Quiz evaluation completed.")
+        is_rev = page.locator(rev_sel).first.is_visible(timeout=1000)
+        has_grade = page.locator(grade_sel).first.is_visible(timeout=1000)
+        if has_grade and not is_rev:
+            logger.info("Quiz evaluation completed; results received ('Your grade:').")
             return
+        if is_rev:
+            logger.info("Submission under review ('Reviewing your submission, hang tight')...")
         if cycle > 0 and cycle % 9 == 0:
             logger.info("Evaluation in progress; reloading page to refresh grade...")
             page.reload(wait_until="domcontentloaded")
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(3000)
         else:
             page.wait_for_timeout(5000)
     logger.warning("Quiz evaluation wait reached %ds timeout.", max_wait_sec)
@@ -36,7 +37,6 @@ def submit_quiz(page: Page, cfg: Settings) -> None:
     sub = page.get_by_role("button", name=re.compile(r"^submit", re.IGNORECASE)).first
     if not sub.is_visible(timeout=cfg.timeout_ms):
         return
-
     sub.scroll_into_view_if_needed()
     sub.click()
     page.wait_for_timeout(1500)

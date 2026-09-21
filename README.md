@@ -11,7 +11,7 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 | **Reading** | Scrolls through content, clicks "Mark as completed" (`data-testid="mark-complete"`), skips if already completed, and advances |
 | **Dialogue / Roleplay** | Clicks "Use text chat" $\to$ "Start Role Play" $\to$ "End Role Play" $\to$ confirms "Yes, end the Role Play" modal and advances |
 | **Discussion** | Types `"ok"` into chatbox, clicks "Reply", waits 10s for post registration, and advances |
-| **Quiz** | Waits 10s for page/CTA reloads, queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, confirms modal, polls up to 5 min for server-side evaluation, and advances |
+| **Quiz** | Queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, confirms modal, waits for 'Reviewing your submission' to complete and 'Your grade:' results to appear, and safely advances to Next item |
 
 ## Anti-Bot Stealth & Evasion
 
@@ -72,7 +72,7 @@ Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module) organized into dom
   - `parser.py`: Question DOM extraction and classification.
   - `solver.py`: NVIDIA LLM API integration.
   - `status.py`: Completed/passed quiz and review-mode detection.
-  - `submit.py`: Quiz submission, modal confirmation, and 5-min evaluation polling.
+  - `submit.py`: Quiz submission, modal confirmation, and 'Reviewing your submission' $\to$ 'Your grade:' evaluation polling.
 
 ## Usage & Quality Gates
 

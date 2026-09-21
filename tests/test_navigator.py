@@ -45,7 +45,7 @@ def test_click_next_item_advances() -> None:
     page.url = "https://www.coursera.org/learn/quiz"
     btn.first.is_visible.return_value = True
     btn.first.get_attribute.return_value = "/learn/next"
-    page.locator.return_value = btn
+    page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False))) if "Reviewing" in s else btn
     with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs"):
         assert click_next_item(page, cfg) is True
     btn.first.click.assert_called_once()

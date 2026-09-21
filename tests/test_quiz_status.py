@@ -7,30 +7,26 @@ from coursera_automation.items.quiz import handle_quiz
 from coursera_automation.items.quiz.status import is_quiz_completed
 
 
-def test_is_quiz_completed_true_when_passed() -> None:
-    """Verify is_quiz_completed returns True when Passed is present without Try again."""
+def test_is_quiz_completed_under_review() -> None:
+    """Verify is_quiz_completed returns False when submission is under review."""
     page = MagicMock()
     page.locator.side_effect = lambda s: MagicMock(
-        first=MagicMock(is_visible=MagicMock(return_value="Passed" in s))
+        first=MagicMock(is_visible=MagicMock(return_value="Reviewing" in s))
     )
-    assert is_quiz_completed(page) is True
+    assert is_quiz_completed(page) is False
 
 
-def test_is_quiz_completed_true_when_top_banner_cta() -> None:
-    """Verify is_quiz_completed returns True when TopBannerCTAButton is present."""
-    page = MagicMock()
-    page.locator.side_effect = lambda s: MagicMock(
-        first=MagicMock(is_visible=MagicMock(return_value="TopBannerCTAButton" in s))
-    )
-    assert is_quiz_completed(page) is True
+def test_is_quiz_completed_passed_and_cta() -> None:
+    """Verify is_quiz_completed returns True when Passed or TopBannerCTAButton is present."""
+    p1 = MagicMock(locator=lambda s: MagicMock(first=MagicMock(is_visible=lambda **kw: "Passed" in s)))
+    assert is_quiz_completed(p1) is True
+    p2 = MagicMock(locator=lambda s: MagicMock(first=MagicMock(is_visible=lambda **kw: "TopBanner" in s)))
+    assert is_quiz_completed(p2) is True
 
 
-def test_is_quiz_completed_false_when_retry_available() -> None:
+def test_is_quiz_completed_false_when_retry() -> None:
     """Verify is_quiz_completed returns False when Try again button is visible."""
-    page = MagicMock()
-    page.locator.side_effect = lambda s: MagicMock(
-        first=MagicMock(is_visible=MagicMock(return_value="Try again" in s))
-    )
+    page = MagicMock(locator=lambda s: MagicMock(first=MagicMock(is_visible=lambda **kw: "Try again" in s)))
     assert is_quiz_completed(page) is False
 
 

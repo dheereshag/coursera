@@ -35,6 +35,7 @@ sequenceDiagram
                 Item->>LLM: solve_quiz_with_llm(questions)
                 LLM-->>Item: JSON answers
                 Item->>Item: Check honor code, submit & confirm modal
+                Item->>Item: Wait for reviewing to clear & 'Your grade:' to appear
             end
 
             Disp->>Nav: click_next_item(page, config)
@@ -65,4 +66,4 @@ sequenceDiagram
   - `parser.py`: Question DOM extraction and classification.
   - `solver.py`: NVIDIA LLM API integration.
   - `status.py`: Completed/passed quiz and review-mode detection.
-  - `submit.py`: Quiz submission, modal confirmation, and 5-min evaluation polling.
+  - `submit.py`: Quiz submission, modal confirmation, and 'Reviewing your submission' $\to$ 'Your grade:' evaluation polling.
