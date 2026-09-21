@@ -3,7 +3,8 @@
 from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
-from coursera_automation.items.quiz import _detect_type, _extract_prompt, handle_quiz
+from coursera_automation.items.quiz import handle_quiz
+from coursera_automation.items.quiz_parser import _detect_type, _extract_prompt
 
 
 def test_detect_type() -> None:

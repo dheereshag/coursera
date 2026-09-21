@@ -16,7 +16,7 @@ def handle_dialogue(page: Page, cfg: Settings) -> None:
         'button:has(span.cds-button-label:has-text("Start Dialogue")), '
         'button:has-text("Start dialogue")'
     ).first
-    if start_btn.is_visible(timeout=cfg.timeout_ms):
+    if start_btn.is_visible(timeout=2000):
         start_btn.click()
         logger.info("Clicked 'Start dialogue'.")
         page.wait_for_timeout(2000)

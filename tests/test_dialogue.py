@@ -23,3 +23,20 @@ def test_handle_dialogue_full_flow() -> None:
     start_btn.click.assert_called_once()
     end_btn.click.assert_called_once()
     confirm_btn.click.assert_called_once()
+
+
+def test_handle_dialogue_already_started() -> None:
+    """Verify handle_dialogue handles already started dialogue by clicking End and confirming."""
+    page, cfg = MagicMock(), Settings()
+    end_btn = MagicMock(is_visible=MagicMock(return_value=True))
+    confirm_btn = MagicMock(is_visible=MagicMock(return_value=True))
+
+    page.locator.side_effect = lambda s: (
+        MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False))) if "Start" in s
+        else MagicMock(first=end_btn) if "End" in s
+        else MagicMock(first=confirm_btn)
+    )
+
+    handle_dialogue(page, cfg)
+    end_btn.click.assert_called_once()
+    confirm_btn.click.assert_called_once()
