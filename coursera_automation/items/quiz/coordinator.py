@@ -5,11 +5,11 @@ import logging
 from playwright.sync_api import Error, Page
 
 from coursera_automation.config import Settings
-from coursera_automation.items.dialogs import dismiss_dialogs
-from coursera_automation.items.quiz_parser import wait_and_extract_questions
-from coursera_automation.items.quiz_solver import solve_quiz_with_llm
-from coursera_automation.items.quiz_status import is_quiz_completed
-from coursera_automation.items.quiz_submit import submit_quiz
+from coursera_automation.items.navigation.dialogs import dismiss_dialogs
+from coursera_automation.items.quiz.parser import wait_and_extract_questions
+from coursera_automation.items.quiz.solver import solve_quiz_with_llm
+from coursera_automation.items.quiz.status import is_quiz_completed
+from coursera_automation.items.quiz.submit import submit_quiz
 
 logger = logging.getLogger(__name__)
 

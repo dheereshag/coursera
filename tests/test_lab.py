@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
-from coursera_automation.items.lab import _check_agreement, handle_lab
+from coursera_automation.items.content.lab import _check_agreement, handle_lab
 
 
 def test_check_agreement_flow() -> None:
@@ -25,8 +25,8 @@ def test_handle_lab_scroll_and_launch() -> None:
     popup = MagicMock()
     page.expect_popup.return_value.__enter__.return_value.value = popup
     with (
-        patch("coursera_automation.items.lab._check_agreement") as mock_agree,
-        patch("coursera_automation.items.lab.dismiss_dialogs"),
+        patch("coursera_automation.items.content.lab._check_agreement") as mock_agree,
+        patch("coursera_automation.items.content.lab.dismiss_dialogs"),
     ):
         handle_lab(page, cfg)
         assert mock_agree.call_count >= 1
@@ -49,8 +49,8 @@ def test_handle_lab_mark_completed() -> None:
         or_=MagicMock(return_value=MagicMock(first=btn)),
     )
     with (
-        patch("coursera_automation.items.lab._check_agreement"),
-        patch("coursera_automation.items.lab.dismiss_dialogs"),
+        patch("coursera_automation.items.content.lab._check_agreement"),
+        patch("coursera_automation.items.content.lab.dismiss_dialogs"),
     ):
         handle_lab(page, cfg)
         mark.click.assert_called_once_with(force=True)

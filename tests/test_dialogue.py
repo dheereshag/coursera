@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock
 
 from coursera_automation.config import Settings
-from coursera_automation.items.dialogue import handle_dialogue
+from coursera_automation.items.interactive.dialogue import handle_dialogue
 
 
 def test_handle_dialogue_with_text_chat() -> None:
@@ -34,3 +34,18 @@ def test_handle_dialogue_already_started() -> None:
     handle_dialogue(page, cfg)
     end_btn.click.assert_called_once()
     conf_btn.click.assert_called_once()
+
+
+def test_handle_roleplay_end_and_confirm() -> None:
+    """Verify handle_dialogue clicks 'End Role Play' and confirms in modal."""
+    page, cfg = MagicMock(), Settings()
+    end_btn = MagicMock(is_visible=MagicMock(return_value=True))
+    conf_btn = MagicMock(is_visible=MagicMock(return_value=True))
+    page.locator.side_effect = lambda s: (
+        MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False))) if "Start" in s or "use-text-chat" in s
+        else MagicMock(first=end_btn) if "end-role-play" in s
+        else MagicMock(first=conf_btn)
+    )
+    handle_dialogue(page, cfg)
+    end_btn.click.assert_called_once()
+    conf_btn.click.assert_called_once_with(force=True)

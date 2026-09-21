@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock
 
-from coursera_automation.items.dialogs import (
+from coursera_automation.items.navigation.dialogs import (
     PENDO_BTN_SEL,
     PENDO_SEL,
     dismiss_dialogs,

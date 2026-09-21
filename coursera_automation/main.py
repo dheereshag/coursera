@@ -10,7 +10,7 @@ from playwright_stealth import Stealth
 from coursera_automation.auth import login
 from coursera_automation.course import open_course
 from coursera_automation.instances import InstanceConfig, load_instances
-from coursera_automation.items.dialogs import register_dialog_handlers
+from coursera_automation.items.navigation import register_dialog_handlers
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)

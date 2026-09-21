@@ -5,13 +5,10 @@ import logging
 from playwright.sync_api import Page
 
 from coursera_automation.config import Settings
-from coursera_automation.items.dialogue import handle_dialogue
-from coursera_automation.items.discussion import handle_discussion
-from coursera_automation.items.lab import handle_lab
-from coursera_automation.items.navigator import click_next_item, dismiss_dialogs
+from coursera_automation.items.content import handle_lab, handle_reading, handle_video
+from coursera_automation.items.interactive import handle_dialogue, handle_discussion
+from coursera_automation.items.navigation import click_next_item, dismiss_dialogs
 from coursera_automation.items.quiz import handle_quiz
-from coursera_automation.items.reading import handle_reading
-from coursera_automation.items.video import handle_video
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +16,7 @@ logger = logging.getLogger(__name__)
 def dispatch_item(page: Page, cfg: Settings) -> None:
     """Detect current item type and execute corresponding handler."""
     dismiss_dialogs(page)
-    dial = '[data-testid="use-text-chat-button"], button:has-text("Use text chat"), button:has-text("Start dialogue")'
+    dial = '[data-testid*="role-play"], [data-testid="use-text-chat-button"], button:has-text("Role Play"), button:has-text("dialogue")'
     is_vid = any(k in page.url for k in ("/lecture/", "/video/")) or page.locator(
         "video, .rc-VideoPlayer, [data-testid*='video']"
     ).first.is_visible(timeout=2500)

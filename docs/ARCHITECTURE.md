@@ -14,8 +14,8 @@ sequenceDiagram
     participant Disp as items.dispatcher
     participant Item as Video/Lab/Reading/Quiz/Dialogue/Discussion
     participant LLM as NVIDIA GLM-5.3
-    participant Dial as items.dialogs
-    participant Nav as items.navigator
+    participant Dial as items.navigation.dialogs
+    participant Nav as items.navigation.navigator
 
     Main->>Inst: load_instances("instances.json")
     Inst-->>Main: list[InstanceConfig]
@@ -29,7 +29,7 @@ sequenceDiagram
             Disp->>Dial: dismiss_dialogs(page)
             Disp->>Item: dispatch_item(page, config)
             opt Video Item
-                Item->>Item: 2x speed playback & 6s post-buffer
+                Item->>Item: Mute audio, 2x speed playback & 6s post-buffer
             end
             opt Quiz Item
                 Item->>LLM: solve_quiz_with_llm(questions)
@@ -48,18 +48,21 @@ sequenceDiagram
 - `coursera_automation/instances.py`: Multi-instance configuration loading and single-instance fallback.
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
 - `coursera_automation/course.py`: Specialization navigation and course entry.
-- `coursera_automation/items/video.py`: Video play start, metadata polling, conditional 2x speed, in-video question skip, stale transition prevention, and 6s post-buffer.
-- `coursera_automation/items/lab.py`: Coursera Honor Code agreement checkbox handling, bottom scrolling, optional LTI launch, "Mark as completed" completion, and background app launch (`bring_to_front`).
-- `coursera_automation/items/reading.py`: Reading completion via progressive scroll and `data-testid="mark-complete"` click.
-- `coursera_automation/items/dialogue.py`: Dialogue start, finish, and modal confirmation.
-- `coursera_automation/items/discussion.py`: Discussion response input.
-- `coursera_automation/items/quiz_solver.py`: NVIDIA LLM API integration.
-- `coursera_automation/items/quiz_parser.py`: Question DOM extraction and classification.
-- `coursera_automation/items/quiz_status.py`: Completed/passed quiz and review-mode detection.
-- `coursera_automation/items/quiz_submit.py`: Quiz submission, modal confirmation, and 5-min evaluation polling.
-- `coursera_automation/items/quiz.py`: Quiz lifecycle coordination, 10s reload waits after CTA clicks, active input validation, and LLM solving.
-- `coursera_automation/items/dialogs.py`: Pendo guide and transient dialog dismissal.
-- `coursera_automation/items/navigator.py`: Resume / Get started and next item progression navigation with 10s page reload buffers.
-- `coursera_automation/items/dispatcher.py`: Item detection via URL routes (/lecture/, /video/, /lab/, /exam/, /quiz/, /supplement) and DOM selectors, and iteration loop.
 - `coursera_automation/main.py`: Multi-instance orchestration with `playwright-stealth` anti-bot evasion.
-
+- `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop.
+- **Content Subpackage (`items/content/`)**:
+  - `video.py`: Video start, audio muting, 2x playback, in-video question skipping, and 6s post-buffer.
+  - `reading.py`: Reading completion via progressive scroll and `data-testid="mark-complete"` click.
+  - `lab.py`: Lab Honor Code checkbox, bottom scrolling, optional LTI launch, and "Mark as completed".
+- **Interactive Subpackage (`items/interactive/`)**:
+  - `dialogue.py`: Roleplay / dialogue start, text chat selection, end, and modal confirmation.
+  - `discussion.py`: Discussion response input with 10-second post-reply stabilization buffer.
+- **Navigation Subpackage (`items/navigation/`)**:
+  - `navigator.py`: Resume / Get started and next item progression navigation with direct `href` fallback.
+  - `dialogs.py`: Pendo guide, Honor Code, and transient popup dialog dismissal.
+- **Quiz Subpackage (`items/quiz/`)**:
+  - `coordinator.py`: Complete quiz lifecycle coordination and CTA interactions.
+  - `parser.py`: Question DOM extraction and classification.
+  - `solver.py`: NVIDIA LLM API integration.
+  - `status.py`: Completed/passed quiz and review-mode detection.
+  - `submit.py`: Quiz submission, modal confirmation, and 5-min evaluation polling.

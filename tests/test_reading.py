@@ -3,8 +3,8 @@
 from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
+from coursera_automation.items.content.reading import handle_reading
 from coursera_automation.items.dispatcher import dispatch_item
-from coursera_automation.items.reading import handle_reading
 
 
 def test_handle_reading_click_mark_complete() -> None:
@@ -15,7 +15,7 @@ def test_handle_reading_click_mark_complete() -> None:
     btn.inner_text.return_value = "Mark as completed"
     page.locator.return_value.or_.return_value.first = btn
 
-    with patch("coursera_automation.items.reading.dismiss_dialogs"):
+    with patch("coursera_automation.items.content.reading.dismiss_dialogs"):
         handle_reading(page, cfg)
 
     btn.scroll_into_view_if_needed.assert_called_once()
@@ -30,7 +30,7 @@ def test_handle_reading_already_completed() -> None:
     btn.inner_text.return_value = "Completed"
     page.locator.return_value.or_.return_value.first = btn
 
-    with patch("coursera_automation.items.reading.dismiss_dialogs"):
+    with patch("coursera_automation.items.content.reading.dismiss_dialogs"):
         handle_reading(page, cfg)
 
     btn.click.assert_not_called()

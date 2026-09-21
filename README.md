@@ -6,11 +6,11 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 
 | Item | Automated Behavior |
 |---|---|
-| **Video** | Checks if already $2\times$ speed before switching; handles in-video questions by clicking "Skip"; waits exact `duration / 2.0` seconds plus a 6-second completion buffer |
+| **Video** | Checks if unmuted and mutes audio (`button[aria-label="Mute"]` and `v.muted = true`); checks if already $2\times$ speed before switching; handles in-video questions by clicking "Skip"; waits exact `duration / 2.0` seconds plus a 6-second completion buffer |
 | **Lab** | Scrolls to bottom, checks Honor Code agreement checkbox (`[aria-label="Coursera Honor Code"]`), launches app if available in background, and clicks "Mark as completed" (`data-testid="mark-complete"`) |
 | **Reading** | Scrolls through content, clicks "Mark as completed" (`data-testid="mark-complete"`), skips if already completed, and advances |
-| **Dialogue** | Clicks "Start dialogue" $\to$ "End dialogue" $\to$ confirms "Yes, end the Dialogue" modal and advances |
-| **Discussion** | Types `"ok"` into chatbox, clicks "Reply", and advances |
+| **Dialogue / Roleplay** | Clicks "Use text chat" $\to$ "Start Role Play" $\to$ "End Role Play" $\to$ confirms "Yes, end the Role Play" modal and advances |
+| **Discussion** | Types `"ok"` into chatbox, clicks "Reply", waits 10s for post registration, and advances |
 | **Quiz** | Waits 10s for page/CTA reloads, queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, confirms modal, polls up to 5 min for server-side evaluation, and advances |
 
 ## Anti-Bot Stealth & Evasion
@@ -40,7 +40,7 @@ Automation uses Playwright's `launch_persistent_context` stored in `.browser_dat
 
 ## Dialog & Popup Management
 
-`coursera_automation/items/dialogs.py` automatically dismisses:
+`coursera_automation/items/navigation/dialogs.py` automatically dismisses:
 - Pendo guides and modals (e.g. "Today's Goals have moved" popup) via `add_locator_handler` and close/confirm triggers
 - Transient marketing/help dialogues (`Got it`, close icons)
 - Feature announcements (e.g. "We added sound effects" popup cross icon)
@@ -50,22 +50,29 @@ Automation uses Playwright's `launch_persistent_context` stored in `.browser_dat
 
 ## Architecture Overview
 
-Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module):
+Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module) organized into domain subpackages:
 - `coursera_automation/config.py`: Environment configuration and credentials.
 - `coursera_automation/auth.py`: Authentication steps with manual Arkose puzzle wait.
 - `coursera_automation/instances.py`: Multi-instance configuration loader and fallback.
 - `coursera_automation/course.py`: Specialization navigation & course entry.
-- `coursera_automation/items/video.py`: Video playback, exact 2x duration wait, and 6s buffer.
-- `coursera_automation/items/lab.py`: Lab agreement and background app launch.
-- `coursera_automation/items/reading.py`: Progressive scrolling, completion check, and `data-testid="mark-complete"` interaction.
-- `coursera_automation/items/dialogue.py`: Dialogue start and finish.
-- `coursera_automation/items/discussion.py`: Discussion response input.
-- `coursera_automation/items/quiz_solver.py`: NVIDIA LLM API integration.
-- `coursera_automation/items/quiz.py`: Quiz interaction, type classification, and submission.
-- `coursera_automation/items/dialogs.py`: Pendo guide and transient dialog dismissal.
-- `coursera_automation/items/navigator.py`: Resume and next item progression navigation.
-- `coursera_automation/items/dispatcher.py`: Item detection and iteration loop.
 - `coursera_automation/main.py`: Browser orchestration for single and multi-instance runs.
+- `coursera_automation/items/dispatcher.py`: Item detection and progression iteration loop.
+- **Content Subpackage (`items/content/`)**:
+  - `video.py`: Video playback, automatic muting, exact 2x duration wait, and 6s buffer.
+  - `reading.py`: Progressive scrolling, completion check, and `data-testid="mark-complete"` interaction.
+  - `lab.py`: Lab agreement, bottom scroll, and background app launch.
+- **Interactive Subpackage (`items/interactive/`)**:
+  - `dialogue.py`: Roleplay / dialogue start, text chat mode, end, and confirmation.
+  - `discussion.py`: Discussion response input with 10s wait buffer.
+- **Navigation Subpackage (`items/navigation/`)**:
+  - `navigator.py`: Resume and next item progression navigation with direct href fallback.
+  - `dialogs.py`: Pendo guide, honor code, and transient dialog dismissal.
+- **Quiz Subpackage (`items/quiz/`)**:
+  - `coordinator.py`: Complete quiz lifecycle orchestration.
+  - `parser.py`: Question DOM extraction and classification.
+  - `solver.py`: NVIDIA LLM API integration.
+  - `status.py`: Completed/passed quiz and review-mode detection.
+  - `submit.py`: Quiz submission, modal confirmation, and 5-min evaluation polling.
 
 ## Usage & Quality Gates
 

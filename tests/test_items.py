@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
 from coursera_automation.items.dispatcher import dispatch_item
-from coursera_automation.items.navigator import click_next_item, dismiss_dialogs
+from coursera_automation.items.navigation import click_next_item, dismiss_dialogs
 
 
 def test_dispatch_item_video() -> None:
@@ -51,7 +51,7 @@ def test_click_next_item_top_banner() -> None:
     page, cfg, btn = MagicMock(), Settings(), MagicMock()
     btn.first.is_visible.return_value = True
     page.locator.side_effect = lambda s: btn if "TopBannerCTAButton" in s else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
-    with patch("coursera_automation.items.navigator.dismiss_dialogs"):
+    with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs"):
         assert click_next_item(page, cfg) is True
     btn.first.click.assert_called_once()
 

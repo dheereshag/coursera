@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
-from coursera_automation.items.quiz_solver import solve_quiz_with_llm
+from coursera_automation.items.quiz.solver import solve_quiz_with_llm
 
 
 def test_solve_quiz_with_llm_json() -> None:
@@ -11,7 +11,7 @@ def test_solve_quiz_with_llm_json() -> None:
     chunk = MagicMock()
     chunk.choices = [MagicMock(delta=MagicMock(content='```json\n{"answers": [{"index": 0, "selected": ["Option A"]}]}\n```', reasoning_content="thinking"))]
 
-    with patch("coursera_automation.items.quiz_solver.OpenAI") as mock_openai:
+    with patch("coursera_automation.items.quiz.solver.OpenAI") as mock_openai:
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = [chunk]
         mock_openai.return_value = mock_client
@@ -27,7 +27,7 @@ def test_solve_quiz_multiselect() -> None:
     """Verify solver parses multiselect answers."""
     chunk = MagicMock()
     chunk.choices = [MagicMock(delta=MagicMock(content='{"answers": [{"index": 0, "selected": ["Opt A", "Opt B"]}]}', reasoning_content=None))]
-    with patch("coursera_automation.items.quiz_solver.OpenAI") as mock_openai:
+    with patch("coursera_automation.items.quiz.solver.OpenAI") as mock_openai:
         mock_client = MagicMock()
         mock_client.chat.completions.create.return_value = [chunk]
         mock_openai.return_value = mock_client

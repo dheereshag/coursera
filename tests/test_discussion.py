@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock
 
 from coursera_automation.config import Settings
-from coursera_automation.items.discussion import handle_discussion
+from coursera_automation.items.interactive.discussion import handle_discussion
 
 
 def test_handle_discussion_fills_and_submits() -> None:

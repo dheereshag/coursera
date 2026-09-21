@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
 from coursera_automation.items.quiz import handle_quiz
-from coursera_automation.items.quiz_parser import _detect_type, _extract_prompt
+from coursera_automation.items.quiz.parser import _detect_type, _extract_prompt
 
 
 def test_detect_type() -> None:
@@ -41,7 +41,7 @@ def test_handle_quiz_flow() -> None:
     )
     page.get_by_role.side_effect = lambda r, **kw: MagicMock(first=sub) if "submit" in str(kw.get("name", "")).lower() else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
 
-    with patch("coursera_automation.items.quiz.solve_quiz_with_llm", return_value={0: ["4"]}):
+    with patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["4"]}):
         handle_quiz(page, cfg)
 
     assert agree.click.call_count == 1 and sub.click.call_count == 1 and modal.click.call_count == 1
@@ -51,9 +51,9 @@ def test_handle_quiz_empty_skips() -> None:
     """Verify handle_quiz skips LLM query and submission when 0 questions found."""
     page, cfg = MagicMock(), Settings()
     with (
-        patch("coursera_automation.items.quiz.wait_and_extract_questions", return_value=([], [])),
-        patch("coursera_automation.items.quiz.solve_quiz_with_llm") as mock_solve,
-        patch("coursera_automation.items.quiz.submit_quiz") as mock_submit,
+        patch("coursera_automation.items.quiz.coordinator.wait_and_extract_questions", return_value=([], [])),
+        patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm") as mock_solve,
+        patch("coursera_automation.items.quiz.coordinator.submit_quiz") as mock_submit,
     ):
         handle_quiz(page, cfg)
         assert not mock_solve.called and not mock_submit.called

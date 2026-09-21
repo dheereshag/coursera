@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
-from coursera_automation.items.quiz_submit import _wait_for_evaluation, submit_quiz
+from coursera_automation.items.quiz.submit import _wait_for_evaluation, submit_quiz
 
 
 def test_wait_for_evaluation_immediate_done() -> None:
@@ -33,7 +33,7 @@ def test_submit_quiz_calls_evaluation_wait() -> None:
     page.get_by_role.return_value.first = sub_btn
     page.locator.return_value.first = modal_btn
 
-    with patch("coursera_automation.items.quiz_submit._wait_for_evaluation") as mock_wait:
+    with patch("coursera_automation.items.quiz.submit._wait_for_evaluation") as mock_wait:
         submit_quiz(page, cfg)
         mock_wait.assert_called_once_with(page, max_wait_sec=300)
     sub_btn.click.assert_called_once()

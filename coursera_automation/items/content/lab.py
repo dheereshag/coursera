@@ -6,7 +6,7 @@ import re
 from playwright.sync_api import Error, Page, TimeoutError
 
 from coursera_automation.config import Settings
-from coursera_automation.items.dialogs import dismiss_dialogs
+from coursera_automation.items.navigation.dialogs import dismiss_dialogs
 
 logger = logging.getLogger(__name__)
 

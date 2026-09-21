@@ -1,4 +1,4 @@
-"""Video playback automation: play click, conditional 2x speed, exact duration wait."""
+"""Video playback automation: play, mute, 2x speed, duration wait."""
 
 import logging
 import time
@@ -30,7 +30,6 @@ def _wait_video(page: Page, wait_secs: float) -> None:
     end = time.time() + wait_secs
     while time.time() < end:
         if skip.is_visible(timeout=300):
-            logger.info("In-video question detected. Clicking 'Skip'...")
             skip.click(force=True)
             page.wait_for_timeout(500)
             page.evaluate("() => document.querySelector('video')?.play()")
@@ -40,20 +39,21 @@ def _wait_video(page: Page, wait_secs: float) -> None:
 
 
 def handle_video(page: Page, cfg: Settings) -> None:
-    """Start video, reveal controls, set 2x speed if needed, and wait."""
+    """Start video, reveal controls, mute, set 2x speed, and wait."""
     logger.info("Handling video item...")
     play_sel = '.vjs-big-play-button, .rc-VideoControlsContainer button, button[aria-label*="play" i], video'
     if (play := page.locator(play_sel).first).is_visible(timeout=cfg.timeout_ms):
         play.click(force=True)
         page.wait_for_timeout(500)
-
+    if (mb := page.locator('button[aria-label="Mute"]').first).is_visible(timeout=2000):
+        mb.click(force=True)
+        logger.info("Muted video playback.")
     sb = page.locator('button[aria-label*="playback rate" i]').first
     if sb.is_visible(timeout=2000) and "2x" not in sb.inner_text().lower():
         for _ in range(4):
             sb.click(force=True)
             page.wait_for_timeout(300)
-
-    page.evaluate("() => { const v = document.querySelector('video'); if (v) { v.playbackRate = 2.0; v.play(); } }")
+    page.evaluate("() => { const v = document.querySelector('video'); if (v) { v.playbackRate = 2.0; v.muted = true; v.play(); } }")
     wait_s = calculate_video_wait(dur := _get_duration(page))
     logger.info("Video duration: %.1fs. Waiting %.1fs at 2x...", dur, wait_s)
     _wait_video(page, wait_s)

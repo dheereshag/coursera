@@ -7,7 +7,7 @@ from playwright.sync_api import Error, Page
 
 from coursera_automation.config import Settings
 from coursera_automation.items.dispatcher import process_items
-from coursera_automation.items.navigator import click_resume, dismiss_dialogs
+from coursera_automation.items.navigation import click_resume, dismiss_dialogs
 
 logger = logging.getLogger(__name__)
 

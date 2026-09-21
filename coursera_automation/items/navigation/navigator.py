@@ -6,7 +6,7 @@ import re
 from playwright.sync_api import Error, Page
 
 from coursera_automation.config import Settings
-from coursera_automation.items.dialogs import dismiss_dialogs
+from coursera_automation.items.navigation.dialogs import dismiss_dialogs
 
 logger = logging.getLogger(__name__)
 NEXT_SEL = '[data-testid="TopBannerCTAButton"], [data-testid*="next-item"], button:has-text("Next item"), a:has-text("Next item")'
