@@ -30,7 +30,12 @@ def click_resume(page: Page, cfg: Settings) -> None:
 
 def click_next_item(page: Page, cfg: Settings) -> bool:
     """Locate and click 'Next item' or 'Go to next item' progression button."""
-    sel = '[data-testid="TopBannerCTAButton"], button:has(span.cds-button-label:has-text("Next item")), a:has(span.cds-button-label:has-text("Next item")), button:has-text("Next item"), a:has-text("Next item"), [data-testid*="next-item"]'
+    sel = (
+        '[data-testid="TopBannerCTAButton"], [data-testid="next-item"], [data-testid*="next-item"], '
+        'button:has(span.cds-button-label:has-text("Go to next item")), '
+        'button:has(span.cds-button-label:has-text("Next item")), '
+        'button:has-text("Go to next item"), button:has-text("Next item")'
+    )
     for _ in range(5):
         dismiss_dialogs(page)
         if (btn := page.locator(sel).first).is_visible(timeout=1000):
@@ -41,4 +46,3 @@ def click_next_item(page: Page, cfg: Settings) -> bool:
         page.mouse.wheel(0, 400)
         page.wait_for_timeout(1000)
     return False
-

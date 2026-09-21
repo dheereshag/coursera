@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 def dispatch_item(page: Page, cfg: Settings) -> None:
     """Detect current item type and execute corresponding handler."""
     dismiss_dialogs(page)
+    is_reading = "/supplement" in page.url or page.locator(
+        '[data-testid="mark-complete"], button:has-text("Mark as completed")'
+    ).first.is_visible(timeout=1000)
     is_lab = any(k in page.url for k in ("/lab", "/ungradedLab", "/programming"))
     is_lab = is_lab or page.locator('button, a, [role="button"]').filter(
         has_text=re.compile(r"launch (app|lab)", re.IGNORECASE)
@@ -27,20 +30,20 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
 
     if page.locator("video").first.is_visible(timeout=2000):
         handle_video(page, cfg)
+    elif is_reading:
+        handle_reading(page, cfg)
     elif is_lab:
         handle_lab(page, cfg)
     elif page.locator(
         'button:has(span.cds-button-label:has-text("Start Dialogue")), button:has-text("Start dialogue")'
     ).first.is_visible(timeout=1000):
         handle_dialogue(page, cfg)
-
     elif page.locator('button:has-text("Reply")').first.is_visible(timeout=1000):
         handle_discussion(page, cfg)
     elif page.locator('button:has-text("assignment"), button:has-text("Try again")').first.is_visible(
         timeout=1000
     ):
         handle_quiz(page, cfg)
-
     else:
         handle_reading(page, cfg)
 

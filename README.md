@@ -8,7 +8,7 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 |---|---|
 | **Video** | Checks if already $2\times$ speed before switching; waits exact `duration / 2.0` seconds plus a 6-second completion buffer |
 | **Lab** | Checks "I agree" checkbox, clicks "Launch app/lab" in background tab without switching focus |
-| **Reading** | Clicks "Mark as completed" and advances |
+| **Reading** | Scrolls through content, clicks "Mark as completed" (`data-testid="mark-complete"`), skips if already completed, and advances |
 | **Dialogue** | Clicks "Start dialogue" $\to$ "End dialogue" and advances |
 | **Discussion** | Types `"ok"` into chatbox, clicks "Reply", and advances |
 | **Quiz** | Queries NVIDIA LLM (`z-ai/glm-5.3`) for answers, checks honor code agreement, submits, confirms modal, and advances |
@@ -53,7 +53,7 @@ Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module):
 - `coursera_automation/course.py`: Specialization navigation & course entry.
 - `coursera_automation/items/video.py`: Video playback, exact 2x duration wait, and 6s buffer.
 - `coursera_automation/items/lab.py`: Lab agreement and background app launch.
-- `coursera_automation/items/reading.py`: Reading completion.
+- `coursera_automation/items/reading.py`: Progressive scrolling, completion check, and `data-testid="mark-complete"` interaction.
 - `coursera_automation/items/dialogue.py`: Dialogue start and finish.
 - `coursera_automation/items/discussion.py`: Discussion response input.
 - `coursera_automation/items/quiz_solver.py`: NVIDIA LLM API integration.
