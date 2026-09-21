@@ -48,7 +48,7 @@ sequenceDiagram
 - `coursera_automation/instances.py`: Multi-instance configuration loading and single-instance fallback.
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
 - `coursera_automation/course.py`: Specialization navigation and course entry.
-- `coursera_automation/items/video.py`: Conditional 2x speed, exact duration calculation, and 6s buffer.
+- `coursera_automation/items/video.py`: Conditional 2x speed, in-video question skip, exact duration wait, and 6s buffer.
 - `coursera_automation/items/lab.py`: Lab agreement and background app launch (`bring_to_front`).
 - `coursera_automation/items/reading.py`: Reading completion via progressive scroll and `data-testid="mark-complete"` click.
 - `coursera_automation/items/dialogue.py`: Dialogue start, finish, and modal confirmation.
@@ -59,7 +59,7 @@ sequenceDiagram
 - `coursera_automation/items/quiz_submit.py`: Quiz submission and confirmation modal interaction.
 - `coursera_automation/items/quiz.py`: Quiz lifecycle coordination and question solving execution.
 - `coursera_automation/items/dialogs.py`: Pendo guide and transient dialog dismissal.
-- `coursera_automation/items/navigator.py`: Resume and next item navigation.
+- `coursera_automation/items/navigator.py`: Resume / Get started and next item navigation.
 - `coursera_automation/items/dispatcher.py`: Item detection and iteration loop.
 - `coursera_automation/main.py`: Concurrent multi-instance browser orchestration via ThreadPoolExecutor.
 

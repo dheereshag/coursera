@@ -6,7 +6,7 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 
 | Item | Automated Behavior |
 |---|---|
-| **Video** | Checks if already $2\times$ speed before switching; waits exact `duration / 2.0` seconds plus a 6-second completion buffer |
+| **Video** | Checks if already $2\times$ speed before switching; handles in-video questions by clicking "Skip"; waits exact `duration / 2.0` seconds plus a 6-second completion buffer |
 | **Lab** | Checks "I agree" checkbox, clicks "Launch app/lab" in background tab without switching focus |
 | **Reading** | Scrolls through content, clicks "Mark as completed" (`data-testid="mark-complete"`), skips if already completed, and advances |
 | **Dialogue** | Clicks "Start dialogue" $\to$ "End dialogue" $\to$ confirms "Yes, end the Dialogue" modal and advances |
