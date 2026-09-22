@@ -8,7 +8,7 @@ from playwright.sync_api import Error, Page
 from coursera_automation.config import Settings
 from coursera_automation.items.navigation.dialogs import dismiss_dialogs
 
-from .parser import _is_textarea, wait_and_extract_questions
+from .parser import _find_textarea, _is_textarea, wait_and_extract_questions
 from .solver import solve_quiz_with_llm
 from .status import is_quiz_completed
 from .submit import NEXT_BTN, poll_and_click_next, submit_quiz
@@ -45,7 +45,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         return
     for idx, q_loc in enumerate(q_locs):
         ans = answers.get(idx, [])
-        ta = q_loc if _is_textarea(q_loc) else q_loc.locator("textarea").first
+        ta = _find_textarea(q_loc)
         if ta.is_visible(timeout=200) and ans:
             ta.fill(ans[0])
         else:

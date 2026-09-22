@@ -4,7 +4,11 @@ from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
 from coursera_automation.items.quiz.coordinator import handle_quiz
-from coursera_automation.items.quiz.parser import _extract_prompt
+from coursera_automation.items.quiz.parser import (
+    _detect_type,
+    _extract_prompt,
+    _find_textarea,
+)
 
 
 def test_extract_prompt_aria_labelledby() -> None:
@@ -24,6 +28,17 @@ def test_extract_prompt_placeholder_fallback() -> None:
     loc.get_attribute.side_effect = lambda a: "What do you think?" if a == "placeholder" else None
     loc.inner_text.return_value = ""
     assert _extract_prompt(loc) == "What do you think?"
+
+
+def test_autogradable_prompt_and_find_textarea() -> None:
+    """Verify prompt extraction and textarea discovery on autogradable prompt id."""
+    loc, ta = MagicMock(), MagicMock()
+    loc.evaluate.return_value = "DIV"
+    loc.locator.side_effect = lambda s: MagicMock(count=lambda: 0, first=MagicMock(is_visible=lambda *a, **k: "cml" in s, inner_text=lambda: "Create prompt"))
+    loc.get_attribute.side_effect = lambda a: "prompt-autoGradableResponseId~123" if a == "id" else None
+    loc.page.locator.side_effect = lambda s: MagicMock(count=lambda: 1 if "prompt-autoGradableResponseId~123" in s else 0, first=ta)
+    ta.is_visible.return_value = True
+    assert _extract_prompt(loc) == "Create prompt" and _detect_type(loc) == "textarea" and _find_textarea(loc) == ta
 
 
 def test_handle_quiz_fill_textarea() -> None:
