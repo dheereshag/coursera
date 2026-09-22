@@ -49,7 +49,7 @@ sequenceDiagram
 - `coursera_automation/instances.py`: Multi-instance configuration loading and single-instance fallback.
 - `coursera_automation/keep_awake.py`: macOS sleep prevention power assertion context manager.
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
-- `coursera_automation/course.py`: Specialization navigation and course entry.
+- `coursera_automation/course.py`: Specialization navigation, resilient multi-state course entry, and dynamic CTA hydration wait (up to 40s).
 - `coursera_automation/main.py`: Multi-instance orchestration with `playwright-stealth` anti-bot evasion and keep-awake integration.
 - `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop.
 - **Content Subpackage (`items/content/`)**:

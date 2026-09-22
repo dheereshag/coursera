@@ -19,7 +19,7 @@ class InstanceConfig:
     course_url: str
     headless: bool = False
     max_items: int = 50
-    timeout_ms: int = 15000
+    timeout_ms: int = 40000
 
     def to_settings(self) -> Settings:
         """Convert this instance configuration into a full Settings object."""

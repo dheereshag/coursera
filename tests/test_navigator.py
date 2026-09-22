@@ -46,3 +46,11 @@ def test_click_next_item_false_when_unchanged() -> None:
     page.locator.return_value.first.is_visible.return_value = False
     with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs"):
         assert click_next_item(page, cfg) is False
+
+
+def test_click_resume_skips_on_item_page() -> None:
+    """Verify click_resume skips button click when already on an item page."""
+    page, cfg = MagicMock(url="https://coursera.org/learn/test/lecture/123"), Settings()
+    with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs") as mock_d:
+        click_resume(page, cfg)
+    mock_d.assert_not_called()

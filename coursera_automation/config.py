@@ -23,7 +23,7 @@ class Settings:
     email: str = os.getenv("COURSERA_EMAIL", "24bai70310@cuchd.in")
     password: str = os.getenv("COURSERA_PASSWORD", "Lakshya.24AI")
     headless: bool = os.getenv("COURSERA_HEADLESS", "false").lower() == "true"
-    timeout_ms: int = int(os.getenv("COURSERA_TIMEOUT_MS", "30000"))
+    timeout_ms: int = int(os.getenv("COURSERA_TIMEOUT_MS", "40000"))
     max_items: int = int(os.getenv("COURSERA_MAX_ITEMS", "25"))
     openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
     openrouter_base_url: str = os.getenv(
