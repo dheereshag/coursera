@@ -5,7 +5,7 @@ from typing import Any
 
 from playwright.sync_api import Error, Locator, Page
 
-Q_SEL = 'fieldset, [role="radiogroup"], [id^="prompt-autoGradableResponseId"], textarea'
+Q_SEL = 'fieldset, [role="radiogroup"], [role="group"], .rc-Option, [id^="prompt-autoGradableResponseId"], textarea'
 
 
 def _is_textarea(loc: Locator) -> bool:
@@ -41,7 +41,7 @@ def _extract_prompt(q_loc: Locator) -> str:
 
 
 def _find_question_locs(page: Page) -> list[Locator]:
-    locs = [q for q in page.locator('fieldset, [role="radiogroup"], textarea:not(fieldset textarea)').all() if not q.locator("#agreement-checkbox-base").count()]
+    locs = [q for q in page.locator('fieldset, [role="radiogroup"], [role="group"], div:has(> * > .rc-Option), textarea:not(fieldset textarea)').all() if not q.locator("#agreement-checkbox-base").count()]
     return locs or [q for q in page.locator('[id^="prompt-autoGradableResponseId"], [data-testid*="question"]').all() if not q.locator("#agreement-checkbox-base").count()]
 
 

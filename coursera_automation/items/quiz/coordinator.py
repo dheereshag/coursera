@@ -51,7 +51,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         else:
             for opt in ans:
                 if (btn := q_loc.locator("label").filter(has_text=opt).first).is_visible():
-                    btn.click(force=True)
+                    btn.locator('input[type="checkbox"]').first.check(force=True) if btn.locator('input[type="checkbox"]').count() else btn.click(force=True)
         page.wait_for_timeout(300)
 
     if (agree := page.locator('#agreement-checkbox-base, label:has-text(", understand and agree.")').first).is_visible(timeout=cfg.timeout_ms):

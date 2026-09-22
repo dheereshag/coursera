@@ -22,18 +22,18 @@ def test_poll_and_click_next_immediate() -> None:
     page.goto.assert_called_once_with("https://www.coursera.org/learn/test/reading/2", wait_until="domcontentloaded")
 
 
-def test_poll_and_click_next_reloads_when_pending() -> None:
-    """Verify poll_and_click_next reloads page periodically while CTA is absent."""
+def test_poll_and_click_next_without_reload() -> None:
+    """Verify poll_and_click_next waits without page reload while CTA is absent."""
     page = MagicMock(url="https://coursera.org/learn/test/quiz/1")
     btn = MagicMock()
-    btn.is_visible.side_effect = [False] * 7 + [True]
+    btn.is_visible.side_effect = [False] * 3 + [True]
     btn.get_attribute.return_value = None
     btn.click.side_effect = lambda **kw: setattr(page, "url", "https://coursera.org/learn/test/reading/2")
     page.locator.return_value.first = btn
 
-    result = poll_and_click_next(page, max_wait_sec=60)
+    result = poll_and_click_next(page, max_wait_sec=25)
     assert result is True
-    page.reload.assert_called_once_with(wait_until="domcontentloaded")
+    page.reload.assert_not_called()
 
 
 def test_poll_and_click_next_timeout() -> None:

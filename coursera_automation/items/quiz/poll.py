@@ -34,11 +34,6 @@ def poll_and_click_next(page: Page, max_wait_sec: int = 300) -> bool:
             logger.info("Clicked CTA but URL did not change yet (current: %s).", page.url)
         else:
             logger.info("'Next item' CTA not visible yet (waited %ds / %ds); retrying in 5s...", elapsed, max_wait_sec)
-        if cycle > 0 and cycle % 6 == 0:
-            logger.info("Waiting for evaluation; reloading page to refresh CTA...")
-            page.reload(wait_until="domcontentloaded")
-            page.wait_for_timeout(3000)
-        else:
-            page.wait_for_timeout(5000)
+        page.wait_for_timeout(5000)
     logger.warning("Timed out after %ds waiting for 'Next item' CTA.", max_wait_sec)
     return page.url != orig
