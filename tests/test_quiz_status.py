@@ -43,6 +43,7 @@ def test_handle_quiz_skips_when_completed() -> None:
     """Verify handle_quiz exits early without solver or submit when already completed."""
     page, cfg = MagicMock(), Settings()
     with (
+        patch("coursera_automation.items.quiz.coordinator.is_on_cover_page", return_value=False),
         patch("coursera_automation.items.quiz.coordinator.is_quiz_completed", return_value=True),
         patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm") as mock_solve,
         patch("coursera_automation.items.quiz.coordinator.submit_quiz") as mock_submit,
@@ -50,3 +51,28 @@ def test_handle_quiz_skips_when_completed() -> None:
         handle_quiz(page, cfg)
         mock_solve.assert_not_called()
         mock_submit.assert_not_called()
+
+
+def test_is_quiz_completed_false_when_resume_cta_present() -> None:
+    """Verify is_quiz_completed returns False when Resume assignment is visible, despite Passed text."""
+    page = MagicMock()
+    page.locator.side_effect = lambda s: MagicMock(
+        first=MagicMock(is_visible=MagicMock(return_value="Resume" in s or "Passed" in s))
+    )
+    assert is_quiz_completed(page) is False
+
+
+def test_is_quiz_completed_false_on_cover_page_no_questions() -> None:
+    """Verify is_quiz_completed returns False if disabled inputs exist but question count is 0."""
+    page = MagicMock()
+
+    def locator_mock(s: str) -> MagicMock:
+        if any(k in s for k in ("fieldset", "radiogroup", "rc-Option")):
+            return MagicMock(count=MagicMock(return_value=0))
+        if "disabled" in s and "not([disabled])" not in s:
+            return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=True)))
+        return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)), count=MagicMock(return_value=0))
+
+    page.locator.side_effect = locator_mock
+    assert is_quiz_completed(page) is False
+

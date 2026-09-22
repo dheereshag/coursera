@@ -31,8 +31,6 @@ def ensure_quiz_launched(page: Page, timeout_ms: int = 15000) -> bool:
     page.wait_for_load_state("domcontentloaded")
     for _ in range(max(1, timeout_ms // 500)):
         dismiss_dialogs(page)
-        if is_quiz_completed(page):
-            return False
         cta = page.locator(COVER_CTA).first
         if cta.count() and cta.is_visible() and cta.get_attribute("aria-disabled") != "true":
             logger.info("Clicking quiz cover page CTA: '%s'", cta.inner_text().strip())
@@ -46,8 +44,10 @@ def ensure_quiz_launched(page: Page, timeout_ms: int = 15000) -> bool:
                 modal.click(force=True)
             with suppress(Error):
                 cta.wait_for(state="hidden", timeout=8000)
-                return True
+            return True
         if page.locator(ATTEMPT_READY).first.is_visible():
             return True
+        if is_quiz_completed(page):
+            return False
         page.wait_for_timeout(500)
     return False

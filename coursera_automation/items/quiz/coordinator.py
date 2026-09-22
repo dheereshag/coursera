@@ -20,12 +20,12 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     """Handle complete quiz lifecycle: launch, solve, agree, and submit."""
     logger.info("Handling quiz assignment...")
     ensure_quiz_launched(page, max(cfg.timeout_ms, 15000))
+    if is_on_cover_page(page):
+        logger.error("Still on quiz cover page after launch attempt; aborting to prevent false extraction.")
+        return
     if page.locator(NEXT_BTN).first.is_visible() or is_quiz_completed(page) or page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible():
         logger.info("Quiz already completed or under review. Polling next item CTA...")
         poll_and_click_next(page, max_wait_sec=300)
-        return
-    if is_on_cover_page(page):
-        logger.error("Still on quiz cover page after launch attempt; aborting to prevent false extraction.")
         return
 
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)

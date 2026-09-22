@@ -74,6 +74,6 @@ sequenceDiagram
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
   - `parser.py`: Question DOM extraction, single/multiselect/textarea classification, and aria-labelledby/cml prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
-  - `status.py`: Completed/passed quiz and review-mode detection.
+  - `status.py`: Completed/passed quiz and review-mode detection with explicit precedence for active `Resume assignment` CTAs and question container validation.
   - `submit.py`: Quiz submission and modal confirmation dialog handling.
   - `poll.py`: 'TopBannerCTAButton' ("Next item") polling with interval logging and reload on pending evaluation.

@@ -77,15 +77,36 @@ def test_ensure_quiz_launched_confirms_attempt_modal() -> None:
 
 
 def test_ensure_quiz_launched_skips_when_completed() -> None:
-    """Verify ensure_quiz_launched immediately returns False if quiz is already completed."""
+    """Verify ensure_quiz_launched returns False if quiz is already completed and no CTA exists."""
     page = MagicMock()
+    page.locator.return_value.first.is_visible.return_value = False
+    page.locator.return_value.first.count.return_value = 0
     with patch("coursera_automation.items.quiz.launcher.dismiss_dialogs"), patch(
         "coursera_automation.items.quiz.launcher.is_quiz_completed", return_value=True
     ):
         result = ensure_quiz_launched(page, timeout_ms=1000)
 
     assert result is False
-    page.locator.assert_not_called()
+
+
+def test_ensure_quiz_launched_prioritizes_cover_cta_over_completed_status() -> None:
+    """Verify ensure_quiz_launched clicks Resume assignment even if is_quiz_completed would be True."""
+    page = MagicMock()
+    cta = MagicMock()
+    cta.count.return_value = 1
+    cta.is_visible.return_value = True
+    cta.get_attribute.return_value = "false"
+    cta.inner_text.return_value = "Resume assignment"
+
+    page.locator.side_effect = lambda sel: MagicMock(first=cta if "CoverPageActionButton" in sel else MagicMock(is_visible=lambda: False, count=lambda: 0))
+
+    with patch("coursera_automation.items.quiz.launcher.dismiss_dialogs"), patch(
+        "coursera_automation.items.quiz.launcher.is_quiz_completed", return_value=True
+    ):
+        result = ensure_quiz_launched(page, timeout_ms=1000)
+
+    assert result is True
+    cta.click.assert_called_once_with(force=True, timeout=5000)
 
 
 def test_ensure_quiz_launched_skips_when_attempt_ready() -> None:
