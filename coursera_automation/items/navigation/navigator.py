@@ -25,7 +25,6 @@ def click_resume(page: Page, cfg: Settings) -> None:
         page.wait_for_timeout(400)
     btn = btn or (res if res.is_visible(timeout=1000) else start)
     btn.wait_for(state="visible", timeout=cfg.timeout_ms)
-    logger.info("Clicking course resume/start CTA...")
     btn.click(force=True)
     page.wait_for_load_state("domcontentloaded")
     page.wait_for_timeout(10000)
@@ -43,18 +42,19 @@ def click_next_item(page: Page, cfg: Settings) -> bool:
         locs = page.locator(NEXT_SEL)
         if (btn := next((l for l in locs.all() if l.is_visible()), None) or (locs.first if locs.first.is_visible() else None)):
             logger.info("Advancing via next item button...")
-            href = btn.get_attribute("href")
             try:
                 btn.scroll_into_view_if_needed()
                 btn.click(timeout=3000)
             except Error:
                 btn.click(force=True)
-            if page.url == orig and href:
+            page.wait_for_timeout(1500)
+            if page.url == orig and (href := btn.get_attribute("href")):
                 page.goto(href if href.startswith("http") else f"https://www.coursera.org{href}", wait_until="domcontentloaded")
             page.wait_for_load_state("domcontentloaded")
-            page.wait_for_timeout(10000)
+            page.wait_for_timeout(2000)
             dismiss_dialogs(page)
-            return True
+            if page.url != orig:
+                return True
         page.mouse.wheel(0, 400)
         page.wait_for_timeout(1000)
     return False

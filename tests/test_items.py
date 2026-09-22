@@ -48,10 +48,12 @@ def test_dismiss_dialogs_honor_code() -> None:
 
 def test_click_next_item_top_banner() -> None:
     """Verify click_next_item clicks TopBannerCTAButton."""
-    page, cfg, btn = MagicMock(), Settings(), MagicMock()
+    page, cfg, btn = MagicMock(url="https://coursera.org/item1"), Settings(), MagicMock()
     btn.first.is_visible.return_value = True
+    btn.first.click.side_effect = lambda **kw: setattr(page, "url", "https://coursera.org/item2")
+    btn.click.side_effect = lambda **kw: setattr(page, "url", "https://coursera.org/item2")
     page.locator.side_effect = lambda s: btn if "TopBannerCTAButton" in s else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
     with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs"):
         assert click_next_item(page, cfg) is True
-    btn.first.click.assert_called_once()
+    assert btn.click.called or btn.first.click.called
 

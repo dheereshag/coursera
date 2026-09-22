@@ -13,30 +13,33 @@ MODAL_BTN = 'button[data-testid="dialog-submit-button"], [role="alertdialog"] bu
 
 
 def poll_and_click_next(page: Page, max_wait_sec: int = 300) -> bool:
-    """Poll until TopBannerCTAButton appears, reloading if pending, then click it."""
-    logger.info("Polling for post-submission 'Next item' CTA (up to %ds)...", max_wait_sec)
-    for cycle in range(max_wait_sec // 5):
+    """Poll every 5s until TopBannerCTAButton mounts, then click it to advance URL."""
+    logger.info("Polling every 5s for 'Next item' CTA (up to %ds)...", max_wait_sec)
+    orig = page.url
+    for cycle in range(max(1, max_wait_sec // 5)):
         if (btn := page.locator(NEXT_BTN).first).is_visible(timeout=1000):
-            href, orig = btn.get_attribute("href"), page.url
+            href = btn.get_attribute("href") or ""
             try:
                 btn.scroll_into_view_if_needed()
                 btn.click(timeout=3000)
             except Error:
                 btn.click(force=True)
+            page.wait_for_timeout(2000)
             if page.url == orig and href:
                 page.goto(href if href.startswith("http") else f"https://www.coursera.org{href}", wait_until="domcontentloaded")
             page.wait_for_load_state("domcontentloaded")
-            page.wait_for_timeout(3000)
-            logger.info("Clicked 'Next item' after quiz submission.")
-            return True
+            page.wait_for_timeout(2000)
+            if page.url != orig:
+                logger.info("Successfully advanced to next item: %s", page.url)
+                return True
         if cycle > 0 and cycle % 6 == 0:
-            logger.info("Evaluation pending; reloading page to refresh next item CTA...")
+            logger.info("Waiting for evaluation; reloading page to refresh CTA...")
             page.reload(wait_until="domcontentloaded")
             page.wait_for_timeout(3000)
         else:
             page.wait_for_timeout(5000)
     logger.warning("Timed out after %ds waiting for 'Next item' CTA.", max_wait_sec)
-    return False
+    return page.url != orig
 
 
 def submit_quiz(page: Page, cfg: Settings) -> None:

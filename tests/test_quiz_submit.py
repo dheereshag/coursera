@@ -9,6 +9,7 @@ from coursera_automation.items.quiz.submit import poll_and_click_next, submit_qu
 def test_poll_and_click_next_immediate() -> None:
     """Verify poll_and_click_next clicks TopBannerCTAButton and advances."""
     page = MagicMock(url="https://coursera.org/learn/test/quiz/1")
+    page.goto.side_effect = lambda url, **kw: setattr(page, "url", url)
     btn = MagicMock()
     btn.is_visible.return_value = True
     btn.get_attribute.return_value = "/learn/test/reading/2"
@@ -26,6 +27,7 @@ def test_poll_and_click_next_reloads_when_pending() -> None:
     btn = MagicMock()
     btn.is_visible.side_effect = [False] * 7 + [True]
     btn.get_attribute.return_value = None
+    btn.click.side_effect = lambda **kw: setattr(page, "url", "https://coursera.org/learn/test/reading/2")
     page.locator.return_value.first = btn
 
     result = poll_and_click_next(page, max_wait_sec=60)
