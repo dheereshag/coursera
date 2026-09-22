@@ -3,7 +3,8 @@
 from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
-from coursera_automation.items.quiz.submit import poll_and_click_next, submit_quiz
+from coursera_automation.items.quiz.poll import poll_and_click_next
+from coursera_automation.items.quiz.submit import submit_quiz
 
 
 def test_poll_and_click_next_immediate() -> None:
@@ -35,6 +36,13 @@ def test_poll_and_click_next_reloads_when_pending() -> None:
     page.reload.assert_called_once_with(wait_until="domcontentloaded")
 
 
+def test_poll_and_click_next_timeout() -> None:
+    """Verify poll_and_click_next returns False when CTA never appears."""
+    page = MagicMock(url="https://coursera.org/learn/test/quiz/1")
+    page.locator.return_value.first.is_visible.return_value = False
+    assert poll_and_click_next(page, max_wait_sec=5) is False
+
+
 def test_submit_quiz_calls_poll_and_click_next() -> None:
     """Verify submit_quiz clicks submit, confirms modal, and calls poll_and_click_next."""
     page, cfg = MagicMock(), Settings()
@@ -48,3 +56,4 @@ def test_submit_quiz_calls_poll_and_click_next() -> None:
         mock_poll.assert_called_once_with(page, max_wait_sec=300)
     sub_btn.click.assert_called_once()
     modal_btn.click.assert_called_once()
+

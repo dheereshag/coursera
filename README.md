@@ -72,7 +72,8 @@ Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module) organized into dom
   - `parser.py`: Question DOM extraction and classification.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
   - `status.py`: Completed/passed quiz and review-mode detection.
-  - `submit.py`: Quiz submission, modal confirmation, and 'TopBannerCTAButton' ("Next item") polling with reload on pending evaluation.
+  - `submit.py`: Quiz submission and confirmation dialog handling.
+  - `poll.py`: 'TopBannerCTAButton' ("Next item") polling with interval logging and reload on pending evaluation.
 
 ## Usage & Quality Gates
 
