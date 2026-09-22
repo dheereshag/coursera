@@ -47,9 +47,10 @@ sequenceDiagram
 
 - `coursera_automation/config.py`: Environment configuration and typed dataclass.
 - `coursera_automation/instances.py`: Multi-instance configuration loading and single-instance fallback.
+- `coursera_automation/keep_awake.py`: macOS sleep prevention power assertion context manager.
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
 - `coursera_automation/course.py`: Specialization navigation and course entry.
-- `coursera_automation/main.py`: Multi-instance orchestration with `playwright-stealth` anti-bot evasion.
+- `coursera_automation/main.py`: Multi-instance orchestration with `playwright-stealth` anti-bot evasion and keep-awake integration.
 - `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop.
 - **Content Subpackage (`items/content/`)**:
   - `video.py`: Video start, audio muting, 2x playback, 0.5s in-video question skip polling, playToggle auto-resume, and 6s post-buffer.

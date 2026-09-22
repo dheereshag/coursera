@@ -11,6 +11,7 @@ from coursera_automation.auth import login
 from coursera_automation.course import open_course
 from coursera_automation.instances import InstanceConfig, load_instances
 from coursera_automation.items.navigation import register_dialog_handlers
+from coursera_automation.keep_awake import keep_awake
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -25,11 +26,9 @@ def run_instance(inst: InstanceConfig) -> None:
     for lk in user_dir.glob("Singleton*"):
         lk.unlink(missing_ok=True)
     with sync_playwright() as p:
-        args = ["--disable-blink-features=AutomationControlled", "--disable-session-crashed-bubble"]
         context = p.chromium.launch_persistent_context(
-            user_data_dir=str(user_dir), headless=cfg.headless,
-            viewport={"width": 1280, "height": 800},
-            ignore_default_args=["--enable-automation"], args=args,
+            user_data_dir=str(user_dir), headless=cfg.headless, viewport={"width": 1280, "height": 800},
+            ignore_default_args=["--enable-automation"], args=["--disable-blink-features=AutomationControlled", "--disable-session-crashed-bubble"],
         )
         Stealth().apply_stealth_sync(context)
         page = context.pages[0] if context.pages else context.new_page()
@@ -47,7 +46,7 @@ def run(instances_path: str = "instances.json") -> None:
     """Load all configured instances and execute them in parallel."""
     instances = load_instances(instances_path)
     logger.info("Executing %d automation instance(s) in parallel...", len(instances))
-    with ThreadPoolExecutor(max_workers=max(1, len(instances))) as ex:
+    with keep_awake(), ThreadPoolExecutor(max_workers=max(1, len(instances))) as ex:
         futs = [ex.submit(run_instance, inst) for inst in instances]
         for fut in as_completed(futs):
             try:

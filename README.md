@@ -58,6 +58,7 @@ Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module) organized into dom
 - `coursera_automation/config.py`: Environment configuration and credentials.
 - `coursera_automation/auth.py`: Authentication steps with manual Arkose puzzle wait.
 - `coursera_automation/instances.py`: Multi-instance configuration loader and fallback.
+- `coursera_automation/keep_awake.py`: macOS sleep prevention power assertion context manager.
 - `coursera_automation/course.py`: Specialization navigation & course entry.
 - `coursera_automation/main.py`: Browser orchestration for single and multi-instance runs.
 - `coursera_automation/items/dispatcher.py`: Item detection and progression iteration loop.
