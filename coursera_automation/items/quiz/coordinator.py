@@ -13,8 +13,8 @@ from coursera_automation.items.quiz.status import is_quiz_completed
 from .submit import NEXT_BTN, poll_and_click_next, submit_quiz
 
 logger = logging.getLogger(__name__)
-COVER = '[data-testid="CoverPageActionButton"], button:has-text("Try again"), button:has-text("Start"), button:has-text("Resume")'
-REV = ':text("Reviewing your submission"), :text("hang tight")'
+START_CTA = '[data-testid="CoverPageActionButton"], button:has-text("Start assignment"), button:has-text("Start"), button:has-text("Resume")'
+REV_SEL = ':text("Reviewing your submission"), :text("hang tight")'
 
 
 def handle_quiz(page: Page, cfg: Settings) -> None:
@@ -23,18 +23,18 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     page.wait_for_load_state("domcontentloaded")
     page.wait_for_timeout(2000)
     dismiss_dialogs(page)
-    if page.locator(NEXT_BTN).first.is_visible(timeout=1000) or is_quiz_completed(page) or page.locator(REV).first.is_visible(timeout=1000):
-        logger.info("Quiz pending or completed. Polling next item CTA...")
-        poll_and_click_next(page, max_wait_sec=300)
-        return
-
-    if (cta := page.locator(COVER).first).is_visible(timeout=4000):
+    if (cta := page.locator(START_CTA).first).is_visible(timeout=3000):
+        logger.info("Clicking quiz start/resume CTA...")
         try:
             cta.click(force=True, timeout=5000)
         except Error:
             pass
         dismiss_dialogs(page)
         page.wait_for_timeout(3000)
+    elif page.locator(NEXT_BTN).first.is_visible(timeout=1000) or is_quiz_completed(page) or page.locator(REV_SEL).first.is_visible(timeout=1000):
+        logger.info("Quiz already completed or under review. Polling next item CTA...")
+        poll_and_click_next(page, max_wait_sec=300)
+        return
 
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     logger.info("Extracted %d quiz question(s).", len(questions))
@@ -56,5 +56,4 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     if (agree := page.locator('#agreement-checkbox-base, label:has-text(", understand and agree.")').first).is_visible(timeout=cfg.timeout_ms):
         agree.click(force=True)
         page.wait_for_timeout(1000)
-
     submit_quiz(page, cfg)

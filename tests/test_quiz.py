@@ -37,7 +37,7 @@ def test_handle_quiz_flow() -> None:
 def test_handle_quiz_fast_path() -> None:
     """Verify handle_quiz immediately advances when Next item CTA is already visible."""
     page, cfg = MagicMock(), Settings()
-    page.locator.return_value.first.is_visible.return_value = True
+    page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=lambda *a, **kw: ("TopBannerCTAButton" in s)))
     with patch("coursera_automation.items.quiz.coordinator.poll_and_click_next") as mock_poll:
         handle_quiz(page, cfg)
         mock_poll.assert_called_once_with(page, max_wait_sec=300)

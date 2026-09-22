@@ -8,7 +8,7 @@ from playwright.sync_api import Error, Page
 from coursera_automation.config import Settings
 
 logger = logging.getLogger(__name__)
-NEXT_BTN = '[data-testid="TopBannerCTAButton"], a:has-text("Next item"), button:has-text("Next item")'
+NEXT_BTN = '[data-testid="TopBannerCTAButton"]'
 MODAL_BTN = 'button[data-testid="dialog-submit-button"], [role="alertdialog"] button:has(span.cds-button-label:has-text("Submit")), [data-testid="AttemptViewSubmitControls__buttons"] button.cds-button-primary'
 
 
