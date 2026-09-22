@@ -15,13 +15,18 @@ def _check_agreement(page: Page) -> None:
     """Ensure Coursera Honor Code agreement checkbox is checked."""
     inp = page.locator('[aria-label="Coursera Honor Code"] input, input[value="agree"]').first
     lbl = page.locator('[aria-label="Coursera Honor Code"] label, label:has-text("agree")').first
-    if (inp.is_visible(timeout=300) or lbl.is_visible(timeout=300)) and not inp.is_checked():
-        (lbl if lbl.is_visible(timeout=300) else inp).click(force=True)
-        page.wait_for_timeout(300)
-        if not inp.is_checked():
-            inp.check(force=True)
-        logger.info("Checked lab agreement checkbox.")
-        page.wait_for_timeout(2000)
+    if inp.is_visible(timeout=300) or lbl.is_visible(timeout=300):
+        target = lbl if lbl.is_visible(timeout=300) else inp
+        try:
+            if not inp.is_checked(timeout=500):
+                target.click(force=True)
+                page.wait_for_timeout(300)
+                if not inp.is_checked(timeout=500):
+                    inp.check(force=True)
+                logger.info("Checked lab agreement checkbox.")
+                page.wait_for_timeout(2000)
+        except (TimeoutError, Error):
+            target.click(force=True)
 
 
 def handle_lab(page: Page, cfg: Settings) -> None:
@@ -33,14 +38,10 @@ def handle_lab(page: Page, cfg: Settings) -> None:
         page.mouse.wheel(0, 1000)
         page.wait_for_timeout(200)
     page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
-    page.wait_for_timeout(500)
     _check_agreement(page)
     dismiss_dialogs(page)
-
     pat = re.compile(r"(launch|open|start) (app|lab|workspace)", re.IGNORECASE)
-    btn = page.locator('button:has-text("Launch App"):not([disabled])').or_(
-        page.locator('button, a, [role="button"]:not([disabled])').filter(has_text=pat)
-    ).first
+    btn = page.locator('button:has-text("Launch App"):not([disabled])').or_(page.locator('button, a, [role="button"]:not([disabled])').filter(has_text=pat)).first
     try:
         btn.wait_for(state="visible", timeout=10000)
         with page.expect_popup(timeout=30000) as pi:

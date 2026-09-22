@@ -52,9 +52,11 @@ sequenceDiagram
 - `coursera_automation/main.py`: Multi-instance orchestration with `playwright-stealth` anti-bot evasion.
 - `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop.
 - **Content Subpackage (`items/content/`)**:
-  - `video.py`: Video start, audio muting, 2x playback, in-video question skipping, and 6s post-buffer.
-  - `reading.py`: Reading completion via progressive scroll and `data-testid="mark-complete"` click.
-  - `lab.py`: Lab Honor Code checkbox, bottom scrolling, optional LTI launch, and "Mark as completed".
+  - `video.py`: Video start, audio muting, 2x playback, 0.5s in-video question skip polling, playToggle auto-resume, and 6s post-buffer.
+
+
+  - `reading.py`: Reading completion via unconditional 60s wait (12 cycles $\times$ 5s scrolling), bottom scroll, and `data-testid="mark-complete"` click.
+  - `lab.py`: Lab Honor Code agreement with bounded timeout, bottom scrolling, optional LTI launch, and "Mark as completed".
 - **Interactive Subpackage (`items/interactive/`)**:
   - `dialogue.py`: Roleplay / dialogue start, text chat selection, end, and modal confirmation.
   - `discussion.py`: Discussion response input with 10-second post-reply stabilization buffer.

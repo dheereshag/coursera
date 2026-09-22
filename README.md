@@ -6,9 +6,11 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 
 | Item | Automated Behavior |
 |---|---|
-| **Video** | Checks if unmuted and mutes audio (`button[aria-label="Mute"]` and `v.muted = true`); checks if already $2\times$ speed before switching; handles in-video questions by clicking "Skip"; waits exact `duration / 2.0` seconds plus a 6-second completion buffer |
-| **Lab** | Scrolls to bottom, checks Honor Code agreement checkbox (`[aria-label="Coursera Honor Code"]`), launches app if available in background, and clicks "Mark as completed" (`data-testid="mark-complete"`) |
-| **Reading** | Scrolls through content, clicks "Mark as completed" (`data-testid="mark-complete"`), skips if already completed, and advances |
+| **Video** | Checks if unmuted and mutes audio (`button[aria-label="Mute"]` and `v.muted = true`); checks if already $2\times$ speed before switching; polls every 0.5s for in-video questions to click CDS "Skip", auto-clicks `data-testid="playToggle"` whenever paused; waits exact `duration / 2.0` seconds plus a 6-second completion buffer |
+
+
+| **Lab** | Scrolls to bottom, checks Honor Code agreement checkbox (`[aria-label="Coursera Honor Code"]` with bounded timeout), launches app if available in background, and clicks "Mark as completed" (`data-testid="mark-complete"`) |
+| **Reading** | Checks if already completed; if not, waits unconditional full 60s duration (12 cycles $\times$ 5s) scrolling down 600px, then scrolls to bottom and clicks "Mark as completed" (`data-testid="mark-complete"`), waiting 3s for state persistence |
 | **Dialogue / Roleplay** | Clicks "Use text chat" $\to$ "Start Role Play" $\to$ "End Role Play" $\to$ confirms "Yes, end the Role Play" modal and advances |
 | **Discussion** | 10-second stabilization wait, opens reply composer if collapsed, types `"ok"`, clicks "Reply", waits 12s, and advances |
 | **Peer Assignment** | 10s load wait, selects "My submission" tab, fills title with "test", uploads `test.png` via Uppy file chooser, polls up to 120s for processing, checks Honor Code, submits, confirms modal, and advances |

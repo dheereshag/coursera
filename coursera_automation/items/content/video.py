@@ -8,6 +8,8 @@ from playwright.sync_api import Page
 from coursera_automation.config import Settings
 
 logger = logging.getLogger(__name__)
+SKIP_SEL = 'button:has(span.cds-button-label:has-text("Skip")), button:has-text("Skip")'
+PLAY_SEL = 'button[data-testid="playToggle"][aria-label="Play" i], button[aria-label="Play" i], .vjs-big-play-button'
 
 
 def calculate_video_wait(duration_seconds: float) -> float:
@@ -25,36 +27,34 @@ def _get_duration(page: Page) -> float:
 
 
 def _wait_video(page: Page, wait_secs: float) -> None:
-    """Poll video playback, click Skip on in-video questions, and wait."""
-    skip = page.locator('.rc-InVideoOverlay button:has-text("Skip"), [data-testid*="in-video"] button:has-text("Skip")').first
+    """Poll video playback every 0.5s, click Skip, click Play if paused, and wait."""
+    skip, play = page.locator(SKIP_SEL).first, page.locator(PLAY_SEL).first
     start, end = time.time(), time.time() + wait_secs
     while time.time() < end:
-        if skip.is_visible(timeout=300):
+        if skip.is_visible(timeout=100):
             skip.click(force=True)
-            page.wait_for_timeout(500)
+            page.wait_for_timeout(300)
             page.evaluate("() => document.querySelector('video')?.play()")
-        if time.time() - start >= 5.0 and bool(page.evaluate("() => { const v = document.querySelector('video'); return v && v.ended && v.currentTime > 5.0; }")):
+        elif play.is_visible(timeout=100) and page.evaluate("() => document.querySelector('video')?.paused"):
+            logger.info("Video paused; clicking Play button...")
+            play.click(force=True)
+            page.wait_for_timeout(300)
+        if time.time() - start >= 5.0 and bool(page.evaluate("() => document.querySelector('video')?.ended")):
             break
-        page.wait_for_timeout(1000)
+        page.wait_for_timeout(500)
 
 
 def handle_video(page: Page, cfg: Settings) -> None:
     """Start video, reveal controls, mute, set 2x speed, and wait."""
     logger.info("Handling video item...")
-    play_sel = '.vjs-big-play-button, button[aria-label="Play" i], button.rc-PlayToggle[aria-label*="play" i]'
-    if page.evaluate("() => !document.querySelector('video') || document.querySelector('video').paused") and (play := page.locator(play_sel).first).is_visible(timeout=cfg.timeout_ms):
+    play = page.locator(PLAY_SEL).first
+    if page.evaluate("() => !document.querySelector('video') || document.querySelector('video').paused") and play.is_visible(timeout=cfg.timeout_ms):
         play.click(force=True)
         page.wait_for_timeout(500)
-    if (mb := page.locator('button[aria-label="Mute"]').first).is_visible(timeout=2000):
-        mb.click(force=True)
-        logger.info("Muted video playback.")
-    sb = page.locator('button[aria-label*="playback rate" i]').first
-    if sb.is_visible(timeout=2000) and "2x" not in sb.inner_text().lower():
-        for _ in range(4):
-            sb.click(force=True)
-            page.wait_for_timeout(300)
+    for sel in ('button[aria-label="Mute"]', 'button[aria-label*="playback rate" i]'):
+        if (b := page.locator(sel).first).is_visible(timeout=2000):
+            b.click(force=True)
     page.evaluate("() => { const v = document.querySelector('video'); if (v) { v.playbackRate = 2.0; v.muted = true; v.play(); } }")
-    wait_s = calculate_video_wait(dur := _get_duration(page))
-    logger.info("Video duration: %.1fs. Waiting %.1fs at 2x...", dur, wait_s)
-    _wait_video(page, wait_s)
+    logger.info("Video duration: %.1fs. Waiting at 2x...", dur := _get_duration(page))
+    _wait_video(page, calculate_video_wait(dur))
     page.wait_for_timeout(6000)

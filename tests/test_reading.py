@@ -20,6 +20,7 @@ def test_handle_reading_click_mark_complete() -> None:
 
     btn.scroll_into_view_if_needed.assert_called_once()
     btn.click.assert_called_once_with(force=True)
+    assert page.mouse.wheel.call_count == 12
 
 
 def test_handle_reading_already_completed() -> None:
