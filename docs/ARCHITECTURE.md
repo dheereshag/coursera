@@ -66,14 +66,14 @@ sequenceDiagram
   - `upload.py`: File attachment via Uppy Dashboard file chooser and direct file input fallback.
 - **Navigation Subpackage (`items/navigation/`)**:
 
-  - `navigator.py`: Resume / Get started and next item progression navigation with direct `href` fallback.
+  - `navigator.py`: Resume and next item progression navigation with active question protection and direct `href` fallback.
   - `dialogs.py`: Pendo guide, Honor Code, weekly learning target (Cancel), and transient popup dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
-  - `coordinator.py`: Complete quiz lifecycle coordination, option selection, and textarea answer filling.
-  - `launcher.py`: Quiz attempt initiation, multi-tier cover CTA detection (`CoverPageActionButton` / `Resume assignment` ignoring target widgets), scrolling, clicking, and attempt transition.
+  - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions are extracted, Honor Code is confirmed, and never bypassed by navigation headers.
+  - `launcher.py`: Quiz attempt initiation with strict precedence for active attempt elements (`textarea:not([disabled])`, Honor Code agreement, `Save draft`, `#agreement-checkbox-base`) over lingering cover CTAs, preventing false cover page aborts.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
   - `parser.py`: Question DOM extraction, single/multiselect/textarea classification, and aria-labelledby/cml prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
-  - `status.py`: Completed/passed quiz and review-mode detection with explicit precedence for active `Resume assignment` CTAs and question container validation.
+  - `status.py`: Completed/passed quiz and review-mode detection with explicit guard returning False when active drafts, unsubmitted textareas, or Honor agreements exist.
   - `submit.py`: Quiz submission and modal confirmation dialog handling.
   - `poll.py`: 'TopBannerCTAButton' and 'Go to next item' ("Next item") polling with interval logging and reload on pending evaluation.

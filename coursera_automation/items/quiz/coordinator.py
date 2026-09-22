@@ -11,7 +11,7 @@ from .launcher import ensure_quiz_launched, is_on_cover_page
 from .parser import _find_textarea, _is_textarea, wait_and_extract_questions
 from .solver import solve_quiz_with_llm
 from .status import is_quiz_completed
-from .submit import NEXT_BTN, poll_and_click_next, submit_quiz
+from .submit import poll_and_click_next, submit_quiz
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     if is_on_cover_page(page):
         logger.error("Still on quiz cover page after launch attempt; aborting to prevent false extraction.")
         return
-    if page.locator(NEXT_BTN).first.is_visible() or is_quiz_completed(page) or page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible():
+    if is_quiz_completed(page) or page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible():
         logger.info("Quiz already completed or under review. Polling next item CTA...")
         poll_and_click_next(page, max_wait_sec=300)
         return
@@ -48,7 +48,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
                 if (btn := q_loc.locator("label").filter(has_text=opt).first).is_visible():
                     btn.locator('input[type="checkbox"]').first.check(force=True) if btn.locator('input[type="checkbox"]').count() else btn.click(force=True)
         page.wait_for_timeout(300)
-    if (agree := page.locator('#agreement-checkbox-base, label:has-text(", understand and agree.")').first).is_visible(timeout=cfg.timeout_ms):
+    if (agree := page.locator('#agreement-checkbox-base, label:has-text("understand and agree"), [aria-label*="understand and agree" i]').first).is_visible(timeout=cfg.timeout_ms):
         agree.click(force=True)
         page.wait_for_timeout(1000)
     submit_quiz(page, cfg)

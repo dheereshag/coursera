@@ -20,7 +20,11 @@ def submit_quiz(page: Page, cfg: Settings) -> None:
     if not sub.is_visible(timeout=cfg.timeout_ms):
         return
     sub.scroll_into_view_if_needed()
-    sub.click()
+    for _ in range(10):
+        if sub.is_enabled() and sub.get_attribute("aria-disabled") != "true":
+            break
+        page.wait_for_timeout(500)
+    sub.click(force=True)
     page.wait_for_timeout(1500)
     if (modal := page.locator(MODAL_BTN).first).is_visible(timeout=5000):
         logger.info("Confirming submission in modal...")

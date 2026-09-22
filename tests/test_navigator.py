@@ -32,11 +32,18 @@ def test_click_next_item_advances() -> None:
     page.goto.side_effect = lambda url, **kw: setattr(page, "url", url)
     btn.is_visible.return_value = True
     btn.get_attribute.return_value = "/learn/next"
-    page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=lambda *a, **kw: False)) if "Reviewing" in s else MagicMock(all=lambda: [btn])
+    page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=lambda *a, **kw: False)) if any(k in s for k in ("Reviewing", "agreement", "prompt-")) else MagicMock(all=lambda: [btn], first=btn)
     with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs"):
         assert click_next_item(page, cfg) is True
     btn.click.assert_called_once()
     page.goto.assert_called_once_with("https://www.coursera.org/learn/next", wait_until="domcontentloaded")
+
+
+def test_click_next_item_refuses_when_active_quiz_present() -> None:
+    """Verify click_next_item refuses to click Next if unsubmitted quiz questions are visible."""
+    page, cfg = MagicMock(url="https://coursera.org/quiz"), Settings()
+    page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=lambda *a, **kw: "agreement" in s or "prompt-" in s))
+    assert click_next_item(page, cfg) is False
 
 
 def test_click_next_item_false_when_unchanged() -> None:

@@ -1,7 +1,6 @@
-"""Navigation controls: resume, next item progression, and dialog dismissal."""
-
 import logging
 import re
+from contextlib import suppress
 
 from playwright.sync_api import Error, Page
 
@@ -34,6 +33,9 @@ def click_resume(page: Page, cfg: Settings) -> None:
 
 def click_next_item(page: Page, cfg: Settings) -> bool:
     """Locate and click 'Next item' or navigate directly via href."""
+    if page.locator('#agreement-checkbox-base, [id^="prompt-autoGradableResponseId"]').first.is_visible(timeout=300):
+        logger.warning("Active quiz questions detected; refusing to advance next item.")
+        return False
     orig = page.url
     for _ in range(8):
         dismiss_dialogs(page)
@@ -43,10 +45,8 @@ def click_next_item(page: Page, cfg: Settings) -> bool:
         locs = page.locator('[data-testid="TopBannerCTAButton"], [data-testid*="next-item"], button:has-text("Next item"), a:has-text("Next item")')
         if (btn := next((l for l in locs.all() if l.is_visible()), None) or (locs.first if locs.first.is_visible() else None)):
             logger.info("Advancing via next item button...")
-            try:
-                btn.click(timeout=3000)
-            except Error:
-                btn.click(force=True)
+            with suppress(Error):
+                btn.click(force=True, timeout=3000)
             page.wait_for_timeout(1500)
             if page.url == orig and (href := btn.get_attribute("href")):
                 page.goto(href if href.startswith("http") else f"https://www.coursera.org{href}", wait_until="domcontentloaded")
