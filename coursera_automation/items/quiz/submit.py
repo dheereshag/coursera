@@ -1,4 +1,4 @@
-"""Quiz submission handling and post-submission evaluation waiting."""
+"""Quiz submission handling and post-submission next-item navigation."""
 
 import logging
 import re
@@ -8,81 +8,50 @@ from playwright.sync_api import Error, Page
 from coursera_automation.config import Settings
 
 logger = logging.getLogger(__name__)
+NEXT_BTN = '[data-testid="TopBannerCTAButton"], a:has-text("Next item"), button:has-text("Next item")'
+MODAL_BTN = 'button[data-testid="dialog-submit-button"], [role="alertdialog"] button:has(span.cds-button-label:has-text("Submit")), [data-testid="AttemptViewSubmitControls__buttons"] button.cds-button-primary'
 
-_NEXT_BTN = '[data-testid="TopBannerCTAButton"]'
 
-
-def _click_next_after_grade(page: Page) -> bool:
-    """Poll for the TopBannerCTAButton and click it; return True if clicked."""
-    for _ in range(12):  # up to ~60 s
-        btn = page.locator(_NEXT_BTN).first
-        if btn.is_visible(timeout=5000):
-            href = btn.get_attribute("href")
-            orig = page.url
+def poll_and_click_next(page: Page, max_wait_sec: int = 300) -> bool:
+    """Poll until TopBannerCTAButton appears, reloading if pending, then click it."""
+    logger.info("Polling for post-submission 'Next item' CTA (up to %ds)...", max_wait_sec)
+    for cycle in range(max_wait_sec // 5):
+        if (btn := page.locator(NEXT_BTN).first).is_visible(timeout=1000):
+            href, orig = btn.get_attribute("href"), page.url
             try:
                 btn.scroll_into_view_if_needed()
                 btn.click(timeout=3000)
             except Error:
                 btn.click(force=True)
             if page.url == orig and href:
-                page.goto(
-                    href if href.startswith("http") else f"https://www.coursera.org{href}",
-                    wait_until="domcontentloaded",
-                )
+                page.goto(href if href.startswith("http") else f"https://www.coursera.org{href}", wait_until="domcontentloaded")
             page.wait_for_load_state("domcontentloaded")
             page.wait_for_timeout(3000)
-            logger.info("Clicked 'Next item' after quiz grading.")
+            logger.info("Clicked 'Next item' after quiz submission.")
             return True
-        page.wait_for_timeout(5000)
-    logger.warning("'Next item' button not found after grading.")
-    return False
-
-
-def _wait_for_evaluation(page: Page, max_wait_sec: int = 300) -> None:
-    """Poll up to max_wait_sec for Coursera quiz grading to complete."""
-    logger.info("Waiting for quiz evaluation (up to %ds)...", max_wait_sec)
-    rev_sel = ':text("Reviewing your submission"), :text("hang tight")'
-    grade_sel = ':text("Your grade:"), :text("Passed"), :text("Grade received"), button:has-text("Try again")'
-    for cycle in range(max_wait_sec // 5):
-        is_rev = page.locator(rev_sel).first.is_visible(timeout=1000)
-        has_grade = page.locator(grade_sel).first.is_visible(timeout=1000)
-        if has_grade and not is_rev:
-            logger.info("Quiz evaluation completed; results received ('Your grade:').")
-            _click_next_after_grade(page)
-            return
-        if is_rev:
-            logger.info("Submission under review ('Reviewing your submission, hang tight')...")
-        if cycle > 0 and cycle % 9 == 0:
-            logger.info("Evaluation in progress; reloading page to refresh grade...")
+        if cycle > 0 and cycle % 6 == 0:
+            logger.info("Evaluation pending; reloading page to refresh next item CTA...")
             page.reload(wait_until="domcontentloaded")
             page.wait_for_timeout(3000)
         else:
             page.wait_for_timeout(5000)
-    logger.warning("Quiz evaluation wait reached %ds timeout.", max_wait_sec)
+    logger.warning("Timed out after %ds waiting for 'Next item' CTA.", max_wait_sec)
+    return False
 
 
 def submit_quiz(page: Page, cfg: Settings) -> None:
-    """Click submit button, confirm in modal, and wait for grading."""
+    """Click submit button, confirm modal, and poll for next item CTA."""
     sub = page.get_by_role("button", name=re.compile(r"^submit", re.IGNORECASE)).first
     if not sub.is_visible(timeout=cfg.timeout_ms):
         return
     sub.scroll_into_view_if_needed()
     sub.click()
     page.wait_for_timeout(1500)
-    modal_btn = page.locator(
-        'button[data-testid="dialog-submit-button"], '
-        '[role="alertdialog"] button:has(span.cds-button-label:has-text("Submit")), '
-        '[data-testid="AttemptViewSubmitControls__buttons"] button.cds-button-primary'
-    ).first
-    if modal_btn.is_visible(timeout=5000):
+    if (modal := page.locator(MODAL_BTN).first).is_visible(timeout=5000):
         logger.info("Confirming submission in modal...")
-        modal_btn.click()
+        modal.click()
         try:
-            page.locator('[role="alertdialog"], button[data-testid="dialog-submit-button"]').first.wait_for(
-                state="hidden", timeout=5000
-            )
-        except Error as exc:
-            logger.debug("Modal dismissal wait: %s", exc)
-    _wait_for_evaluation(page, max_wait_sec=300)
-    page.wait_for_timeout(2000)
-
+            modal.wait_for(state="hidden", timeout=5000)
+        except Error:
+            pass
+    poll_and_click_next(page, max_wait_sec=300)

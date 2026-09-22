@@ -35,7 +35,7 @@ sequenceDiagram
                 Item->>LLM: solve_quiz_with_llm(questions)
                 LLM-->>Item: JSON answers
                 Item->>Item: Check honor code, submit & confirm modal
-                Item->>Item: Wait for reviewing to clear & 'Your grade:' to appear
+                Item->>Item: Poll TopBannerCTAButton ('Next item') & click to advance
             end
 
             Disp->>Nav: click_next_item(page, config)
@@ -66,4 +66,4 @@ sequenceDiagram
   - `parser.py`: Question DOM extraction and classification.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
   - `status.py`: Completed/passed quiz and review-mode detection.
-  - `submit.py`: Quiz submission, modal confirmation, and 'Reviewing your submission' $\to$ 'Your grade:' evaluation polling.
+  - `submit.py`: Quiz submission, modal confirmation, and 'TopBannerCTAButton' ("Next item") polling with reload on pending evaluation.

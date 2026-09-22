@@ -9,7 +9,7 @@ from coursera_automation.items.navigation.dialogs import dismiss_dialogs
 from coursera_automation.items.quiz.parser import wait_and_extract_questions
 from coursera_automation.items.quiz.solver import solve_quiz_with_llm
 from coursera_automation.items.quiz.status import is_quiz_completed
-from coursera_automation.items.quiz.submit import _wait_for_evaluation, submit_quiz
+from coursera_automation.items.quiz.submit import poll_and_click_next, submit_quiz
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     page.wait_for_timeout(2000)
     dismiss_dialogs(page)
     if page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible(timeout=1000):
-        _wait_for_evaluation(page, max_wait_sec=300)
+        poll_and_click_next(page, max_wait_sec=300)
         return
     if is_quiz_completed(page):
         logger.info("Quiz already completed or passed. Ready for next item.")

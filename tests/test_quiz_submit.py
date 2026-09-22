@@ -1,42 +1,48 @@
-"""Unit tests for quiz submit and evaluation polling."""
+"""Unit tests for quiz submit and post-submission next item polling."""
 
 from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
-from coursera_automation.items.quiz.submit import _wait_for_evaluation, submit_quiz
+from coursera_automation.items.quiz.submit import poll_and_click_next, submit_quiz
 
 
-def test_wait_for_evaluation_immediate_done() -> None:
-    """Verify _wait_for_evaluation returns when Your grade is present and review done."""
-    page = MagicMock()
-    page.locator.side_effect = lambda s: MagicMock(
-        first=MagicMock(is_visible=MagicMock(return_value="Reviewing" not in s))
-    )
-    _wait_for_evaluation(page, max_wait_sec=10)
-    page.reload.assert_not_called()
-    calls = [c[0][0] for c in page.locator.call_args_list]
-    assert any(':text("Your grade:")' in s for s in calls)
-    assert any(':text("Reviewing your submission")' in s for s in calls)
+def test_poll_and_click_next_immediate() -> None:
+    """Verify poll_and_click_next clicks TopBannerCTAButton and advances."""
+    page = MagicMock(url="https://coursera.org/learn/test/quiz/1")
+    btn = MagicMock()
+    btn.is_visible.return_value = True
+    btn.get_attribute.return_value = "/learn/test/reading/2"
+    page.locator.return_value.first = btn
+
+    result = poll_and_click_next(page, max_wait_sec=10)
+    assert result is True
+    btn.click.assert_called_once()
+    page.goto.assert_called_once_with("https://www.coursera.org/learn/test/reading/2", wait_until="domcontentloaded")
 
 
-def test_wait_for_evaluation_reloads_when_pending() -> None:
-    """Verify _wait_for_evaluation reloads page when review is pending."""
-    page = MagicMock()
-    page.locator.return_value.first.is_visible.side_effect = ([True, False] * 10) + [False, True, True]
-    _wait_for_evaluation(page, max_wait_sec=60)
-    page.reload.assert_called_once()
+def test_poll_and_click_next_reloads_when_pending() -> None:
+    """Verify poll_and_click_next reloads page periodically while CTA is absent."""
+    page = MagicMock(url="https://coursera.org/learn/test/quiz/1")
+    btn = MagicMock()
+    btn.is_visible.side_effect = [False] * 7 + [True]
+    btn.get_attribute.return_value = None
+    page.locator.return_value.first = btn
+
+    result = poll_and_click_next(page, max_wait_sec=60)
+    assert result is True
+    page.reload.assert_called_once_with(wait_until="domcontentloaded")
 
 
-def test_submit_quiz_calls_evaluation_wait() -> None:
-    """Verify submit_quiz clicks submit, confirms modal, and calls evaluation wait."""
+def test_submit_quiz_calls_poll_and_click_next() -> None:
+    """Verify submit_quiz clicks submit, confirms modal, and calls poll_and_click_next."""
     page, cfg = MagicMock(), Settings()
     sub_btn = MagicMock(is_visible=MagicMock(return_value=True))
     modal_btn = MagicMock(is_visible=MagicMock(return_value=True))
     page.get_by_role.return_value.first = sub_btn
     page.locator.return_value.first = modal_btn
 
-    with patch("coursera_automation.items.quiz.submit._wait_for_evaluation") as mock_wait:
+    with patch("coursera_automation.items.quiz.submit.poll_and_click_next") as mock_poll:
         submit_quiz(page, cfg)
-        mock_wait.assert_called_once_with(page, max_wait_sec=300)
+        mock_poll.assert_called_once_with(page, max_wait_sec=300)
     sub_btn.click.assert_called_once()
     modal_btn.click.assert_called_once()
