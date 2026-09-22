@@ -8,45 +8,50 @@ from coursera_automation.config import Settings
 from coursera_automation.items.content import handle_lab, handle_reading, handle_video
 from coursera_automation.items.interactive import handle_dialogue, handle_discussion
 from coursera_automation.items.navigation import click_next_item, dismiss_dialogs
+from coursera_automation.items.peer import handle_peer
 from coursera_automation.items.quiz import handle_quiz
 
 logger = logging.getLogger(__name__)
 
 
 def dispatch_item(page: Page, cfg: Settings) -> None:
-    """Detect current item type and execute corresponding handler."""
+    """Detect current item type with 10s stabilization wait and execute handler."""
+    logger.info("Stabilizing item page (10s load wait)...")
+    page.wait_for_load_state("domcontentloaded")
+    page.wait_for_timeout(10000)
     dismiss_dialogs(page)
-    dial = '[data-testid*="role-play"], [data-testid="use-text-chat-button"], button:has-text("Role Play"), button:has-text("dialogue")'
-    is_vid = any(k in page.url for k in ("/lecture/", "/video/")) or page.locator(
-        "video, .rc-VideoPlayer, [data-testid*='video']"
-    ).first.is_visible(timeout=2500)
-    is_lab = any(k in page.url for k in ("/lab/", "/ungradedLab/", "/programming/")) or page.locator(
-        'form[data-testid="lti-launch-form"], [aria-label="Coursera Honor Code"], button:has-text("Launch App")'
-    ).first.is_visible(timeout=1000)
-    is_quiz = any(k in page.url for k in ("/exam/", "/quiz/", "/assignment")) or page.locator(
-        '[data-testid="CoverPageActionButton"], button:has-text("Try again")'
-    ).first.is_visible(timeout=2000)
-    is_reading = "/supplement" in page.url or page.locator(
-        '[data-testid="mark-complete"], button:has-text("Mark as completed")'
-    ).first.is_visible(timeout=1000)
 
-    if is_vid:
-        handle_video(page, cfg)
-    elif is_lab:
-        handle_lab(page, cfg)
-    elif is_quiz:
-        handle_quiz(page, cfg)
-    elif is_reading:
-        handle_reading(page, cfg)
-    elif any(k in page.url for k in ("/roleplay/", "/dialogue/")) or page.locator(dial).first.is_visible(timeout=1000):
-        handle_dialogue(page, cfg)
-    elif page.locator('button:has-text("Reply")').first.is_visible(timeout=1000):
+    url = page.url
+    if any(k in url for k in ("/peer/", "/peer-assignment/")):
+        handle_peer(page, cfg)
+    elif any(k in url for k in ("/discussionPrompt/", "/discussion/", "/discussions/")):
         handle_discussion(page, cfg)
+    elif any(k in url for k in ("/lecture/", "/video/")):
+        handle_video(page, cfg)
+    elif any(k in url for k in ("/lab/", "/ungradedLab/", "/programming/")):
+        handle_lab(page, cfg)
+    elif any(k in url for k in ("/exam/", "/quiz/")):
+        handle_quiz(page, cfg)
+    elif "/supplement" in url:
+        handle_reading(page, cfg)
+    elif page.locator('button[role="tab"]:has-text("My submission"), [data-track-page="peer_review_my_project"]').first.is_visible(timeout=5000):
+        handle_peer(page, cfg)
+    elif page.locator('button:has-text("Reply")').first.is_visible(timeout=5000):
+        handle_discussion(page, cfg)
+    elif page.locator("video, .rc-VideoPlayer, [data-testid*='video']").first.is_visible(timeout=3000):
+        handle_video(page, cfg)
+    elif page.locator('form[data-testid="lti-launch-form"], [aria-label="Coursera Honor Code"], button:has-text("Launch App")').first.is_visible(timeout=3000):
+        handle_lab(page, cfg)
+    elif page.locator('[data-testid="CoverPageActionButton"], button:has-text("Try again")').first.is_visible(timeout=3000):
+        handle_quiz(page, cfg)
+    elif page.locator('[data-testid*="role-play"], [data-testid="use-text-chat-button"], button:has-text("Role Play"), button:has-text("dialogue")').first.is_visible(timeout=3000):
+        handle_dialogue(page, cfg)
     else:
         handle_reading(page, cfg)
 
 
 def process_items(page: Page, cfg: Settings) -> None:
+
     """Iterate through course items up to max_items limit."""
     for step in range(cfg.max_items):
         orig_url = page.url

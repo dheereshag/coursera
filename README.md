@@ -10,8 +10,10 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 | **Lab** | Scrolls to bottom, checks Honor Code agreement checkbox (`[aria-label="Coursera Honor Code"]`), launches app if available in background, and clicks "Mark as completed" (`data-testid="mark-complete"`) |
 | **Reading** | Scrolls through content, clicks "Mark as completed" (`data-testid="mark-complete"`), skips if already completed, and advances |
 | **Dialogue / Roleplay** | Clicks "Use text chat" $\to$ "Start Role Play" $\to$ "End Role Play" $\to$ confirms "Yes, end the Role Play" modal and advances |
-| **Discussion** | Types `"ok"` into chatbox, clicks "Reply", waits 10s for post registration, and advances |
+| **Discussion** | 10-second stabilization wait, opens reply composer if collapsed, types `"ok"`, clicks "Reply", waits 12s, and advances |
+| **Peer Assignment** | 10s load wait, selects "My submission" tab, fills title with "test", uploads `test.png` via Uppy file chooser, polls up to 120s for processing, checks Honor Code, submits, confirms modal, and advances |
 | **Quiz** | Queries OpenRouter LLM (`poolside/laguna-s-2.1:free`) with reasoning enabled via `requests` and `tenacity` retry backoff (3 attempts, 2-10s exponential backoff); aborts without submitting if answers cannot be obtained; checks honor code agreement, submits, confirms modal, polls for `TopBannerCTAButton` ("Next item") with periodic reload on pending evaluation, and clicks to advance |
+
 
 ## Anti-Bot Stealth & Evasion
 
@@ -64,7 +66,11 @@ Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module) organized into dom
 - **Interactive Subpackage (`items/interactive/`)**:
   - `dialogue.py`: Roleplay / dialogue start, text chat mode, end, and confirmation.
   - `discussion.py`: Discussion response input with 10s wait buffer.
+- **Peer Assignment Subpackage (`items/peer/`)**:
+  - `coordinator.py`: My submission tab, title input, upload, Honor Code check, submit, and next item advance.
+  - `upload.py`: Uppy Dashboard file chooser interaction and direct file input fallback.
 - **Navigation Subpackage (`items/navigation/`)**:
+
   - `navigator.py`: Resume and next item progression navigation with direct href fallback.
   - `dialogs.py`: Pendo guide, honor code, and transient dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
