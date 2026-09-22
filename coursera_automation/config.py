@@ -25,15 +25,12 @@ class Settings:
     headless: bool = os.getenv("COURSERA_HEADLESS", "false").lower() == "true"
     timeout_ms: int = int(os.getenv("COURSERA_TIMEOUT_MS", "30000"))
     max_items: int = int(os.getenv("COURSERA_MAX_ITEMS", "25"))
-    nvidia_api_key: str = os.getenv(
-        "NVIDIA_API_KEY",
-        "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",
+    openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
+    openrouter_base_url: str = os.getenv(
+        "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
     )
-    nvidia_base_url: str = os.getenv(
-        "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
-    )
-    nvidia_model: str = os.getenv(
-        "NVIDIA_MODEL", "nvidia/nemotron-3-ultra-550b-a55b"
+    openrouter_model: str = os.getenv(
+        "OPENROUTER_MODEL", "nvidia/nemotron-3-ultra-550b-a55b:free"
     )
 
 

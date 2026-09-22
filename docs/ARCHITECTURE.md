@@ -13,7 +13,7 @@ sequenceDiagram
     participant Course as coursera_automation.course
     participant Disp as items.dispatcher
     participant Item as Video/Lab/Reading/Quiz/Dialogue/Discussion
-    participant LLM as NVIDIA GLM-5.3
+    participant LLM as OpenRouter Laguna-2.1
     participant Dial as items.navigation.dialogs
     participant Nav as items.navigation.navigator
 
@@ -64,6 +64,6 @@ sequenceDiagram
 - **Quiz Subpackage (`items/quiz/`)**:
   - `coordinator.py`: Complete quiz lifecycle coordination and CTA interactions.
   - `parser.py`: Question DOM extraction and classification.
-  - `solver.py`: NVIDIA LLM API integration.
+  - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
   - `status.py`: Completed/passed quiz and review-mode detection.
   - `submit.py`: Quiz submission, modal confirmation, and 'Reviewing your submission' $\to$ 'Your grade:' evaluation polling.

@@ -22,7 +22,7 @@ def test_wait_for_evaluation_immediate_done() -> None:
 def test_wait_for_evaluation_reloads_when_pending() -> None:
     """Verify _wait_for_evaluation reloads page when review is pending."""
     page = MagicMock()
-    page.locator.return_value.first.is_visible.side_effect = ([True, False] * 10) + [False, True]
+    page.locator.return_value.first.is_visible.side_effect = ([True, False] * 10) + [False, True, True]
     _wait_for_evaluation(page, max_wait_sec=60)
     page.reload.assert_called_once()
 

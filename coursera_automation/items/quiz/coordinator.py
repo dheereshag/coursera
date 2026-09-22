@@ -20,24 +20,20 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     page.wait_for_load_state("domcontentloaded")
     page.wait_for_timeout(2000)
     dismiss_dialogs(page)
-    rev_sel = ':text("Reviewing your submission"), :text("hang tight")'
-    if page.locator(rev_sel).first.is_visible(timeout=1000):
-        logger.info("Quiz submission under review. Waiting for results...")
+    if page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible(timeout=1000):
         _wait_for_evaluation(page, max_wait_sec=300)
         return
     if is_quiz_completed(page):
         logger.info("Quiz already completed or passed. Ready for next item.")
         return
 
-    cta_sel = '[data-testid="CoverPageActionButton"], button:has-text("Try again"), button:has-text("Start"), button:has-text("Resume")'
-    if (cta := page.locator(cta_sel).first).is_visible(timeout=4000):
+    if (cta := page.locator('[data-testid="CoverPageActionButton"], button:has-text("Try again"), button:has-text("Start"), button:has-text("Resume")').first).is_visible(timeout=4000):
         try:
             cta.click(force=True, timeout=5000)
-        except Error as exc:
-            logger.warning("Quiz CTA click bypassed (%s); checking questions...", exc)
-        page.wait_for_timeout(5000)
+        except Error:
+            pass
         dismiss_dialogs(page)
-        page.wait_for_timeout(5000)
+        page.wait_for_timeout(10000)
 
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     logger.info("Extracted %d quiz question(s).", len(questions))
@@ -45,7 +41,10 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         logger.info("No active/unsubmitted quiz questions found. Skipping.")
         return
 
-    answers = solve_quiz_with_llm(questions, cfg)
+    if not (answers := solve_quiz_with_llm(questions, cfg)):
+        logger.error("No valid answers received from LLM; aborting quiz submission.")
+        return
+
     logger.info("Quiz answers received: %s", answers)
     for idx, q_loc in enumerate(q_locs):
         for opt in answers.get(idx, []):

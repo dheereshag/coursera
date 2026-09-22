@@ -1,36 +1,41 @@
-"""Tests for quiz solver parsing and JSON extraction."""
+"""Tests for quiz solver parsing, JSON extraction, and tenacity retries."""
 
 from unittest.mock import MagicMock, patch
+
+import requests
 
 from coursera_automation.config import Settings
 from coursera_automation.items.quiz.solver import solve_quiz_with_llm
 
 
+def _mock_resp(content: str) -> MagicMock:
+    """Create mock requests response with json payload."""
+    resp = MagicMock()
+    resp.json.return_value = {"choices": [{"message": {"content": content}}]}
+    return resp
+
+
 def test_solve_quiz_with_llm_json() -> None:
-    """Verify solver parses valid JSON response from LLM."""
-    chunk = MagicMock()
-    chunk.choices = [MagicMock(delta=MagicMock(content='```json\n{"answers": [{"index": 0, "selected": ["Option A"]}]}\n```', reasoning_content="thinking"))]
-
-    with patch("coursera_automation.items.quiz.solver.OpenAI") as mock_openai:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = [chunk]
-        mock_openai.return_value = mock_client
-
-        cfg = Settings()
-        questions = [{"index": 0, "text": "Q1?", "options": ["Option A", "Option B"]}]
-        answers = solve_quiz_with_llm(questions, cfg)
-
-        assert answers == {0: ["Option A"]}
+    """Verify solver parses valid JSON response from OpenRouter."""
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post:
+        mock_post.return_value = _mock_resp('{"answers": [{"index": 0, "selected": ["Option A"]}]}')
+        assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["Option A"]}
+        payload = mock_post.call_args[1]["json"]
+        assert payload["model"] == "nvidia/nemotron-3-ultra-550b-a55b:free" and payload["reasoning"] == {"enabled": True}
 
 
-def test_solve_quiz_multiselect() -> None:
-    """Verify solver parses multiselect answers."""
-    chunk = MagicMock()
-    chunk.choices = [MagicMock(delta=MagicMock(content='{"answers": [{"index": 0, "selected": ["Opt A", "Opt B"]}]}', reasoning_content=None))]
-    with patch("coursera_automation.items.quiz.solver.OpenAI") as mock_openai:
-        mock_client = MagicMock()
-        mock_client.chat.completions.create.return_value = [chunk]
-        mock_openai.return_value = mock_client
-        cfg = Settings()
-        questions = [{"index": 0, "text": "Q1?", "options": ["Opt A", "Opt B"], "type": "multiselect"}]
-        assert solve_quiz_with_llm(questions, cfg) == {0: ["Opt A", "Opt B"]}
+def test_solve_quiz_retry_on_request_error() -> None:
+    """Verify solver retries on RequestException and succeeds on subsequent attempt."""
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
+        mock_post.side_effect = [
+            requests.RequestException("503 Service Temporarily Unavailable"),
+            _mock_resp('{"answers": [{"index": 0, "selected": ["Opt B"]}]}'),
+        ]
+        assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["Opt B"]}
+
+
+def test_solve_quiz_exhausted_retries_returns_empty() -> None:
+    """Verify solver returns empty dict when all retries fail."""
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
+        mock_post.side_effect = requests.RequestException("Service overloaded")
+        assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {}

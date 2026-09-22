@@ -9,6 +9,34 @@ from coursera_automation.config import Settings
 
 logger = logging.getLogger(__name__)
 
+_NEXT_BTN = '[data-testid="TopBannerCTAButton"]'
+
+
+def _click_next_after_grade(page: Page) -> bool:
+    """Poll for the TopBannerCTAButton and click it; return True if clicked."""
+    for _ in range(12):  # up to ~60 s
+        btn = page.locator(_NEXT_BTN).first
+        if btn.is_visible(timeout=5000):
+            href = btn.get_attribute("href")
+            orig = page.url
+            try:
+                btn.scroll_into_view_if_needed()
+                btn.click(timeout=3000)
+            except Error:
+                btn.click(force=True)
+            if page.url == orig and href:
+                page.goto(
+                    href if href.startswith("http") else f"https://www.coursera.org{href}",
+                    wait_until="domcontentloaded",
+                )
+            page.wait_for_load_state("domcontentloaded")
+            page.wait_for_timeout(3000)
+            logger.info("Clicked 'Next item' after quiz grading.")
+            return True
+        page.wait_for_timeout(5000)
+    logger.warning("'Next item' button not found after grading.")
+    return False
+
 
 def _wait_for_evaluation(page: Page, max_wait_sec: int = 300) -> None:
     """Poll up to max_wait_sec for Coursera quiz grading to complete."""
@@ -20,6 +48,7 @@ def _wait_for_evaluation(page: Page, max_wait_sec: int = 300) -> None:
         has_grade = page.locator(grade_sel).first.is_visible(timeout=1000)
         if has_grade and not is_rev:
             logger.info("Quiz evaluation completed; results received ('Your grade:').")
+            _click_next_after_grade(page)
             return
         if is_rev:
             logger.info("Submission under review ('Reviewing your submission, hang tight')...")
@@ -56,3 +85,4 @@ def submit_quiz(page: Page, cfg: Settings) -> None:
             logger.debug("Modal dismissal wait: %s", exc)
     _wait_for_evaluation(page, max_wait_sec=300)
     page.wait_for_timeout(2000)
+
