@@ -30,7 +30,7 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
         handle_video(page, cfg)
     elif any(k in url for k in ("/lab/", "/ungradedLab/", "/programming/")):
         handle_lab(page, cfg)
-    elif any(k in url for k in ("/exam/", "/quiz/")):
+    elif any(k in url for k in ("/exam/", "/quiz/", "/assignment-")):
         handle_quiz(page, cfg)
     elif "/supplement" in url:
         handle_reading(page, cfg)
@@ -51,7 +51,6 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
 
 
 def process_items(page: Page, cfg: Settings) -> None:
-
     """Iterate through course items up to max_items limit."""
     for step in range(cfg.max_items):
         orig_url = page.url

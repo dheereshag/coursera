@@ -15,7 +15,7 @@ def is_quiz_completed(page: Page) -> bool:
         return False
     if page.locator('[data-testid="CoverPageActionButton"], [data-e2e="CoverPageActionButton"], button:has-text("Resume assignment"), button:has-text("Resume")').first.is_visible():
         return False
-    if page.locator('[data-testid="TopBannerCTAButton"]').first.is_visible(timeout=500):
+    if page.locator('[data-testid="TopBannerCTAButton"], button:has-text("Go to next item"), button:has-text("Next item")').first.is_visible(timeout=500):
         return True
     has_passed = page.locator(
         ':text("Your grade:"), :text("Passed"), :text("Grade received"), :text("You passed")'

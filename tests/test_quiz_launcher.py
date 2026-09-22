@@ -155,8 +155,45 @@ def test_ensure_quiz_launched_ignores_disabled_button() -> None:
 def test_is_on_cover_page() -> None:
     """Verify is_on_cover_page returns True if CoverPageActionButton is visible."""
     page = MagicMock()
+    page.locator.return_value.first.count.return_value = 1
     page.locator.return_value.first.is_visible.return_value = True
+    page.locator.return_value.first.inner_text.return_value = "Resume assignment"
     assert is_on_cover_page(page) is True
 
     page.locator.return_value.first.is_visible.return_value = False
     assert is_on_cover_page(page) is False
+
+
+def test_ensure_quiz_launched_ignores_weekly_learning_target_widget() -> None:
+    """Verify weekly target widget with 'Not started' is ignored in favor of CoverPageActionButton."""
+    page = MagicMock()
+    target_widget = MagicMock(
+        count=lambda: 1,
+        is_visible=lambda: True,
+        inner_text=lambda: "Set up a weekly learning target\nSet up a weekly learning target, Not started",
+    )
+    cta = MagicMock(
+        count=lambda: 1,
+        is_visible=lambda: True,
+        get_attribute=lambda a: "false" if a == "aria-disabled" else None,
+        inner_text=lambda: "Resume assignment",
+    )
+
+    def locator_mock(sel: str) -> MagicMock:
+        if "CoverPageActionButton" in sel:
+            return MagicMock(first=cta)
+        if "target" in sel:
+            return MagicMock(first=target_widget)
+        return MagicMock(first=MagicMock(is_visible=lambda: False, count=lambda: 0))
+
+    page.locator.side_effect = locator_mock
+
+    with patch("coursera_automation.items.quiz.launcher.dismiss_dialogs"), patch(
+        "coursera_automation.items.quiz.launcher.is_quiz_completed", return_value=False
+    ):
+        result = ensure_quiz_launched(page, timeout_ms=1000)
+
+    assert result is True
+    cta.click.assert_called_once_with(force=True, timeout=5000)
+    target_widget.click.assert_not_called()
+

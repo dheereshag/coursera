@@ -5,7 +5,7 @@ import logging
 from playwright.sync_api import Error, Page
 
 logger = logging.getLogger(__name__)
-NEXT_BTN = '[data-testid="TopBannerCTAButton"]'
+NEXT_BTN = '[data-testid="TopBannerCTAButton"], [data-testid*="next-item"], button:has-text("Go to next item"), button:has-text("Next item"), a:has-text("Next item")'
 
 
 def poll_and_click_next(page: Page, max_wait_sec: int = 300) -> bool:

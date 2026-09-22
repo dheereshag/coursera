@@ -76,3 +76,13 @@ def test_is_quiz_completed_false_on_cover_page_no_questions() -> None:
     page.locator.side_effect = locator_mock
     assert is_quiz_completed(page) is False
 
+
+def test_is_quiz_completed_true_when_go_to_next_item_visible() -> None:
+    """Verify is_quiz_completed returns True when 'Go to next item' is visible."""
+    page = MagicMock()
+    page.locator.side_effect = lambda s: MagicMock(
+        first=MagicMock(is_visible=MagicMock(return_value="Go to next item" in s))
+    )
+    assert is_quiz_completed(page) is True
+
+
