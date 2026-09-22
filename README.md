@@ -55,7 +55,7 @@ Automation uses Playwright's `launch_persistent_context` stored in `.browser_dat
 
 ## Architecture Overview
 
-Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module) organized into domain subpackages:
+Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per production module; test suites exempt) organized into domain subpackages:
 - `coursera_automation/config.py`: Environment configuration and credentials.
 - `coursera_automation/auth.py`: Authentication steps with manual Arkose puzzle wait.
 - `coursera_automation/instances.py`: Multi-instance configuration loader and fallback.

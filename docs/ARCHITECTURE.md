@@ -1,6 +1,6 @@
 # Architecture & Design
 
-This project automates Coursera workflows using Playwright in Python, strictly adhering to NASA JPL Rule 4 (≤ 60 lines per module) and the 3-step verification loop.
+This project automates Coursera workflows using Playwright in Python, strictly adhering to NASA JPL Rule 4 (≤ 60 lines per production module; test suites exempt) and the 3-step verification loop.
 
 ## Architecture
 
@@ -43,7 +43,7 @@ sequenceDiagram
     end
 ```
 
-## Modular Decomposition (NASA JPL Rule 4)
+## Modular Decomposition (NASA JPL Rule 4 - Production Modules)
 
 - `coursera_automation/config.py`: Environment configuration and typed dataclass.
 - `coursera_automation/instances.py`: Multi-instance configuration loading and single-instance fallback.
