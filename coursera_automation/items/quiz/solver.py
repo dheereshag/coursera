@@ -6,24 +6,19 @@ import re
 from typing import Any
 
 import requests
-from tenacity import (
-    before_sleep_log,
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
+import tenacity as tc
 
 from coursera_automation.config import Settings
 
 logger = logging.getLogger(__name__)
+EXC = (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, ValueError)
 
 
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=10),
-    retry=retry_if_exception_type((requests.RequestException, json.JSONDecodeError, KeyError, TypeError, ValueError)),
-    before_sleep=before_sleep_log(logger, logging.WARNING),
+@tc.retry(
+    stop=tc.stop_after_attempt(3),
+    wait=tc.wait_exponential(multiplier=1, min=2, max=10),
+    retry=tc.retry_if_exception_type(EXC),
+    before_sleep=tc.before_sleep_log(logger, logging.WARNING),
     reraise=True,
 )
 def _query_and_parse(cfg: Settings, prompt: str) -> dict[int, list[str]]:
@@ -39,7 +34,11 @@ def _query_and_parse(cfg: Settings, prompt: str) -> dict[int, list[str]]:
     resp.raise_for_status()
     raw = resp.json()["choices"][0]["message"]["content"]
     data = json.loads(re.sub(r"```json|```", "", raw).strip())
-    if ans := {it["index"]: it.get("selected", []) for it in data.get("answers", [])}:
+    ans = {
+        it["index"]: [v] if isinstance(v := it.get("selected") or it.get("text") or it.get("answer") or [], str) else list(v)
+        for it in data.get("answers", [])
+    }
+    if ans:
         logger.info("Parsed %d answer(s): %s", len(ans), ans)
         return ans
     raise ValueError(f"Empty answers in payload: {raw}")
@@ -48,13 +47,13 @@ def _query_and_parse(cfg: Settings, prompt: str) -> dict[int, list[str]]:
 def solve_quiz_with_llm(questions: list[dict[str, Any]], cfg: Settings) -> dict[int, list[str]]:
     """Query OpenRouter LLM with tenacity retry backoff and parse JSON answers."""
     prompt = (
-        "Answer these quiz questions. For 'single', choose 1 option. For 'multiselect', choose all.\n"
-        'Respond ONLY in JSON: {"answers": [{"index": 0, "selected": ["option text"]}]}\n\n'
+        "Answer questions: 'single'=1 option, 'multiselect'=all, 'textarea'=concise written text.\n"
+        'Respond ONLY in JSON: {"answers": [{"index": 0, "selected": ["option or text"]}]}\n\n'
         f"Questions:\n{json.dumps(questions, indent=2)}"
     )
     logger.info("Querying OpenRouter (%s) with %d questions...", cfg.openrouter_model, len(questions))
     try:
         return _query_and_parse(cfg, prompt)
-    except (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+    except EXC as exc:
         logger.error("LLM solver failed after retries: %s", exc)
         return {}

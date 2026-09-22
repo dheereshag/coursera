@@ -8,11 +8,12 @@ from coursera_automation.items.quiz.parser import _detect_type, _extract_prompt
 
 
 def test_detect_type() -> None:
-    """Verify _detect_type returns multiselect for checkboxes, single otherwise."""
-    m1, m2 = MagicMock(), MagicMock()
-    m1.locator.return_value.count.return_value = 2
-    m2.locator.return_value.count.return_value = 0
-    assert _detect_type(m1) == "multiselect" and _detect_type(m2) == "single"
+    """Verify _detect_type classifies textarea, multiselect, and single."""
+    m1, m2, m3 = MagicMock(), MagicMock(), MagicMock()
+    m1.locator.side_effect = lambda s: MagicMock(count=lambda: 2 if "checkbox" in s else 0)
+    m2.locator.side_effect = lambda s: MagicMock(count=lambda: 0)
+    m3.locator.side_effect = lambda s: MagicMock(count=lambda: 1 if "textarea" in s else 0)
+    assert _detect_type(m1) == "multiselect" and _detect_type(m2) == "single" and _detect_type(m3) == "textarea"
 
 
 def test_extract_prompt_cml() -> None:

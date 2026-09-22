@@ -68,8 +68,8 @@ sequenceDiagram
   - `navigator.py`: Resume / Get started and next item progression navigation with direct `href` fallback.
   - `dialogs.py`: Pendo guide, Honor Code, and transient popup dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
-  - `coordinator.py`: Complete quiz lifecycle coordination and CTA interactions.
-  - `parser.py`: Question DOM extraction and classification.
+  - `coordinator.py`: Complete quiz lifecycle coordination, option selection, and textarea answer filling.
+  - `parser.py`: Question DOM extraction, single/multiselect/textarea classification, and aria-labelledby/cml prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
   - `status.py`: Completed/passed quiz and review-mode detection.
   - `submit.py`: Quiz submission and modal confirmation dialog handling.

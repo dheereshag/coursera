@@ -39,3 +39,10 @@ def test_solve_quiz_exhausted_retries_returns_empty() -> None:
     with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
         mock_post.side_effect = requests.RequestException("Service overloaded")
         assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {}
+
+
+def test_solve_quiz_text_answer() -> None:
+    """Verify solver parses string text answer for textarea questions."""
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post:
+        mock_post.return_value = _mock_resp('{"answers": [{"index": 0, "text": "Written response"}]}')
+        assert solve_quiz_with_llm([{"index": 0, "type": "textarea"}], Settings()) == {0: ["Written response"]}

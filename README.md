@@ -14,7 +14,7 @@ Automated workflow for logging into Coursera, navigating to courses, resuming pr
 | **Dialogue / Roleplay** | Clicks "Use text chat" $\to$ "Start Role Play" $\to$ "End Role Play" $\to$ confirms "Yes, end the Role Play" modal and advances |
 | **Discussion** | 10-second stabilization wait, opens reply composer if collapsed, types `"ok"`, clicks "Reply", waits 12s, and advances |
 | **Peer Assignment** | 10s load wait, selects "My submission" tab, fills title with "test", uploads `test.png` via Uppy file chooser, polls up to 120s for processing, checks Honor Code, submits, confirms modal, and advances |
-| **Quiz** | Queries OpenRouter LLM (`poolside/laguna-s-2.1:free`) with reasoning enabled via `requests` and `tenacity` retry backoff (3 attempts, 2-10s exponential backoff); aborts without submitting if answers cannot be obtained; checks honor code agreement, submits, confirms modal, polls for `TopBannerCTAButton` ("Next item") with periodic reload on pending evaluation, and clicks to advance |
+| **Quiz / Graded Assignment** | Parses single-choice, multiple-choice, and auto-gradable `<textarea>` questions; queries OpenRouter LLM (`poolside/laguna-s-2.1:free`) with reasoning enabled via `requests` and `tenacity` retry backoff (3 attempts, 2-10s exponential backoff); fills textarea inputs and selects options; aborts without submitting if answers cannot be obtained; checks honor code agreement, submits, confirms modal, polls for `TopBannerCTAButton` ("Next item") with periodic reload on pending evaluation, and clicks to advance |
 
 
 ## Anti-Bot Stealth & Evasion
@@ -76,8 +76,8 @@ Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per module) organized into dom
   - `navigator.py`: Resume and next item progression navigation with direct href fallback.
   - `dialogs.py`: Pendo guide, honor code, and transient dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
-  - `coordinator.py`: Complete quiz lifecycle orchestration.
-  - `parser.py`: Question DOM extraction and classification.
+  - `coordinator.py`: Complete quiz lifecycle orchestration with option selection and textarea answer filling.
+  - `parser.py`: Question DOM extraction, single/multiselect/textarea classification, and aria-labelledby/cml prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
   - `status.py`: Completed/passed quiz and review-mode detection.
   - `submit.py`: Quiz submission and confirmation dialog handling.
