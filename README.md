@@ -79,6 +79,7 @@ Strictly adheres to NASA JPL Rule 4 (≤ 60 lines per production module; test su
   - `dialogs.py`: Pendo guide, honor code, and transient dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
   - `coordinator.py`: Complete quiz lifecycle orchestration with option selection and textarea answer filling.
+  - `launcher.py`: Quiz attempt initiation, cover page CTA detection (`CoverPageActionButton`), scrolling, clicking, and attempt transition.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
   - `parser.py`: Question DOM extraction, single/multiselect/textarea classification, and aria-labelledby/cml prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.

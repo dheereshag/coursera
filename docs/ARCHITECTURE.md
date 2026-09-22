@@ -70,6 +70,7 @@ sequenceDiagram
   - `dialogs.py`: Pendo guide, Honor Code, weekly learning target (Cancel), and transient popup dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
   - `coordinator.py`: Complete quiz lifecycle coordination, option selection, and textarea answer filling.
+  - `launcher.py`: Quiz attempt initiation, cover page CTA detection (`CoverPageActionButton`), scrolling, clicking, and attempt transition.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
   - `parser.py`: Question DOM extraction, single/multiselect/textarea classification, and aria-labelledby/cml prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.

@@ -53,3 +53,15 @@ def test_handle_quiz_empty_answers_aborts() -> None:
         handle_quiz(page, cfg)
         mock_sub.assert_not_called()
     agree.click.assert_not_called()
+
+
+def test_handle_quiz_aborts_if_still_on_cover_page() -> None:
+    """Verify handle_quiz aborts without extracting questions if still on cover page."""
+    page, cfg = MagicMock(), Settings()
+    page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=lambda *a, **kw: ("CoverPageActionButton" in s)))
+    with patch("coursera_automation.items.quiz.coordinator.ensure_quiz_launched"), patch(
+        "coursera_automation.items.quiz.coordinator.wait_and_extract_questions"
+    ) as mock_extract:
+        handle_quiz(page, cfg)
+        mock_extract.assert_not_called()
+
