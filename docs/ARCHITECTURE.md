@@ -67,7 +67,7 @@ sequenceDiagram
 - **Navigation Subpackage (`items/navigation/`)**:
 
   - `navigator.py`: Resume / Get started and next item progression navigation with direct `href` fallback.
-  - `dialogs.py`: Pendo guide, Honor Code, and transient popup dialog dismissal.
+  - `dialogs.py`: Pendo guide, Honor Code, weekly learning target (Cancel), and transient popup dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
   - `coordinator.py`: Complete quiz lifecycle coordination, option selection, and textarea answer filling.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.

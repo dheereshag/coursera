@@ -50,6 +50,7 @@ Automation uses Playwright's `launch_persistent_context` stored in `.browser_dat
 - Feature announcements (e.g. "We added sound effects" popup cross icon)
 - Coursera Honor Code modal (`HonorCodeModal` with "Continue" button)
 - Quiz attempt limit warnings (`StartAttemptModal` with "Continue" button)
+- Weekly learning target / progress modal (`select-goal-days-btn-group` with "Cancel" button)
 - End-screen video cards and bottom-bar next buttons
 
 ## Architecture Overview

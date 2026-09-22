@@ -100,12 +100,13 @@ For any Python modifications:
 
 ## 9. NASA JPL Rule 4: Single Sheet of Paper Architecture (≤ 60 Lines)
 
-**Every file and function must fit on a single printed sheet of paper.**
+**Every production file and function must fit on a single printed sheet of paper.**
 
 Derived from Gerard J. Holzmann's NASA JPL *Power of 10* safety-critical code rules (Rule 4):
 - **Function Limit**: No function should exceed **60 lines of code** (single sheet of standard reference paper).
-- **Module Limit**: Service files must be compact and single-purpose, targeting **≤ 60 lines per file** (excluding docstrings where reasonable, hard ceiling of 60 lines).
-- **Folder / Subpackage Hierarchy**: Decompose multi-step or multi-concern domains into structured subpackages (e.g. `app/services/detector/`, `app/services/ocr/`, `app/services/plate_rules/`) rather than large monolithic files.
+- **Module Limit**: Production and service files must be compact and single-purpose, targeting **≤ 60 lines per file** (excluding docstrings where reasonable, hard ceiling of 60 lines).
+- **Exclusion of Test Case Files**: Test suites and test files (e.g. `tests/` directory or files matching `test_*.py`) are explicitly **exempt** from the 60-line file limit. Test files may be as long as necessary to ensure thorough test coverage, multiple test cases, and readable fixtures.
+- **Folder / Subpackage Hierarchy**: Decompose multi-step or multi-concern domains into structured subpackages (e.g. `coursera_automation/items/quiz/`, `coursera_automation/items/navigation/`) rather than large monolithic files.
 - **Single Cohesive Concern**: Each module must do one thing (e.g. geometry, occupancy policy, enhancement, spatial clustering).
 - **Harmony with Surgical Changes (§3)**: Apply this standard to new or refactored components; do not arbitrarily refactor untouched adjacent code unless requested.
 

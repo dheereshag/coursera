@@ -7,10 +7,7 @@ from playwright.sync_api import Locator, Page
 logger = logging.getLogger(__name__)
 
 PENDO_SEL = '#pendo-guide-container, ._pendo-step-container-size, [id^="pendo-g-"]'
-PENDO_BTN_SEL = (
-    'button._pendo-close-guide, button[id^="pendo-close-guide"], '
-    'button:has-text("Okay, got it"), #pendo-guide-container button'
-)
+PENDO_BTN_SEL = 'button._pendo-close-guide, button[id^="pendo-close-guide"], button:has-text("Okay, got it"), #pendo-guide-container button'
 
 
 def dismiss_pendo(page: Page) -> None:
@@ -20,9 +17,7 @@ def dismiss_pendo(page: Page) -> None:
         btn.click(force=True)
         page.wait_for_timeout(300)
     if (guide := page.locator(PENDO_SEL).first).is_visible(timeout=200):
-        guide.evaluate(
-            '(el) => { el.closest("._pendo-step-container-size")?.remove() || el.remove(); }'
-        )
+        guide.evaluate('(el) => { el.closest("._pendo-step-container-size")?.remove() || el.remove(); }')
 
 
 def dismiss_dialogs(page: Page) -> None:
@@ -40,7 +35,11 @@ def dismiss_dialogs(page: Page) -> None:
     if (att := page.locator('[data-testid="StartAttemptModal__primary-button"]').first).is_visible(timeout=400):
         logger.info("Dismissing attempt warning modal (Continue)...")
         att.click(force=True)
-    for sel in ('.ab-close-button', 'button[aria-label*="close" i]', 'button:has-text("Got it")'):
+    for sel in (
+        '.ab-close-button', 'button[aria-label*="close" i]', 'button:has-text("Got it")',
+        '[data-testid="select-goal-days-btn-group"] button:has-text("Cancel")',
+        '[aria-modal="true"]:has-text("weekly learning target") button:has-text("Cancel")',
+    ):
         if (btn := page.locator(sel).first).is_visible(timeout=300):
             btn.click(force=True)
             break
@@ -49,7 +48,6 @@ def dismiss_dialogs(page: Page) -> None:
 def register_dialog_handlers(page: Page) -> None:
     """Register Playwright locator handlers for unexpected transient overlays."""
     def _handle_pendo(loc: Locator) -> None:
-        logger.info("Pendo guide intercepted by locator handler.")
         btn = loc.locator(PENDO_BTN_SEL).first
         if btn.is_visible(timeout=500):
             btn.click(force=True)
@@ -57,3 +55,5 @@ def register_dialog_handlers(page: Page) -> None:
             loc.evaluate('(el) => { el.closest("._pendo-step-container-size")?.remove() || el.remove(); }')
 
     page.add_locator_handler(page.locator(PENDO_SEL).first, _handle_pendo)
+    target = page.locator('[data-testid="select-goal-days-step"], [aria-modal="true"]:has-text("weekly learning target")').first
+    page.add_locator_handler(target, lambda loc: loc.page.locator('[data-testid="select-goal-days-btn-group"] button:has-text("Cancel")').first.click(force=True))
