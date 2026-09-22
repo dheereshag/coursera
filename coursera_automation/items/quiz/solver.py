@@ -25,14 +25,13 @@ def _query_and_parse(cfg: Settings, prompt: str) -> dict[int, list[str]]:
     """Query OpenRouter chat completion and parse answers, retrying on errors."""
     url = f"{cfg.openrouter_base_url.rstrip('/')}/chat/completions"
     headers = {"Authorization": f"Bearer {cfg.openrouter_api_key}", "Content-Type": "application/json"}
-    payload = {
-        "model": cfg.openrouter_model,
-        "messages": [{"role": "user", "content": prompt}],
-        "reasoning": {"enabled": True},
-    }
+    payload = {"model": cfg.openrouter_model, "messages": [{"role": "user", "content": prompt}], "reasoning": {"enabled": True}}
     resp = requests.post(url, headers=headers, json=payload, timeout=60)
     resp.raise_for_status()
-    raw = resp.json()["choices"][0]["message"]["content"]
+    res_data = resp.json()
+    if "error" in res_data:
+        raise ValueError(f"OpenRouter API error: {res_data['error']}")
+    raw = res_data["choices"][0]["message"]["content"]
     data = json.loads(re.sub(r"```json|```", "", raw).strip())
     ans = {
         it["index"]: [v] if isinstance(v := it.get("selected") or it.get("text") or it.get("answer") or [], str) else list(v)

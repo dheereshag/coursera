@@ -14,8 +14,6 @@ from .status import is_quiz_completed
 from .submit import NEXT_BTN, poll_and_click_next, submit_quiz
 
 logger = logging.getLogger(__name__)
-START_CTA = '[data-testid="CoverPageActionButton"], button:has-text("Start assignment"), button:has-text("Start"), button:has-text("Resume")'
-REV_SEL = ':text("Reviewing your submission"), :text("hang tight")'
 
 
 def handle_quiz(page: Page, cfg: Settings) -> None:
@@ -24,12 +22,14 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     page.wait_for_load_state("domcontentloaded")
     page.wait_for_timeout(2000)
     dismiss_dialogs(page)
-    if (cta := page.locator(START_CTA).first).is_visible(timeout=3000):
+    start_cta = '[data-testid="CoverPageActionButton"], button:has-text("Start assignment"), button:has-text("Start"), button:has-text("Resume")'
+    if (cta := page.locator(start_cta).first).is_visible(timeout=3000):
         with suppress(Error):
             cta.click(force=True, timeout=5000)
+        page.wait_for_load_state("domcontentloaded")
         dismiss_dialogs(page)
-        page.wait_for_timeout(3000)
-    elif page.locator(NEXT_BTN).first.is_visible(timeout=1000) or is_quiz_completed(page) or page.locator(REV_SEL).first.is_visible(timeout=1000):
+        page.wait_for_timeout(4000)
+    elif page.locator(NEXT_BTN).first.is_visible(timeout=1000) or is_quiz_completed(page) or page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible(timeout=1000):
         logger.info("Quiz already completed or under review. Polling next item CTA...")
         poll_and_click_next(page, max_wait_sec=300)
         return
@@ -44,8 +44,9 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         logger.error("No valid answers received from LLM; aborting quiz submission.")
         return
     for idx, q_loc in enumerate(q_locs):
-        ans = answers.get(idx, [])
-        ta = _find_textarea(q_loc)
+        with suppress(Error):
+            q_loc.scroll_into_view_if_needed(timeout=1000)
+        ans, ta = answers.get(idx, []), _find_textarea(q_loc)
         if ta.is_visible(timeout=200) and ans:
             ta.fill(ans[0])
         else:
@@ -53,7 +54,6 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
                 if (btn := q_loc.locator("label").filter(has_text=opt).first).is_visible():
                     btn.locator('input[type="checkbox"]').first.check(force=True) if btn.locator('input[type="checkbox"]').count() else btn.click(force=True)
         page.wait_for_timeout(300)
-
     if (agree := page.locator('#agreement-checkbox-base, label:has-text(", understand and agree.")').first).is_visible(timeout=cfg.timeout_ms):
         agree.click(force=True)
         page.wait_for_timeout(1000)

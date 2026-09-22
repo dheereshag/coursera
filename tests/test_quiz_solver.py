@@ -46,3 +46,11 @@ def test_solve_quiz_text_answer() -> None:
     with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post:
         mock_post.return_value = _mock_resp('{"answers": [{"index": 0, "text": "Written response"}]}')
         assert solve_quiz_with_llm([{"index": 0, "type": "textarea"}], Settings()) == {0: ["Written response"]}
+
+
+def test_solve_quiz_retry_on_api_error_payload() -> None:
+    """Verify solver retries when OpenRouter returns an error dict payload."""
+    resp_err = MagicMock(json=lambda: {"error": {"message": "Rate limited"}})
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
+        mock_post.side_effect = [resp_err, _mock_resp('{"answers": [{"index": 0, "selected": ["OK"]}]}')]
+        assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["OK"]}
