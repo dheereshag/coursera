@@ -10,7 +10,7 @@ from playwright.sync_api import Error, Locator, Page
 from coursera_automation.items.navigation.dialogs import dismiss_dialogs
 
 logger = logging.getLogger(__name__)
-Q_SEL = 'fieldset, [role="radiogroup"], [role="group"], .rc-Option, [id^="prompt-autoGradableResponseId"], textarea'
+Q_SEL = '[data-testid^="part-"], fieldset:not([aria-hidden="true"]), [role="radiogroup"], textarea:not([aria-hidden="true"])'
 
 
 def _detect_expected_count(page: Page) -> int:

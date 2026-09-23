@@ -57,3 +57,40 @@ def test_handle_quiz_fill_textarea() -> None:
     ):
         handle_quiz(page, cfg)
         ta.fill.assert_called_once_with("My answer text")
+
+
+def test_find_question_locs_scopes_to_part_containers() -> None:
+    """Verify _find_question_locs matches top-level question parts and ignores decorative fieldsets and shadow textareas."""
+    from coursera_automation.items.quiz.parser import _find_question_locs
+
+    page = MagicMock()
+    part_1, part_2, part_3 = MagicMock(), MagicMock(), MagicMock()
+    for p in (part_1, part_2, part_3):
+        p.locator.return_value.count.return_value = 0
+
+    def loc_mock(sel: str) -> MagicMock:
+        if "part-" in sel:
+            return MagicMock(all=lambda: [part_1, part_2, part_3])
+        return MagicMock(all=lambda: [MagicMock() for _ in range(14)])
+
+    page.locator.side_effect = loc_mock
+    locs = _find_question_locs(page)
+    assert len(locs) == 3
+    assert locs == [part_1, part_2, part_3]
+
+
+def test_find_textarea_ignores_shadow_textarea() -> None:
+    """Verify _find_textarea selects active textarea and ignores aria-hidden readonly shadow textareas."""
+    loc = MagicMock()
+    loc.evaluate.return_value = "DIV"
+    visible_ta, shadow_ta = MagicMock(), MagicMock()
+    shadow_ta.get_attribute.side_effect = lambda a: "true" if a == "aria-hidden" else None
+
+    def ta_mock(sel: str) -> MagicMock:
+        if "aria-hidden" in sel:
+            return MagicMock(count=lambda: 1, first=visible_ta)
+        return MagicMock(count=lambda: 2, first=visible_ta)
+
+    loc.locator.side_effect = ta_mock
+    assert _find_textarea(loc) == visible_ta
+

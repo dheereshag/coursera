@@ -33,7 +33,7 @@ def click_resume(page: Page, cfg: Settings) -> None:
 
 def click_next_item(page: Page, cfg: Settings) -> bool:
     """Locate and click 'Next item' or navigate directly via href."""
-    if page.locator('#agreement-checkbox-base, [id^="prompt-autoGradableResponseId"]').first.is_visible(timeout=300):
+    if page.locator('[data-testid="tunnel-vision-back-button"], #agreement-checkbox-base, [id^="prompt-autoGradableResponseId"]').first.is_visible(timeout=300):
         logger.warning("Active quiz questions detected; refusing to advance next item.")
         return False
     orig = page.url

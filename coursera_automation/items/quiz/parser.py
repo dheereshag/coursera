@@ -15,19 +15,21 @@ def _is_textarea(loc: Locator) -> bool:
 
 
 def _find_textarea(loc: Locator) -> Locator:
-    if _is_textarea(loc) or loc.locator("textarea").count():
-        return loc if _is_textarea(loc) else loc.locator("textarea").first
+    if _is_textarea(loc):
+        return loc
+    if (ta := loc.locator('textarea:not([aria-hidden="true"]):not([readonly])')).count():
+        return ta.first
     with suppress(Error, AttributeError):
         if isinstance(p := loc.get_attribute("id"), str) and p and (t := loc.page.locator(f'textarea[aria-labelledby="{p}"]').first).is_visible(timeout=100):
             return t
-    return loc.locator("xpath=following::textarea[1]").first
+    return loc.locator('xpath=following::textarea[not(@aria-hidden="true") and not(@readonly)][1]').first
 
 
 def _detect_type(q_loc: Locator) -> str:
     with suppress(Error, AttributeError):
         if isinstance(p := q_loc.get_attribute("id"), str) and p and q_loc.page.locator(f'textarea[aria-labelledby="{p}"]').count():
             return "textarea"
-    if _is_textarea(q_loc) or q_loc.locator("textarea").count():
+    if _is_textarea(q_loc) or q_loc.locator('textarea:not([aria-hidden="true"]):not([readonly])').count():
         return "textarea"
     return "multiselect" if q_loc.locator('input[type="checkbox"], [role="checkbox"]').count() else "single"
 
@@ -41,8 +43,11 @@ def _extract_prompt(q_loc: Locator) -> str:
 
 
 def _find_question_locs(page: Page) -> list[Locator]:
-    locs = [q for q in page.locator('fieldset, [role="radiogroup"], [role="group"], div:has(> * > .rc-Option), textarea:not(fieldset textarea)').all() if not q.locator("#agreement-checkbox-base").count()]
-    return locs or [q for q in page.locator('[id^="prompt-autoGradableResponseId"], [data-testid*="question"]').all() if not q.locator("#agreement-checkbox-base").count()]
+    parts = [q for q in page.locator('[data-testid^="part-"]:has(textarea:not([aria-hidden="true"]), input:not(#agreement-checkbox-base):not([type="hidden"]), .rc-Option)').all() if not q.locator("#agreement-checkbox-base").count()]
+    if parts:
+        return parts
+    locs = [q for q in page.locator('fieldset:not([aria-hidden="true"]), [role="radiogroup"], div:has(> * > .rc-Option)').all() if not q.locator("#agreement-checkbox-base").count()]
+    return locs or [q for q in page.locator('[id^="prompt-autoGradableResponseId"], textarea:not([aria-hidden="true"]):not([readonly])').all() if not q.locator("#agreement-checkbox-base").count()]
 
 
 def wait_and_extract_questions(page: Page, timeout_ms: int) -> tuple[list[Locator], list[dict[str, Any]]]:

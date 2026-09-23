@@ -69,10 +69,10 @@ sequenceDiagram
   - `navigator.py`: Resume and next item progression navigation with active question protection and direct `href` fallback.
   - `dialogs.py`: Pendo guide, Honor Code, weekly learning target (Cancel), and transient popup dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
-  - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions are extracted, Honor Code is confirmed, and never bypassed by navigation headers.
-  - `launcher.py`: Quiz attempt initiation with strict precedence for active attempt elements (`textarea:not([disabled])`, Honor Code agreement, `Save draft`, `#agreement-checkbox-base`) over lingering cover CTAs, preventing false cover page aborts.
+  - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions are extracted, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
+  - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements over lingering cover CTAs, preventing false cover page aborts.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
-  - `parser.py`: Question DOM extraction, single/multiselect/textarea classification, and aria-labelledby/cml prompt retrieval.
+  - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), excluding decorative notched outlines and shadow textareas, with classification and CML prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
   - `status.py`: Completed/passed quiz and review-mode detection with explicit guard returning False when active drafts, unsubmitted textareas, or Honor agreements exist.
   - `submit.py`: Quiz submission and modal confirmation dialog handling.

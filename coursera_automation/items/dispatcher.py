@@ -42,7 +42,7 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
         handle_video(page, cfg)
     elif page.locator('form[data-testid="lti-launch-form"], [aria-label="Coursera Honor Code"], button:has-text("Launch App")').first.is_visible(timeout=3000):
         handle_lab(page, cfg)
-    elif page.locator('[data-testid="CoverPageActionButton"], button:has-text("Try again"), #agreement-checkbox-base, [id^="prompt-autoGradableResponseId"]').first.is_visible(timeout=3000):
+    elif page.locator('[data-testid="tunnel-vision-back-button"], [data-testid="CoverPageActionButton"], button:has-text("Try again"), #agreement-checkbox-base').first.is_visible(timeout=3000):
         handle_quiz(page, cfg)
     elif page.locator('[data-testid*="role-play"], [data-testid="use-text-chat-button"], button:has-text("Role Play"), button:has-text("dialogue")').first.is_visible(timeout=3000):
         handle_dialogue(page, cfg)

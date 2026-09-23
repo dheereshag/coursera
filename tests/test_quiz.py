@@ -95,3 +95,30 @@ def test_handle_quiz_does_not_skip_when_active_questions_present() -> None:
         mock_sub.assert_called_once()
 
 
+def test_handle_quiz_proceeds_when_tunnel_vision_back_button_present() -> None:
+    """Verify handle_quiz does not abort when tunnel-vision-back-button is visible."""
+    page, cfg, agree, sub = MagicMock(), Settings(), MagicMock(), MagicMock()
+    agree.is_visible = sub.is_visible = lambda *a, **kw: True
+    q_loc = MagicMock(inner_text=lambda: "Q?", locator=lambda s: MagicMock(count=lambda: 1, all=lambda: [MagicMock(inner_text=lambda: "Ans")], first=MagicMock(is_visible=lambda *a, **kw: False)))
+
+    def loc_mock(s: str) -> MagicMock:
+        if "tunnel-vision-back-button" in s:
+            return MagicMock(first=MagicMock(is_visible=lambda *a, **kw: True))
+        if "CoverPageActionButton" in s:
+            return MagicMock(first=MagicMock(is_visible=lambda *a, **kw: True), count=lambda: 1)
+        if "agree" in s:
+            return MagicMock(first=agree)
+        return MagicMock(all=lambda: [q_loc], first=MagicMock(is_visible=lambda *a, **kw: False), count=lambda: 1)
+
+    page.locator.side_effect = loc_mock
+    page.get_by_role.side_effect = lambda r, **kw: MagicMock(first=sub)
+    with (
+        patch("coursera_automation.items.quiz.coordinator.ensure_quiz_launched"),
+        patch("coursera_automation.items.quiz.coordinator.wait_and_extract_questions", return_value=([q_loc], [{"index": 0, "type": "single", "question": "Q?", "options": ["Ans"]}])) as mock_extract,
+        patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["Ans"]}),
+        patch("coursera_automation.items.quiz.coordinator.submit_quiz"),
+    ):
+        handle_quiz(page, cfg)
+        mock_extract.assert_called_once()
+
+
