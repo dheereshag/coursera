@@ -29,6 +29,12 @@ OPENROUTER_API_KEY="sk-or-v1-your-openrouter-key"
 
 ### Course Instances Configuration (`instances.py`)
 
+Create your instances file from the template:
+
+```bash
+cp instances.example.py instances.py
+```
+
 Define your Coursera accounts, passwords, and courses in `instances.py`:
 
 ```python
