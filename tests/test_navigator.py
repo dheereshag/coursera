@@ -61,3 +61,26 @@ def test_click_resume_skips_on_item_page() -> None:
     with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs") as mock_d:
         click_resume(page, cfg)
     mock_d.assert_not_called()
+
+
+def test_click_next_item_back_button_with_top_banner() -> None:
+    """Verify click_next_item prioritizes TopBannerCTAButton when back button is visible."""
+    page, cfg, top_btn = MagicMock(url="https://coursera.org/learn/test/quiz/1"), Settings(), MagicMock()
+    page.goto.side_effect = lambda url, **kw: setattr(page, "url", url)
+    top_btn.is_visible.return_value = True
+    top_btn.first.is_visible.return_value = True
+    top_btn.get_attribute.return_value = "/learn/test/reading/2"
+    top_btn.first.get_attribute.return_value = "/learn/test/reading/2"
+    page.locator.side_effect = lambda s: top_btn if any(k in s for k in ("tunnel-vision-back-button", "Back", "TopBannerCTAButton")) else MagicMock(first=MagicMock(is_visible=lambda *a, **kw: False))
+    with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs"):
+        assert click_next_item(page, cfg) is True
+    assert top_btn.click.called or top_btn.first.click.called
+    page.goto.assert_called_once_with("https://www.coursera.org/learn/test/reading/2", wait_until="domcontentloaded")
+
+
+def test_click_next_item_back_button_active_questions_aborts() -> None:
+    """Verify click_next_item aborts when back button is visible and active questions remain."""
+    page, cfg = MagicMock(url="https://coursera.org/learn/test/quiz/1"), Settings()
+    page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=lambda *a, **kw: any(k in s for k in ("tunnel-vision-back-button", "Back", "agreement"))))
+    assert click_next_item(page, cfg) is False
+

@@ -17,11 +17,12 @@ def test_is_quiz_completed_under_review() -> None:
 
 
 def test_is_quiz_completed_passed_and_cta() -> None:
-    """Verify is_quiz_completed returns True when Passed or TopBannerCTAButton is present."""
+    """Verify is_quiz_completed returns True when Passed or TopBannerCTAButton with back button is present."""
     p1 = MagicMock(locator=lambda s: MagicMock(first=MagicMock(is_visible=lambda **kw: "Passed" in s)))
     assert is_quiz_completed(p1) is True
-    p2 = MagicMock(locator=lambda s: MagicMock(first=MagicMock(is_visible=lambda **kw: "TopBanner" in s)))
+    p2 = MagicMock(locator=lambda s: MagicMock(first=MagicMock(is_visible=lambda **kw: any(k in s for k in ("TopBanner", "tunnel-vision-back-button", "Back")))))
     assert is_quiz_completed(p2) is True
+
 
 
 def test_is_quiz_completed_false_when_retry() -> None:

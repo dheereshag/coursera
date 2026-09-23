@@ -5,20 +5,23 @@ import logging
 from playwright.sync_api import Error, Page
 
 logger = logging.getLogger(__name__)
-NEXT_BTN = '[data-testid="TopBannerCTAButton"], [data-testid*="next-item"], button:has-text("Go to next item"), button:has-text("Next item"), a:has-text("Next item")'
+BACK_BTN = '[data-testid="tunnel-vision-back-button"], button[aria-label="Back"]'
+TOP_CTA = '[data-testid="TopBannerCTAButton"]'
+NEXT_BTN = '[data-testid*="next-item"], button:has-text("Go to next item"), button:has-text("Next item"), a:has-text("Next item")'
 
 
 def poll_and_click_next(page: Page, max_wait_sec: int = 300) -> bool:
-    """Poll every 5s until TopBannerCTAButton mounts, then click it to advance URL."""
+    """Poll for back button, then check and click TopBannerCTAButton to advance URL."""
     logger.info("Polling every 5s for 'Next item' CTA (up to %ds)...", max_wait_sec)
     orig = page.url
     for cycle in range(max(1, max_wait_sec // 5)):
         elapsed = (cycle + 1) * 5
-        if (btn := page.locator(NEXT_BTN).first).is_visible(timeout=1000):
-            logger.info("Found 'Next item' CTA. Attempting to click...")
+        has_back = page.locator(BACK_BTN).first.is_visible(timeout=500)
+        btn = page.locator(TOP_CTA).first if has_back else page.locator(NEXT_BTN).first
+        if btn.is_visible(timeout=1000):
+            logger.info("Found 'Next item' CTA (has_back=%s). Attempting to click...", has_back)
             href = btn.get_attribute("href") or ""
             try:
-                btn.scroll_into_view_if_needed()
                 btn.click(timeout=3000)
             except Error:
                 btn.click(force=True)

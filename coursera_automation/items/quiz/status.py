@@ -19,9 +19,12 @@ def is_quiz_completed(page: Page) -> bool:
     has_active = page.locator('input:not([disabled]):not([type="hidden"]), textarea:not([disabled])').first.is_visible(timeout=300)
     if has_q and (has_active or page.locator('#agreement-checkbox-base').first.is_visible(timeout=300)):
         return False
-    if page.locator('[data-testid="tunnel-vision-back-button"], button[aria-label="Back"], button:has-text("Save draft"), textarea:not([disabled])').first.is_visible(timeout=300):
+    has_back = page.locator('[data-testid="tunnel-vision-back-button"], button[aria-label="Back"]').first.is_visible(timeout=300)
+    if has_back and page.locator('[data-testid="TopBannerCTAButton"]').first.is_visible(timeout=500):
+        return True
+    if has_back and (has_active or page.locator('button:has-text("Save draft")').first.is_visible(timeout=300)):
         return False
-    if page.locator('[data-testid="TopBannerCTAButton"], button:has-text("Go to next item")').first.is_visible(timeout=500):
+    if page.locator('button:has-text("Go to next item")').first.is_visible(timeout=500):
         return True
     has_passed = page.locator(
         ':text("Your grade:"), :text("Passed"), :text("Grade received"), :text("You passed")'

@@ -47,13 +47,27 @@ def test_dismiss_dialogs_honor_code() -> None:
 
 
 def test_click_next_item_top_banner() -> None:
-    """Verify click_next_item clicks TopBannerCTAButton."""
+    """Verify click_next_item clicks TopBannerCTAButton when back button is visible."""
     page, cfg, btn = MagicMock(url="https://coursera.org/item1"), Settings(), MagicMock()
     btn.first.is_visible.return_value = True
     btn.first.click.side_effect = lambda **kw: setattr(page, "url", "https://coursera.org/item2")
     btn.click.side_effect = lambda **kw: setattr(page, "url", "https://coursera.org/item2")
-    page.locator.side_effect = lambda s: btn if "TopBannerCTAButton" in s else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
+    page.locator.side_effect = lambda s: btn if any(k in s for k in ("TopBannerCTAButton", "tunnel-vision-back-button", "Back")) else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False))
     with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs"):
         assert click_next_item(page, cfg) is True
     assert btn.click.called or btn.first.click.called
+
+
+def test_click_next_item_without_back_button() -> None:
+    """Verify click_next_item uses standard locators when back button is absent."""
+    page, cfg, btn = MagicMock(url="https://coursera.org/item1"), Settings(), MagicMock()
+    btn.first.is_visible.return_value = True
+    btn.first.click.side_effect = lambda **kw: setattr(page, "url", "https://coursera.org/item2")
+    btn.click.side_effect = lambda **kw: setattr(page, "url", "https://coursera.org/item2")
+    btn.all.return_value = [btn]
+    page.locator.side_effect = lambda s: btn if "next-item" in s else MagicMock(first=MagicMock(is_visible=lambda timeout=0: False), all=list)
+    with patch("coursera_automation.items.navigation.navigator.dismiss_dialogs"):
+        assert click_next_item(page, cfg) is True
+    assert btn.click.called or btn.first.click.called
+
 

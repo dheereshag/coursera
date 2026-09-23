@@ -66,7 +66,8 @@ sequenceDiagram
   - `upload.py`: File attachment via Uppy Dashboard file chooser and direct file input fallback.
 - **Navigation Subpackage (`items/navigation/`)**:
 
-  - `navigator.py`: Resume and next item progression navigation with active question protection and direct `href` fallback.
+  - `resume.py`: Resume and get started course navigation with vertical scrolling and button detection.
+  - `navigator.py`: Next item progression navigation checking TopBannerCTAButton when back button is visible, with direct href fallback.
   - `dialogs.py`: Pendo guide, Honor Code, weekly learning target (Cancel), and transient popup dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
   - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions are extracted, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
@@ -74,6 +75,6 @@ sequenceDiagram
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
   - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), excluding decorative notched outlines and shadow textareas, with classification and CML prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
-  - `status.py`: Completed/passed quiz and review-mode detection with explicit guard returning False when active drafts, unsubmitted textareas, or Honor agreements exist.
+  - `status.py`: Completed/passed quiz and review-mode detection with TopBannerCTAButton and back button coordination.
   - `submit.py`: Quiz submission and modal confirmation dialog handling.
-  - `poll.py`: 'TopBannerCTAButton' and 'Go to next item' ("Next item") polling with interval logging and reload on pending evaluation.
+  - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence and reload on pending evaluation.
