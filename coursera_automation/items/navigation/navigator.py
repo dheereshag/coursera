@@ -19,6 +19,8 @@ def click_next_item(page: Page, cfg: Settings) -> bool:
         top = page.locator('[data-testid="TopBannerCTAButton"]').first
         if not top.is_visible(timeout=1000):
             return not page.locator('#agreement-checkbox-base, [id^="prompt-autoGradableResponseId"]').first.is_visible(timeout=300) and False
+        if any(bad in (top.get_attribute("href") or "") for bad in ("/view-feedback", "/attempt")):
+            return False
         btn_cand = [top]
     else:
         btn_cand = []

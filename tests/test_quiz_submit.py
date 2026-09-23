@@ -44,7 +44,7 @@ def test_poll_and_click_next_timeout() -> None:
 
 
 def test_submit_quiz_calls_poll_and_click_next() -> None:
-    """Verify submit_quiz clicks submit, confirms modal, and calls poll_and_click_next."""
+    """Verify submit_quiz clicks submit, confirms modal, waits, and calls poll_and_click_next."""
     page, cfg = MagicMock(), Settings()
     sub_btn = MagicMock(is_visible=MagicMock(return_value=True))
     modal_btn = MagicMock(is_visible=MagicMock(return_value=True))
@@ -56,4 +56,21 @@ def test_submit_quiz_calls_poll_and_click_next() -> None:
         mock_poll.assert_called_once_with(page, max_wait_sec=300)
     sub_btn.click.assert_called_once()
     modal_btn.click.assert_called_once()
+    assert page.wait_for_timeout.called
+
+
+def test_poll_and_click_next_ignores_view_feedback() -> None:
+    """Verify poll_and_click_next ignores view-feedback href and waits for next item."""
+    page = MagicMock(url="https://coursera.org/learn/test/quiz/1")
+    page.goto.side_effect = lambda url, **kw: setattr(page, "url", url)
+    btn = MagicMock()
+    btn.is_visible.return_value = True
+    btn.get_attribute.side_effect = ["/learn/test/assignment/1/view-feedback", "/learn/test/supplement/10"]
+    page.locator.return_value.first = btn
+
+    result = poll_and_click_next(page, max_wait_sec=15)
+    assert result is True
+    btn.click.assert_called_once()
+    page.goto.assert_called_once_with("https://www.coursera.org/learn/test/supplement/10", wait_until="domcontentloaded")
+
 

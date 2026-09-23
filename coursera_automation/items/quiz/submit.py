@@ -33,5 +33,13 @@ def submit_quiz(page: Page, cfg: Settings) -> None:
             modal.wait_for(state="hidden", timeout=5000)
         except Error:
             pass
+    wait_sec = max(0, cfg.post_quiz_wait_sec)
+    if wait_sec:
+        logger.info("Quiz submitted. Waiting %ds (5 mins) for evaluation and DOM stabilization...", wait_sec)
+        for elapsed in range(30, wait_sec + 1, 30):
+            page.wait_for_timeout(30000)
+            logger.info("Post-quiz stabilization wait: %ds / %ds elapsed...", elapsed, wait_sec)
+        if rem := wait_sec % 30:
+            page.wait_for_timeout(rem * 1000)
     poll_and_click_next(page, max_wait_sec=300)
 

@@ -19,22 +19,25 @@ def poll_and_click_next(page: Page, max_wait_sec: int = 300) -> bool:
         has_back = page.locator(BACK_BTN).first.is_visible(timeout=500)
         btn = page.locator(TOP_CTA).first if has_back else page.locator(NEXT_BTN).first
         if btn.is_visible(timeout=1000):
-            logger.info("Found 'Next item' CTA (has_back=%s). Attempting to click...", has_back)
             href = btn.get_attribute("href") or ""
-            try:
-                btn.click(timeout=3000)
-            except Error:
-                btn.click(force=True)
-            page.wait_for_timeout(2000)
-            if page.url == orig and href:
-                target = href if href.startswith("http") else f"https://www.coursera.org{href}"
-                page.goto(target, wait_until="domcontentloaded")
-            page.wait_for_load_state("domcontentloaded")
-            page.wait_for_timeout(2000)
-            if page.url != orig:
-                logger.info("Successfully advanced to next item: %s", page.url)
-                return True
-            logger.info("Clicked CTA but URL did not change yet (current: %s).", page.url)
+            if any(bad in href for bad in ("/view-feedback", "/attempt")):
+                logger.info("Found CTA pointing to feedback/attempt URL (%s); waiting...", href)
+            else:
+                logger.info("Found 'Next item' CTA (has_back=%s, href=%s). Clicking...", has_back, href)
+                try:
+                    btn.click(timeout=3000)
+                except Error:
+                    btn.click(force=True)
+                page.wait_for_timeout(2000)
+                if page.url == orig and href:
+                    target = href if href.startswith("http") else f"https://www.coursera.org{href}"
+                    page.goto(target, wait_until="domcontentloaded")
+                page.wait_for_load_state("domcontentloaded")
+                page.wait_for_timeout(2000)
+                if page.url != orig:
+                    logger.info("Successfully advanced to next item: %s", page.url)
+                    return True
+                logger.info("Clicked CTA but URL did not change yet (current: %s).", page.url)
         else:
             logger.info("'Next item' CTA not visible yet (waited %ds / %ds); retrying in 5s...", elapsed, max_wait_sec)
         page.wait_for_timeout(5000)
