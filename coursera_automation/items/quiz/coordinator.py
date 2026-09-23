@@ -8,6 +8,7 @@ from playwright.sync_api import Error, Page
 from coursera_automation.config import Settings
 
 from .launcher import ensure_quiz_launched, is_on_cover_page
+from .option_matcher import click_option
 from .parser import _find_textarea, _is_textarea, wait_and_extract_questions
 from .solver import solve_quiz_with_llm
 from .status import is_quiz_completed
@@ -29,7 +30,6 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         logger.info("Quiz already completed or under review. Polling next item CTA...")
         poll_and_click_next(page, max_wait_sec=300)
         return
-
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     logger.info("Extracted %d quiz question(s).", len(questions))
     if not questions or not any(q.locator('input:not([disabled]), textarea:not([disabled])').count() or _is_textarea(q) for q in q_locs):
@@ -46,9 +46,9 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         if ta.is_visible(timeout=200) and ans:
             ta.fill(ans[0])
         else:
+            opts = questions[idx].get("options", []) if idx < len(questions) else []
             for opt in ans:
-                if (btn := q_loc.locator("label").filter(has_text=opt).first).is_visible():
-                    btn.locator('input[type="checkbox"]').first.check(force=True) if btn.locator('input[type="checkbox"]').count() else btn.click(force=True)
+                click_option(q_loc, opt, opts)
         page.wait_for_timeout(300)
     if (agree := page.locator('#agreement-checkbox-base, label:has-text("understand and agree"), [aria-label*="understand and agree" i]').first).is_visible(timeout=cfg.timeout_ms):
         agree.click(force=True)

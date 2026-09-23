@@ -71,8 +71,9 @@ sequenceDiagram
   - `dialogs.py`: Pendo guide, Honor Code, weekly learning target (Cancel), and transient popup dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
   - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions are extracted, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
-  - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements over lingering cover CTAs, preventing false cover page aborts.
+  - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements over lingering cover CTAs, with explicit support for `"Try again"` retries on evaluation review screens.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
+  - `option_matcher.py`: Robust quiz option resolution and normalization, handling LaTeX/KaTeX math formatting (`*` vs `×`, braces, whitespace) and resolving index-based and text-based checkbox/radio clicks.
   - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), excluding decorative notched outlines and shadow textareas, with classification and CML prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
   - `status.py`: Completed/passed quiz and review-mode detection with TopBannerCTAButton and back button coordination.

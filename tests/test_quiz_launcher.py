@@ -221,3 +221,33 @@ def test_ensure_quiz_launched_ignores_weekly_learning_target_widget() -> None:
     assert result is True
     cta.click.assert_called_once_with(force=True, timeout=5000)
     target_widget.click.assert_not_called()
+
+
+def test_ensure_quiz_launched_clicks_try_again_cta() -> None:
+    """Verify ensure_quiz_launched clicks Try again even when tunnel vision back button is visible."""
+    page = MagicMock()
+    try_again_btn = MagicMock(
+        count=lambda: 1,
+        is_visible=lambda *a, **k: True,
+        get_attribute=lambda a: "false" if a == "aria-disabled" else None,
+        inner_text=lambda: "Try again",
+    )
+    back_btn = MagicMock(is_visible=lambda *a, **k: True)
+
+    def locator_mock(sel: str) -> MagicMock:
+        if "Try again" in sel:
+            return MagicMock(first=try_again_btn)
+        if "tunnel-vision-back-button" in sel or "Back" in sel:
+            return MagicMock(first=back_btn)
+        return MagicMock(first=MagicMock(is_visible=lambda *a, **k: False, count=lambda: 0))
+
+    page.locator.side_effect = locator_mock
+
+    with patch("coursera_automation.items.quiz.launcher.dismiss_dialogs"), patch(
+        "coursera_automation.items.quiz.launcher.is_quiz_completed", return_value=False
+    ):
+        result = ensure_quiz_launched(page, timeout_ms=1000)
+
+    assert result is True
+    try_again_btn.click.assert_called_once_with(force=True, timeout=5000)
+

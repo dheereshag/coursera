@@ -47,7 +47,8 @@ def solve_quiz_with_llm(questions: list[dict[str, Any]], cfg: Settings) -> dict[
     """Query OpenRouter LLM with tenacity retry backoff and parse JSON answers."""
     prompt = (
         "Answer questions: 'single'=1 option, 'multiselect'=all, 'textarea'=concise written text.\n"
-        'Respond ONLY in JSON: {"answers": [{"index": 0, "selected": ["option or text"]}]}\n\n'
+        "For multiple choice, 'selected' MUST contain the exact verbatim option text from 'options'.\n"
+        'Respond ONLY in JSON: {"answers": [{"index": 0, "selected": ["exact option text or answer"]}]}\n\n'
         f"Questions:\n{json.dumps(questions, indent=2)}"
     )
     logger.info("Querying OpenRouter (%s) with %d questions...", cfg.openrouter_model, len(questions))
