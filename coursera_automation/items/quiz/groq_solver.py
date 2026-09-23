@@ -21,8 +21,14 @@ EXC = (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, Val
 def _call_groq(cfg: Settings, prompt: str) -> dict[int, list[str]]:
     url = f"{cfg.groq_base_url.rstrip('/')}/chat/completions"
     headers = {"Authorization": f"Bearer {cfg.groq_api_key}", "Content-Type": "application/json"}
-    payload = {"model": cfg.groq_model, "messages": [{"role": "user", "content": prompt}], "temperature": 0.2, "max_completion_tokens": 2048, "response_format": {"type": "json_object"}}
-    resp = requests.post(url, headers=headers, json=payload, timeout=30)
+    payload = {
+        "model": cfg.groq_model, "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.2, "max_completion_tokens": 4096, "reasoning_effort": "low",
+        "response_format": {"type": "json_object"},
+    }
+    resp = requests.post(url, headers=headers, json=payload, timeout=60)
+    if resp.status_code == 400:
+        raise RuntimeError(f"Groq 400 Bad Request: {resp.text}")
     resp.raise_for_status()
     res_data = resp.json()
     if "error" in res_data:

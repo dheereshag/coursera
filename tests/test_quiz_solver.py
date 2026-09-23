@@ -110,7 +110,7 @@ def test_solve_quiz_fallback_to_second_model_on_429() -> None:
             resp_429,
             _mock_resp('{"answers": [{"index": 0, "selected": ["Fallback 1 Ans"]}]}'),
         ]
-        res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(groq_api_key=""))
+        res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(groq_api_key="", openrouter_api_key="single-key"))
         assert res == {0: ["Fallback 1 Ans"]}
         models_called = [call[1]["json"]["model"] for call in mock_post.call_args_list]
         assert "inclusionai/ling-3.0-flash-fin:free" in models_called
@@ -130,7 +130,7 @@ def test_solve_quiz_fallback_to_third_model_on_429() -> None:
             resp_429,
             _mock_resp('{"answers": [{"index": 0, "selected": ["Qwen Ans"]}]}'),
         ]
-        res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(groq_api_key=""))
+        res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(groq_api_key="", openrouter_api_key="single-key"))
         assert res == {0: ["Qwen Ans"]}
         models_called = [call[1]["json"]["model"] for call in mock_post.call_args_list]
         assert "inclusionai/ling-3.0-flash-fin:free" in models_called
@@ -161,5 +161,37 @@ def test_solve_quiz_groq_fails_falls_back_to_openrouter() -> None:
         res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], cfg)
         assert res == {0: ["OR Ans"]}
         mock_or.assert_called_once()
+
+
+def test_solve_quiz_openrouter_key_rotation_on_429() -> None:
+    """Verify that when key 1 hits 429, openrouter rotates to key 2 on the same model."""
+    resp_429 = MagicMock()
+    resp_429.raise_for_status.side_effect = requests.HTTPError("429 Client Error: Too Many Requests")
+
+    cfg = Settings(groq_api_key="", openrouter_api_key="key-alpha,key-beta")
+    with patch("coursera_automation.items.quiz.openrouter_solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
+        mock_post.side_effect = [
+            resp_429,
+            resp_429,
+            _mock_resp('{"answers": [{"index": 0, "selected": ["Key Beta Ans"]}]}'),
+        ]
+        res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], cfg)
+        assert res == {0: ["Key Beta Ans"]}
+        auth_headers = [call[1]["headers"]["Authorization"] for call in mock_post.call_args_list]
+        assert "Bearer key-alpha" in auth_headers
+        assert "Bearer key-beta" in auth_headers
+
+
+def test_solve_quiz_openrouter_key_round_robin() -> None:
+    """Verify consecutive OpenRouter queries cycle keys round-robin."""
+    cfg = Settings(groq_api_key="", openrouter_api_key="key-1,key-2,key-3")
+    with patch("coursera_automation.items.quiz.openrouter_solver.requests.post") as mock_post:
+        mock_post.return_value = _mock_resp('{"answers": [{"index": 0, "selected": ["Ans"]}]}')
+        solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], cfg)
+        solve_quiz_with_llm([{"index": 0, "text": "Q2?"}], cfg)
+        auth_headers = [call[1]["headers"]["Authorization"] for call in mock_post.call_args_list]
+        assert len(auth_headers) == 2
+        assert auth_headers[0] != auth_headers[1]
+
 
 

@@ -32,6 +32,10 @@ class Settings:
     groq_base_url: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
     post_quiz_wait_sec: int = int(os.getenv("COURSERA_POST_QUIZ_WAIT_SEC", "180"))
 
+    def get_openrouter_keys(self) -> list[str]:
+        """Return list of parsed OpenRouter API keys for rotation."""
+        return [k.strip() for k in self.openrouter_api_key.split(",") if k.strip()]
+
 
 config = Settings()
 

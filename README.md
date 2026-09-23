@@ -24,7 +24,7 @@ Configure global settings and API keys in `.env`:
 ```ini
 GROQ_API_KEY="gsk_your_groq_api_key"
 GROQ_MODEL="openai/gpt-oss-120b"
-OPENROUTER_API_KEY="sk-or-v1-your-openrouter-key"
+OPENROUTER_API_KEY="sk-or-v1-key1,sk-or-v1-key2,sk-or-v1-key3" # Comma-separated for auto-rotation
 ```
 
 ### Course Instances Configuration (`instances.py`)

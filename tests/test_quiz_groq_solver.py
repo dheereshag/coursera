@@ -28,6 +28,8 @@ def test_query_groq_success() -> None:
         call_args = mock_post.call_args
         assert call_args[1]["headers"]["Authorization"] == "Bearer test-groq-key"
         assert call_args[1]["json"]["model"] == "openai/gpt-oss-120b"
+        assert call_args[1]["json"]["reasoning_effort"] == "low"
+        assert call_args[1]["json"]["max_completion_tokens"] == 4096
 
 
 def test_query_groq_retry_on_error() -> None:
@@ -49,3 +51,14 @@ def test_query_groq_empty_answers_raises() -> None:
         mock_post.return_value = _mock_groq_resp('{"answers": []}')
         with pytest.raises(ValueError, match="Empty answers"):
             query_groq(cfg, "Prompt")
+
+
+def test_query_groq_400_raises_runtime_error_without_retry() -> None:
+    """Verify query_groq immediately raises RuntimeError on 400 Bad Request without retrying."""
+    cfg = Settings(groq_api_key="test-groq-key")
+    resp_400 = MagicMock(status_code=400, text='{"error":"json_validate_failed"}')
+    with patch("coursera_automation.items.quiz.groq_solver.requests.post", return_value=resp_400) as mock_post:
+        with pytest.raises(RuntimeError, match="Groq 400 Bad Request"):
+            query_groq(cfg, "Prompt")
+        assert mock_post.call_count == 1
+

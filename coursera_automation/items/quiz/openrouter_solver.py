@@ -12,15 +12,16 @@ from .json_extractor import extract_llm_json
 
 logger = logging.getLogger(__name__)
 EXC = (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, ValueError, IndexError)
+_key_idx = 0
 
 
 @tc.retry(
     stop=tc.stop_after_attempt(2), wait=tc.wait_fixed(2), retry=tc.retry_if_exception_type(EXC),
     before_sleep=tc.before_sleep_log(logger, logging.WARNING), reraise=True,
 )
-def _call_openrouter_model(cfg: Settings, prompt: str, model: str) -> dict[int, list[str]]:
+def _call_openrouter_model(cfg: Settings, prompt: str, model: str, key: str) -> dict[int, list[str]]:
     url = f"{cfg.openrouter_base_url.rstrip('/')}/chat/completions"
-    headers = {"Authorization": f"Bearer {cfg.openrouter_api_key}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     payload = {"model": model, "messages": [{"role": "user", "content": prompt}], "reasoning": {"enabled": True}}
     resp = requests.post(url, headers=headers, json=payload, timeout=60)
     resp.raise_for_status()
@@ -38,13 +39,20 @@ def _call_openrouter_model(cfg: Settings, prompt: str, model: str) -> dict[int, 
 
 
 def query_openrouter(cfg: Settings, prompt: str) -> dict[int, list[str]]:
-    """Query OpenRouter with fallback across candidate models."""
+    """Query OpenRouter with key rotation and fallback across candidate models."""
+    global _key_idx
+    keys = cfg.get_openrouter_keys() if hasattr(cfg, "get_openrouter_keys") else [k.strip() for k in cfg.openrouter_api_key.split(",") if k.strip()]
+    keys = keys or [""]
     models = [cfg.openrouter_model] + [m.strip() for m in cfg.openrouter_fallback_models.split(",") if m.strip() and m.strip() != cfg.openrouter_model]
     for m in models:
-        logger.info("Querying OpenRouter (%s)...", m)
-        try:
-            return _call_openrouter_model(cfg, prompt, m)
-        except EXC as exc:
-            logger.warning("OpenRouter model %s failed: %s. Trying fallback...", m, exc)
-    logger.error("All OpenRouter models failed after retries.")
+        for offset in range(len(keys)):
+            k = keys[(_key_idx + offset) % len(keys)]
+            logger.info("Querying OpenRouter (model=%s, key=...%s)...", m, k[-6:] if len(k) > 6 else "")
+            try:
+                ans = _call_openrouter_model(cfg, prompt, m, k)
+                _key_idx = (_key_idx + offset + 1) % len(keys)
+                return ans
+            except EXC as exc:
+                logger.warning("OpenRouter key ...%s failed on %s: %s. Rotating...", k[-6:] if len(k) > 6 else "", m, exc)
+    logger.error("All OpenRouter models and keys failed after retries.")
     return {}
