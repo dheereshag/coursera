@@ -1,0 +1,50 @@
+"""OpenRouter LLM quiz solver with model fallback chain and tenacity retries."""
+
+import json
+import logging
+
+import requests
+import tenacity as tc
+
+from coursera_automation.config import Settings
+
+from .json_extractor import extract_llm_json
+
+logger = logging.getLogger(__name__)
+EXC = (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, ValueError, IndexError)
+
+
+@tc.retry(
+    stop=tc.stop_after_attempt(2), wait=tc.wait_fixed(2), retry=tc.retry_if_exception_type(EXC),
+    before_sleep=tc.before_sleep_log(logger, logging.WARNING), reraise=True,
+)
+def _call_openrouter_model(cfg: Settings, prompt: str, model: str) -> dict[int, list[str]]:
+    url = f"{cfg.openrouter_base_url.rstrip('/')}/chat/completions"
+    headers = {"Authorization": f"Bearer {cfg.openrouter_api_key}", "Content-Type": "application/json"}
+    payload = {"model": model, "messages": [{"role": "user", "content": prompt}], "reasoning": {"enabled": True}}
+    resp = requests.post(url, headers=headers, json=payload, timeout=60)
+    resp.raise_for_status()
+    res_data = resp.json()
+    if "error" in res_data:
+        raise ValueError(f"OpenRouter API error: {res_data['error']}")
+    msg = res_data["choices"][0]["message"]
+    data = extract_llm_json(msg.get("content") or msg.get("reasoning") or "")
+    items = data if isinstance(data, list) else data.get("answers", [])
+    ans = {it["index"]: [v] if isinstance(v := it.get("selected") or it.get("text") or it.get("answer") or [], str) else list(v) for it in items}
+    if ans:
+        logger.info("Parsed %d answer(s) from OpenRouter (%s): %s", len(ans), model, ans)
+        return ans
+    raise ValueError(f"Empty answers in payload: {msg}")
+
+
+def query_openrouter(cfg: Settings, prompt: str) -> dict[int, list[str]]:
+    """Query OpenRouter with fallback across candidate models."""
+    models = [cfg.openrouter_model] + [m.strip() for m in cfg.openrouter_fallback_models.split(",") if m.strip() and m.strip() != cfg.openrouter_model]
+    for m in models:
+        logger.info("Querying OpenRouter (%s)...", m)
+        try:
+            return _call_openrouter_model(cfg, prompt, m)
+        except EXC as exc:
+            logger.warning("OpenRouter model %s failed: %s. Trying fallback...", m, exc)
+    logger.error("All OpenRouter models failed after retries.")
+    return {}
