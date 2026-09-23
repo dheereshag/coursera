@@ -7,12 +7,15 @@ from playwright.sync_api import Error, Page
 from coursera_automation.config import Settings
 from coursera_automation.items.navigation.dialogs import dismiss_dialogs
 from coursera_automation.items.navigation.resume import click_resume
+from coursera_automation.items.quiz.status import is_final_exam
 
 __all__ = ["click_next_item", "click_resume"]
 
 
 def click_next_item(page: Page, cfg: Settings) -> bool:
     """Locate and click 'Next item' or navigate directly via href."""
+    if is_final_exam(page):
+        return False
     orig = page.url
     has_back = page.locator('[data-testid="tunnel-vision-back-button"], button[aria-label="Back"]').first.is_visible(timeout=300)
     if has_back:

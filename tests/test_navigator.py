@@ -84,3 +84,11 @@ def test_click_next_item_back_button_active_questions_aborts() -> None:
     page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=lambda *a, **kw: any(k in s for k in ("tunnel-vision-back-button", "Back", "agreement"))))
     assert click_next_item(page, cfg) is False
 
+
+def test_click_next_item_skips_on_final_exam() -> None:
+    """Verify click_next_item returns False immediately when is_final_exam is True."""
+    page, cfg = MagicMock(), Settings()
+    with patch("coursera_automation.items.navigation.navigator.is_final_exam", return_value=True):
+        assert click_next_item(page, cfg) is False
+
+

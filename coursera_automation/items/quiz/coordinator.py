@@ -28,13 +28,13 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         return
     if is_quiz_completed(page) or page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible():
         logger.info("Quiz already completed or under review. Polling next item CTA...")
-        poll_and_click_next(page, max_wait_sec=300)
+        poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
         return
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     logger.info("Extracted %d quiz question(s).", len(questions))
     if not questions or not any(q.locator('input:not([disabled]), textarea:not([disabled])').count() or _is_textarea(q) for q in q_locs):
         logger.info("No active/unsubmitted questions found. Polling next item CTA.")
-        poll_and_click_next(page, max_wait_sec=300)
+        poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
         return
     if not (answers := solve_quiz_with_llm(questions, cfg)):
         logger.error("No valid answers received from LLM; aborting quiz submission.")

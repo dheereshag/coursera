@@ -4,14 +4,19 @@ import logging
 
 from playwright.sync_api import Error, Page
 
+from .status import is_final_exam
+
 logger = logging.getLogger(__name__)
 BACK_BTN = '[data-testid="tunnel-vision-back-button"], button[aria-label="Back"]'
 TOP_CTA = '[data-testid="TopBannerCTAButton"]'
 NEXT_BTN = '[data-testid*="next-item"], button:has-text("Go to next item"), button:has-text("Next item"), a:has-text("Next item")'
 
 
-def poll_and_click_next(page: Page, max_wait_sec: int = 300) -> bool:
+def poll_and_click_next(page: Page, max_wait_sec: int = 180) -> bool:
     """Poll for back button, then check and click TopBannerCTAButton to advance URL."""
+    if is_final_exam(page):
+        logger.info("Final Exam detected; skipping 'Next item' polling as no next item exists.")
+        return False
     logger.info("Polling every 5s for 'Next item' CTA (up to %ds)...", max_wait_sec)
     orig = page.url
     for cycle in range(max(1, max_wait_sec // 5)):

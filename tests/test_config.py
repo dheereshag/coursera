@@ -9,7 +9,7 @@ def test_default_config() -> None:
     assert config.password == "Lakshya.24AI"
     assert "coursera.org" in config.login_url
     assert "generative-ai" in config.course_url
-    assert config.post_quiz_wait_sec == 300
+    assert config.post_quiz_wait_sec == 180
 
 
 def test_custom_settings() -> None:

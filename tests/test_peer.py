@@ -40,7 +40,7 @@ def test_handle_peer_flow(mock_dis: MagicMock, mock_up: MagicMock, mock_poll: Ma
     mock_up.assert_called_once()
     sub_btn.click.assert_called_once()
     modal_btn.click.assert_called_once()
-    mock_poll.assert_called_once_with(page, max_wait_sec=300)
+    mock_poll.assert_called_once_with(page, max_wait_sec=180)
 
 
 @patch("coursera_automation.items.dispatcher.dismiss_dialogs")

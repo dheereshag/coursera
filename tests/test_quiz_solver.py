@@ -54,3 +54,46 @@ def test_solve_quiz_retry_on_api_error_payload() -> None:
     with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
         mock_post.side_effect = [resp_err, _mock_resp('{"answers": [{"index": 0, "selected": ["OK"]}]}')]
         assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["OK"]}
+
+
+def test_solve_quiz_with_markdown_preamble() -> None:
+    """Verify solver parses JSON wrapped in markdown fences with preamble text."""
+    raw = 'Sure! Here are your answers:\n```json\n{"answers": [{"index": 0, "selected": ["Correct"]}]}\n```\nGood luck!'
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post:
+        mock_post.return_value = _mock_resp(raw)
+        assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["Correct"]}
+
+
+def test_solve_quiz_with_think_tags() -> None:
+    """Verify solver strips <think> reasoning blocks before parsing JSON."""
+    raw = '<think>Analyzing question 1...\nOption A is correct.</think>\n{"answers": [{"index": 0, "selected": ["Option A"]}]}'
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post:
+        mock_post.return_value = _mock_resp(raw)
+        assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["Option A"]}
+
+
+def test_solve_quiz_with_direct_array() -> None:
+    """Verify solver parses direct JSON array responses."""
+    raw = '[{"index": 0, "selected": ["Array Opt"]}]'
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post:
+        mock_post.return_value = _mock_resp(raw)
+        assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["Array Opt"]}
+
+
+def test_solve_quiz_fallback_to_reasoning() -> None:
+    """Verify solver falls back to reasoning attribute when content is empty."""
+    resp = MagicMock()
+    resp.json.return_value = {
+        "choices": [{"message": {"content": "", "reasoning": '{"answers": [{"index": 0, "selected": ["From Reasoning"]}]}'}}]
+    }
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post:
+        mock_post.return_value = resp
+        assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["From Reasoning"]}
+
+
+def test_solve_quiz_retry_on_empty_choices() -> None:
+    """Verify solver retries when choices is empty (IndexError) and recovers."""
+    resp_empty = MagicMock(json=lambda: {"choices": []})
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
+        mock_post.side_effect = [resp_empty, _mock_resp('{"answers": [{"index": 0, "selected": ["Recovered"]}]}')]
+        assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["Recovered"]}

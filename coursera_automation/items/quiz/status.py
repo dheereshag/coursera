@@ -2,9 +2,18 @@
 
 import logging
 
-from playwright.sync_api import Page
+from playwright.sync_api import Error, Page, TimeoutError
 
 logger = logging.getLogger(__name__)
+
+
+def is_final_exam(page: Page) -> bool:
+    """Check if current page is a Final Exam item."""
+    try:
+        hdr = page.locator('[data-testid="header-left"], header h1, [role="main"] h1').first
+        return "final exam" in str(hdr.inner_text(timeout=300)).lower()
+    except (Error, TimeoutError):
+        return False
 
 
 def is_quiz_completed(page: Page) -> bool:

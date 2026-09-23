@@ -54,5 +54,5 @@ def handle_peer(page: Page, cfg: Settings) -> None:
         page.wait_for_timeout(1000)
     upload_peer_file(page, Path("test.png").resolve())
     _submit_and_confirm(page, max_wait=120)
-    poll_and_click_next(page, max_wait_sec=300)
+    poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
 

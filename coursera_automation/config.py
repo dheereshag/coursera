@@ -32,7 +32,7 @@ class Settings:
     openrouter_model: str = os.getenv(
         "OPENROUTER_MODEL", "inclusionai/ling-3.0-flash-fin:free"
     )
-    post_quiz_wait_sec: int = int(os.getenv("COURSERA_POST_QUIZ_WAIT_SEC", "300"))
+    post_quiz_wait_sec: int = int(os.getenv("COURSERA_POST_QUIZ_WAIT_SEC", "180"))
 
 
 config = Settings()

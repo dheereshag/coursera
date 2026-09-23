@@ -2,7 +2,6 @@
 
 import json
 import logging
-import re
 from typing import Any
 
 import requests
@@ -10,16 +9,17 @@ import tenacity as tc
 
 from coursera_automation.config import Settings
 
+from .json_extractor import extract_llm_json
+
 logger = logging.getLogger(__name__)
-EXC = (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, ValueError)
+EXC = (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, ValueError, IndexError)
 
 
 @tc.retry(
     stop=tc.stop_after_attempt(3),
     wait=tc.wait_exponential(multiplier=1, min=2, max=10),
     retry=tc.retry_if_exception_type(EXC),
-    before_sleep=tc.before_sleep_log(logger, logging.WARNING),
-    reraise=True,
+    before_sleep=tc.before_sleep_log(logger, logging.WARNING), reraise=True,
 )
 def _query_and_parse(cfg: Settings, prompt: str) -> dict[int, list[str]]:
     """Query OpenRouter chat completion and parse answers, retrying on errors."""
@@ -31,16 +31,17 @@ def _query_and_parse(cfg: Settings, prompt: str) -> dict[int, list[str]]:
     res_data = resp.json()
     if "error" in res_data:
         raise ValueError(f"OpenRouter API error: {res_data['error']}")
-    raw = res_data["choices"][0]["message"]["content"]
-    data = json.loads(re.sub(r"```json|```", "", raw).strip())
+    msg = res_data["choices"][0]["message"]
+    data = extract_llm_json(msg.get("content") or msg.get("reasoning") or "")
+    items = data if isinstance(data, list) else data.get("answers", [])
     ans = {
         it["index"]: [v] if isinstance(v := it.get("selected") or it.get("text") or it.get("answer") or [], str) else list(v)
-        for it in data.get("answers", [])
+        for it in items
     }
     if ans:
         logger.info("Parsed %d answer(s): %s", len(ans), ans)
         return ans
-    raise ValueError(f"Empty answers in payload: {raw}")
+    raise ValueError(f"Empty answers in payload: {msg}")
 
 
 def solve_quiz_with_llm(questions: list[dict[str, Any]], cfg: Settings) -> dict[int, list[str]]:

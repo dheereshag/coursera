@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
 from coursera_automation.items.quiz import handle_quiz
-from coursera_automation.items.quiz.status import is_quiz_completed
+from coursera_automation.items.quiz.status import is_final_exam, is_quiz_completed
 
 
 def test_is_quiz_completed_under_review() -> None:
@@ -85,5 +85,19 @@ def test_is_quiz_completed_true_when_go_to_next_item_visible() -> None:
         first=MagicMock(is_visible=MagicMock(return_value="Go to next item" in s))
     )
     assert is_quiz_completed(page) is True
+
+
+def test_is_final_exam_true() -> None:
+    """Verify is_final_exam returns True when header has Final Exam text."""
+    page = MagicMock()
+    page.locator.return_value.first.inner_text.return_value = "Final Exam\nPractice Assignment • 10 min"
+    assert is_final_exam(page) is True
+
+
+def test_is_final_exam_false() -> None:
+    """Verify is_final_exam returns False when header does not have Final Exam text."""
+    page = MagicMock()
+    page.locator.return_value.first.inner_text.return_value = "Week 1 Practice Quiz"
+    assert is_final_exam(page) is False
 
 

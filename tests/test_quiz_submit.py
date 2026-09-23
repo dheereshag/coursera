@@ -53,7 +53,7 @@ def test_submit_quiz_calls_poll_and_click_next() -> None:
 
     with patch("coursera_automation.items.quiz.submit.poll_and_click_next") as mock_poll:
         submit_quiz(page, cfg)
-        mock_poll.assert_called_once_with(page, max_wait_sec=300)
+        mock_poll.assert_called_once_with(page, max_wait_sec=180)
     sub_btn.click.assert_called_once()
     modal_btn.click.assert_called_once()
     assert page.wait_for_timeout.called
@@ -72,5 +72,27 @@ def test_poll_and_click_next_ignores_view_feedback() -> None:
     assert result is True
     btn.click.assert_called_once()
     page.goto.assert_called_once_with("https://www.coursera.org/learn/test/supplement/10", wait_until="domcontentloaded")
+
+
+def test_submit_quiz_skips_poll_on_final_exam() -> None:
+    """Verify submit_quiz skips poll_and_click_next when is_final_exam is True."""
+    page, cfg = MagicMock(), Settings()
+    sub_btn = MagicMock(is_visible=MagicMock(return_value=True))
+    page.get_by_role.return_value.first = sub_btn
+    page.locator.return_value.first = MagicMock(is_visible=MagicMock(return_value=False))
+
+    with (
+        patch("coursera_automation.items.quiz.submit.is_final_exam", return_value=True),
+        patch("coursera_automation.items.quiz.submit.poll_and_click_next") as mock_poll,
+    ):
+        submit_quiz(page, cfg)
+        mock_poll.assert_not_called()
+
+
+def test_poll_and_click_next_skips_on_final_exam() -> None:
+    """Verify poll_and_click_next returns False immediately when is_final_exam is True."""
+    page = MagicMock()
+    with patch("coursera_automation.items.quiz.poll.is_final_exam", return_value=True):
+        assert poll_and_click_next(page) is False
 
 

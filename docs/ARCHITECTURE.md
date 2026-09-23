@@ -51,11 +51,9 @@ sequenceDiagram
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
 - `coursera_automation/course.py`: Specialization navigation, resilient multi-state course entry, and dynamic CTA hydration wait (up to 40s).
 - `coursera_automation/main.py`: Multi-instance orchestration with `playwright-stealth` anti-bot evasion and keep-awake integration.
-- `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop.
+- `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop with 7s load stabilization wait.
 - **Content Subpackage (`items/content/`)**:
   - `video.py`: Video start, audio muting, 2x playback, 0.5s in-video question skip polling, playToggle auto-resume, and 6s post-buffer.
-
-
   - `reading.py`: Reading completion via unconditional 60s wait (12 cycles $\times$ 5s scrolling), bottom scroll, and `data-testid="mark-complete"` click.
   - `lab.py`: Lab Honor Code agreement with bounded timeout, bottom scrolling, optional LTI launch, and "Mark as completed".
 - **Interactive Subpackage (`items/interactive/`)**:
@@ -65,17 +63,17 @@ sequenceDiagram
   - `coordinator.py`: Peer submission coordination, title, upload wait, Honor Code, submit, and next item progression.
   - `upload.py`: File attachment via Uppy Dashboard file chooser and direct file input fallback.
 - **Navigation Subpackage (`items/navigation/`)**:
-
   - `resume.py`: Resume and get started course navigation with vertical scrolling and button detection.
-  - `navigator.py`: Next item progression navigation checking TopBannerCTAButton when back button is visible, with direct href fallback.
+  - `navigator.py`: Next item progression navigation checking TopBannerCTAButton when back button is visible, with direct href fallback, and graceful termination on Final Exams.
   - `dialogs.py`: Pendo guide, Honor Code, weekly learning target (Cancel), and transient popup dialog dismissal.
 - **Quiz Subpackage (`items/quiz/`)**:
   - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions are extracted, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
+  - `json_extractor.py`: Robust JSON extraction and decoding from LLM outputs, stripping `<think>` tags, markdown code blocks, and conversational preambles.
   - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements over lingering cover CTAs, with explicit support for `"Try again"` retries on evaluation review screens.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
   - `option_matcher.py`: Robust quiz option resolution and normalization, handling LaTeX/KaTeX math formatting (`*` vs `×`, braces, whitespace) and resolving index-based and text-based checkbox/radio clicks.
   - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), excluding decorative notched outlines and shadow textareas, with classification and CML prompt retrieval.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
-  - `status.py`: Completed/passed quiz and review-mode detection with TopBannerCTAButton and back button coordination.
-  - `submit.py`: Quiz submission and modal confirmation dialog handling.
-  - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence and reload on pending evaluation.
+  - `status.py`: Completed/passed quiz and review-mode detection, plus Final Exam header recognition.
+  - `submit.py`: Quiz submission, modal confirmation dialog handling, and 3-minute post-submission evaluation DOM stabilization wait.
+  - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence, skipping immediately on Final Exams.
