@@ -32,6 +32,10 @@ class Settings:
     openrouter_model: str = os.getenv(
         "OPENROUTER_MODEL", "inclusionai/ling-3.0-flash-fin:free"
     )
+    openrouter_fallback_models: str = os.getenv(
+        "OPENROUTER_FALLBACK_MODELS",
+        "dots-studio/dots-3-note-preview:free,qwen/qwen3.8-27b:free",
+    )
     post_quiz_wait_sec: int = int(os.getenv("COURSERA_POST_QUIZ_WAIT_SEC", "180"))
 
 

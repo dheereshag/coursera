@@ -97,3 +97,43 @@ def test_solve_quiz_retry_on_empty_choices() -> None:
     with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
         mock_post.side_effect = [resp_empty, _mock_resp('{"answers": [{"index": 0, "selected": ["Recovered"]}]}')]
         assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["Recovered"]}
+
+
+def test_solve_quiz_fallback_to_second_model_on_429() -> None:
+    """Verify solver falls back to dots-studio model when primary hits 429."""
+    resp_429 = MagicMock()
+    resp_429.raise_for_status.side_effect = requests.HTTPError("429 Client Error: Too Many Requests")
+
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
+        mock_post.side_effect = [
+            resp_429,
+            resp_429,
+            _mock_resp('{"answers": [{"index": 0, "selected": ["Fallback 1 Ans"]}]}'),
+        ]
+        res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings())
+        assert res == {0: ["Fallback 1 Ans"]}
+        models_called = [call[1]["json"]["model"] for call in mock_post.call_args_list]
+        assert "inclusionai/ling-3.0-flash-fin:free" in models_called
+        assert "dots-studio/dots-3-note-preview:free" in models_called
+
+
+def test_solve_quiz_fallback_to_third_model_on_429() -> None:
+    """Verify solver falls back to qwen model when primary and secondary both hit 429."""
+    resp_429 = MagicMock()
+    resp_429.raise_for_status.side_effect = requests.HTTPError("429 Client Error: Too Many Requests")
+
+    with patch("coursera_automation.items.quiz.solver.requests.post") as mock_post, patch("tenacity.nap.time.sleep"):
+        mock_post.side_effect = [
+            resp_429,
+            resp_429,
+            resp_429,
+            resp_429,
+            _mock_resp('{"answers": [{"index": 0, "selected": ["Qwen Ans"]}]}'),
+        ]
+        res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings())
+        assert res == {0: ["Qwen Ans"]}
+        models_called = [call[1]["json"]["model"] for call in mock_post.call_args_list]
+        assert "inclusionai/ling-3.0-flash-fin:free" in models_called
+        assert "dots-studio/dots-3-note-preview:free" in models_called
+        assert "qwen/qwen3.8-27b:free" in models_called
+
