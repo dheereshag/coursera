@@ -48,8 +48,13 @@ def test_submit_quiz_calls_poll_and_click_next() -> None:
     page, cfg = MagicMock(), Settings()
     sub_btn = MagicMock(is_visible=MagicMock(return_value=True))
     modal_btn = MagicMock(is_visible=MagicMock(return_value=True))
-    page.get_by_role.return_value.first = sub_btn
-    page.locator.return_value.first = modal_btn
+
+    def loc_mock(sel: str) -> MagicMock:
+        if "dialog-submit-button" in sel or "alertdialog" in sel:
+            return MagicMock(first=modal_btn)
+        return MagicMock(first=sub_btn)
+
+    page.locator.side_effect = loc_mock
 
     with patch("coursera_automation.items.quiz.submit.poll_and_click_next") as mock_poll:
         submit_quiz(page, cfg)
@@ -78,8 +83,14 @@ def test_submit_quiz_skips_poll_on_final_exam() -> None:
     """Verify submit_quiz skips poll_and_click_next when is_final_exam is True."""
     page, cfg = MagicMock(), Settings()
     sub_btn = MagicMock(is_visible=MagicMock(return_value=True))
-    page.get_by_role.return_value.first = sub_btn
-    page.locator.return_value.first = MagicMock(is_visible=MagicMock(return_value=False))
+    modal_btn = MagicMock(is_visible=MagicMock(return_value=False))
+
+    def loc_mock(sel: str) -> MagicMock:
+        if "dialog" in sel or "alertdialog" in sel:
+            return MagicMock(first=modal_btn)
+        return MagicMock(first=sub_btn)
+
+    page.locator.side_effect = loc_mock
 
     with (
         patch("coursera_automation.items.quiz.submit.is_final_exam", return_value=True),
@@ -94,5 +105,14 @@ def test_poll_and_click_next_skips_on_final_exam() -> None:
     page = MagicMock()
     with patch("coursera_automation.items.quiz.poll.is_final_exam", return_value=True):
         assert poll_and_click_next(page) is False
+
+
+def test_modal_btn_does_not_match_page_submit_controls() -> None:
+    """Verify MODAL_BTN never targets in-page AttemptViewSubmitControls buttons."""
+    from coursera_automation.items.quiz.submit import MODAL_BTN, SUB_SEL
+    assert "AttemptViewSubmitControls" not in MODAL_BTN
+    assert "dialog-submit-button" in MODAL_BTN
+    assert "submit-button" in SUB_SEL
+
 
 
