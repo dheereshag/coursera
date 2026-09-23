@@ -10,7 +10,7 @@ from playwright.sync_api import Error, Locator, Page
 from coursera_automation.items.navigation.dialogs import dismiss_dialogs
 
 logger = logging.getLogger(__name__)
-Q_SEL = '[data-testid^="part-"], fieldset:not([aria-hidden="true"]), [role="radiogroup"], textarea:not([aria-hidden="true"])'
+Q_SEL = '[data-testid^="part-Submission_"], [data-testid^="part-"], fieldset:not([aria-hidden="true"]), [role="radiogroup"]'
 
 
 def _detect_expected_count(page: Page) -> int:
@@ -27,19 +27,20 @@ def load_and_stabilize_questions(page: Page, timeout_ms: int, find_fn: Callable[
         page.locator(Q_SEL).first.wait_for(state="attached", timeout=timeout_ms)
     expected = _detect_expected_count(page)
     prev_count, stable_ticks = 0, 0
-    for _ in range(20):
+    for _ in range(25):
         page.mouse.wheel(0, 1000)
+        with suppress(Error):
+            page.evaluate("window.scrollBy(0, 1000)")
         page.wait_for_timeout(500)
         dismiss_dialogs(page)
-        locs = find_fn(page)
-        count = len(locs)
+        count = len(find_fn(page))
         if expected and count >= expected:
             logger.info("Reached expected %d questions.", expected)
             break
-        bottom = page.locator('#agreement-checkbox-base, [data-testid*="submit"], button:has-text("Submit")').first.is_visible()
+        bottom = page.locator('#agreement-checkbox-base').first.is_visible()
         if count > 0 and count == prev_count:
             stable_ticks += 1
-            if stable_ticks >= 3 or (bottom and stable_ticks >= 2):
+            if stable_ticks >= 4 or (bottom and stable_ticks >= 3):
                 logger.info("Question count stabilized at %d.", count)
                 break
         else:

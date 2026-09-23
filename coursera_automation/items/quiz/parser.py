@@ -18,14 +18,12 @@ def _is_textarea(loc: Locator) -> bool:
 
 
 def _find_textarea(loc: Locator) -> Locator:
-    if _is_textarea(loc):
-        return loc
-    if (ta := loc.locator(TEXT_SEL)).count():
-        return ta.first
+    if _is_textarea(loc) or (ta := loc.locator(TEXT_SEL)).count():
+        return loc if _is_textarea(loc) else ta.first
     with suppress(Error, AttributeError):
         if isinstance(p := loc.get_attribute("id"), str) and p and (t := loc.page.locator(f'{TEXT_SEL}[aria-labelledby="{p}"]').first).is_visible(timeout=100):
             return t
-    return loc.locator('xpath=following::*[self::textarea or self::input][not(@type="radio" or @type="checkbox" or @type="hidden" or @readonly)][1]').first
+    return loc.locator(TEXT_SEL).first
 
 
 def _detect_type(q_loc: Locator) -> str:
@@ -47,10 +45,10 @@ def _extract_prompt(q_loc: Locator) -> str:
 
 
 def _find_question_locs(page: Page) -> list[Locator]:
-    parts = [q for q in page.locator(f'[data-testid^="part-"]:has({TEXT_SEL}, input:not(#agreement-checkbox-base):not([type="hidden"]), .rc-Option)').all() if not q.locator("#agreement-checkbox-base").count()]
+    parts = [q for q in page.locator('[data-testid^="part-Submission_"]').all() if not q.locator("#agreement-checkbox-base").count()]
     if parts:
         return parts
-    locs = [q for q in page.locator('fieldset:not([aria-hidden="true"]), [role="radiogroup"], div:has(> * > .rc-Option)').all() if not q.locator("#agreement-checkbox-base").count()]
+    locs = [q for q in page.locator(f'[data-testid^="part-"]:has({TEXT_SEL}, .rc-Option), fieldset:not([aria-hidden="true"]), [role="radiogroup"]').all() if not q.locator("#agreement-checkbox-base").count()]
     return locs or [q for q in page.locator(f'[id^="prompt-autoGradableResponseId"], {TEXT_SEL}').all() if not q.locator("#agreement-checkbox-base").count()]
 
 

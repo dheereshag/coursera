@@ -17,6 +17,7 @@ EXC = (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, Val
 
 def solve_quiz_with_llm(questions: list[dict[str, Any]], cfg: Settings) -> dict[int, list[str]]:
     """Solve quiz questions using Groq first with fallback to OpenRouter."""
+    logger.info("Solving %d quiz question(s):\n%s", len(questions), json.dumps(questions, indent=2))
     prompt = (
         "Answer questions: 'single'=1 option, 'multiselect'=all, 'textarea'=concise written text.\n"
         "For multiple choice, 'selected' MUST contain the exact verbatim option text from 'options'.\n"

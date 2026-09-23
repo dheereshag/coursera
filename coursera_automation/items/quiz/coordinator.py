@@ -21,10 +21,8 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     """Handle complete quiz lifecycle: launch, solve, agree, and submit."""
     logger.info("Handling quiz assignment...")
     ensure_quiz_launched(page, max(cfg.timeout_ms, 15000))
-    if page.locator('[data-testid="tunnel-vision-back-button"], button[aria-label="Back"]').first.is_visible(timeout=500):
-        logger.info("Quiz attempt loaded in tunnel vision view.")
-    elif is_on_cover_page(page):
-        logger.error("Still on quiz cover page after launch attempt; aborting to prevent false extraction.")
+    if is_on_cover_page(page) and not page.locator('[data-testid="tunnel-vision-back-button"], button[aria-label="Back"]').first.is_visible(timeout=500):
+        logger.error("Still on quiz cover page; aborting.")
         return
     if is_quiz_completed(page) or page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible():
         logger.info("Quiz already completed or under review. Polling next item CTA...")
@@ -33,7 +31,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     logger.info("Extracted %d quiz question(s).", len(questions))
     if not questions or not any(q.locator('input:not([disabled]), textarea:not([disabled])').count() or _is_textarea(q) for q in q_locs):
-        logger.info("No active/unsubmitted questions found. Polling next item CTA.")
+        logger.info("No active questions found. Polling next item CTA.")
         poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
         return
     if not (answers := solve_quiz_with_llm(questions, cfg)):
@@ -42,19 +40,19 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
     for idx, q_loc in enumerate(q_locs):
         with suppress(Error):
             q_loc.scroll_into_view_if_needed(timeout=1000)
-        ans, ta = answers.get(idx, []), _find_textarea(q_loc)
-        if ta.is_visible(timeout=200) and ans:
+        ans, q_meta = answers.get(idx, []), (questions[idx] if idx < len(questions) else {})
+        if not ans:
+            continue
+        if q_meta.get("type") == "textarea":
             with suppress(Error):
-                ta.scroll_into_view_if_needed(timeout=1000)
-            ta.fill(ans[0])
+                _find_textarea(q_loc).fill(ans[0])
         else:
-            opts = questions[idx].get("options", []) if idx < len(questions) else []
             for opt in ans:
-                click_option(q_loc, opt, opts)
+                click_option(q_loc, opt, q_meta.get("options", []))
         page.wait_for_timeout(300)
-    if (agree := page.locator('#agreement-checkbox-base, label:has-text("understand and agree"), [aria-label*="understand and agree" i]').first).is_visible(timeout=cfg.timeout_ms):
+    if (agree := page.locator('#agreement-checkbox-base, label:has-text("understand and agree")').first).is_visible(timeout=cfg.timeout_ms):
         with suppress(Error):
             agree.scroll_into_view_if_needed(timeout=1000)
-        agree.click(force=True)
+            agree.click(force=True)
         page.wait_for_timeout(1000)
     submit_quiz(page, cfg)

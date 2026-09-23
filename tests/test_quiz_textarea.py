@@ -126,3 +126,23 @@ def test_handle_quiz_fill_text_exact_match() -> None:
         inp.fill.assert_called_once_with("hypothesis")
 
 
+def test_choice_question_never_fills_downstream_textarea() -> None:
+    """Verify radio and checkbox questions call click_option and never fill downstream text inputs."""
+    page, cfg, agree, sub = MagicMock(), Settings(), MagicMock(), MagicMock()
+    page.locator.side_effect = lambda s: MagicMock(first=agree) if "agree" in s else MagicMock(first=MagicMock(is_visible=lambda *a, **kw: False))
+    page.get_by_role.return_value.first = sub
+    q_loc = MagicMock()
+
+    with (
+        patch("coursera_automation.items.quiz.coordinator.wait_and_extract_questions", return_value=([q_loc], [{"type": "single", "options": ["Option A", "Option B"]}])),
+        patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["Option A"]}),
+        patch("coursera_automation.items.quiz.coordinator.click_option") as mock_click,
+        patch("coursera_automation.items.quiz.coordinator._find_textarea") as mock_find_ta,
+        patch("coursera_automation.items.quiz.coordinator.submit_quiz"),
+    ):
+        handle_quiz(page, cfg)
+        mock_click.assert_called_once_with(q_loc, "Option A", ["Option A", "Option B"])
+        mock_find_ta.assert_not_called()
+
+
+
