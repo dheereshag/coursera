@@ -19,7 +19,7 @@ def test_handle_discussion_fills_and_submits() -> None:
 
     chatbox.fill.assert_called_once_with("ok")
     reply_btn.click.assert_called_once()
-    page.wait_for_timeout.assert_any_call(10000)
+    page.wait_for_timeout.assert_any_call(15000)
 
 
 def test_handle_discussion_bypasses_when_absent() -> None:

@@ -19,6 +19,7 @@ def test_handle_dialogue_with_text_chat() -> None:
     handle_dialogue(page, cfg)
     for b in btns.values():
         b.click.assert_called_once()
+    page.wait_for_timeout.assert_any_call(15000)
 
 
 def test_handle_dialogue_already_started() -> None:
@@ -34,6 +35,7 @@ def test_handle_dialogue_already_started() -> None:
     handle_dialogue(page, cfg)
     end_btn.click.assert_called_once()
     conf_btn.click.assert_called_once()
+    page.wait_for_timeout.assert_any_call(15000)
 
 
 def test_handle_roleplay_end_and_confirm() -> None:
@@ -49,3 +51,4 @@ def test_handle_roleplay_end_and_confirm() -> None:
     handle_dialogue(page, cfg)
     end_btn.click.assert_called_once()
     conf_btn.click.assert_called_once_with(force=True)
+    page.wait_for_timeout.assert_any_call(15000)

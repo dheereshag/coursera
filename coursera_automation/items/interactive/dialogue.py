@@ -46,4 +46,8 @@ def handle_dialogue(page: Page, cfg: Settings) -> None:
     if confirm_btn.is_visible(timeout=5000):
         confirm_btn.click(force=True)
         logger.info("Confirmed ending in modal.")
-        page.wait_for_timeout(5000)
+        page.wait_for_timeout(2000)
+
+    logger.info("Waiting 15s for dialogue finalization before advancing...")
+    page.wait_for_load_state("domcontentloaded")
+    page.wait_for_timeout(15000)
