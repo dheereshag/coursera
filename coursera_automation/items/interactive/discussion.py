@@ -1,41 +1,38 @@
-"""Discussion prompt automation: type ok and submit Reply."""
+"""Discussion prompt automation: type ok, dwell & scroll 60s, and advance."""
 
 import logging
-import re
+from contextlib import suppress
 
-from playwright.sync_api import Page
+from playwright.sync_api import Error, Page
 
 from coursera_automation.config import Settings
 
 logger = logging.getLogger(__name__)
+CHAT_SEL = 'div[data-slate-editor="true"][role="textbox"], div[role="textbox"][aria-label="Your Reply"], textarea, div[contenteditable="true"]'
+REPLY_SEL = 'button[data-track-component="thread_reply"], button[id^="thread_reply_button"], button:has-text("Reply")'
+NEXT_SEL = 'button:has-text("Go to next item"), button:has-text("Next item"), a:has-text("Next item")'
 
 
 def handle_discussion(page: Page, cfg: Settings) -> None:
-    """Type 'ok' into discussion prompt and click Reply."""
-    logger.info("Handling discussion prompt item (10s load wait)...")
+    """Type 'ok' into discussion prompt, submit Reply, dwell 60s, and advance."""
+    logger.info("Handling discussion prompt item (7s load wait)...")
     page.wait_for_load_state("domcontentloaded")
-    page.wait_for_timeout(10000)
+    page.wait_for_timeout(7000)
 
-    chatbox = page.locator(
-        'textarea, input[placeholder*="reply" i], div[contenteditable="true"], div[role="textbox"]'
-    ).first
-    if not chatbox.is_visible(timeout=2000):
-        reply_trig = page.locator('button:has-text("Reply"), button:has-text("Leave a response")').first
-        if reply_trig.is_visible(timeout=5000):
-            reply_trig.scroll_into_view_if_needed()
-            reply_trig.click()
-            page.wait_for_timeout(2000)
+    chatbox = page.locator(CHAT_SEL).first
+    if not chatbox.is_visible(timeout=2000) and (trig := page.locator('button:has-text("Reply"), button:has-text("Leave a response")').first).is_visible(timeout=4000):
+        trig.scroll_into_view_if_needed()
+        trig.click(force=True)
+        page.wait_for_timeout(2000)
 
     if chatbox.is_visible(timeout=cfg.timeout_ms):
         chatbox.scroll_into_view_if_needed()
-        chatbox.fill("ok")
+        chatbox.click()
+        chatbox.press_sequentially("ok", delay=50)
         logger.info("Typed 'ok' into discussion chatbox. Waiting 3s before clicking Reply...")
         page.wait_for_timeout(3000)
 
-        reply_btn = page.get_by_role(
-            "button", name=re.compile(r"^reply$", re.IGNORECASE)
-        ).or_(page.get_by_text("Reply", exact=True)).first
-
+        reply_btn = page.locator(REPLY_SEL).first
         for _ in range(10):
             if reply_btn.is_visible() and reply_btn.is_enabled() and reply_btn.get_attribute("aria-disabled") != "true":
                 break
@@ -43,11 +40,17 @@ def handle_discussion(page: Page, cfg: Settings) -> None:
 
         if reply_btn.is_visible(timeout=cfg.timeout_ms):
             reply_btn.click(force=True)
-            logger.info("Clicked 'Reply' button. Waiting 8s for next item to mount...")
-            page.wait_for_timeout(8000)
+            logger.info("Clicked 'Reply'. Dwell & scroll for 60s for completion tick...")
+            for s in range(12):
+                page.mouse.wheel(0, 400)
+                page.wait_for_timeout(5000)
+                logger.info("Discussion dwell: %ds / 60s elapsed...", (s + 1) * 5)
+            page.evaluate("() => window.scrollTo(0, document.body.scrollHeight)")
+            page.wait_for_timeout(1000)
 
-        next_btn = page.locator('button:has-text("Go to next item"), button:has-text("Next item"), a:has-text("Next item")').first
-        if next_btn.is_visible(timeout=5000):
+    next_btn = page.locator(NEXT_SEL).first
+    if next_btn.is_visible(timeout=5000):
+        with suppress(Error):
             next_btn.click(force=True)
             logger.info("Clicked 'Go to next item' on discussion prompt.")
             page.wait_for_timeout(3000)
