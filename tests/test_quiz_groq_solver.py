@@ -28,8 +28,9 @@ def test_query_groq_success() -> None:
         call_args = mock_post.call_args
         assert call_args[1]["headers"]["Authorization"] == "Bearer test-groq-key"
         assert call_args[1]["json"]["model"] == "openai/gpt-oss-120b"
-        assert call_args[1]["json"]["reasoning_effort"] == "low"
+        assert call_args[1]["json"]["reasoning_effort"] == "medium"
         assert call_args[1]["json"]["max_completion_tokens"] == 4096
+        assert call_args[1]["timeout"] == 60
 
 
 def test_query_groq_retry_on_error() -> None:
