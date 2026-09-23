@@ -13,7 +13,7 @@ sequenceDiagram
     participant Course as coursera_automation.course
     participant Disp as items.dispatcher
     participant Item as Video/Lab/Reading/Quiz/Dialogue/Discussion
-    participant LLM as OpenRouter Laguna-2.1
+    participant LLM as OpenRouter Ling-3.0-Flash-Fin
     participant Dial as items.navigation.dialogs
     participant Nav as items.navigation.navigator
 

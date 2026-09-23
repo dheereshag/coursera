@@ -21,7 +21,7 @@ def test_solve_quiz_with_llm_json() -> None:
         mock_post.return_value = _mock_resp('{"answers": [{"index": 0, "selected": ["Option A"]}]}')
         assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["Option A"]}
         payload = mock_post.call_args[1]["json"]
-        assert payload["model"] == "nvidia/nemotron-3-ultra-550b-a55b:free" and payload["reasoning"] == {"enabled": True}
+        assert payload["model"] == "inclusionai/ling-3.0-flash-fin:free" and payload["reasoning"] == {"enabled": True}
 
 
 def test_solve_quiz_retry_on_request_error() -> None:

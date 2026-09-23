@@ -30,7 +30,7 @@ class Settings:
         "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
     )
     openrouter_model: str = os.getenv(
-        "OPENROUTER_MODEL", "nvidia/nemotron-3-ultra-550b-a55b:free"
+        "OPENROUTER_MODEL", "inclusionai/ling-3.0-flash-fin:free"
     )
 
 
