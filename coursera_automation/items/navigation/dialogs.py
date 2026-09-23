@@ -4,6 +4,8 @@ import logging
 
 from playwright.sync_api import Locator, Page
 
+from .target import TARGET_SEL, handle_weekly_target
+
 logger = logging.getLogger(__name__)
 
 PENDO_SEL = '#pendo-guide-container, ._pendo-step-container-size, [id^="pendo-g-"]'
@@ -22,6 +24,7 @@ def dismiss_pendo(page: Page) -> None:
 
 def dismiss_dialogs(page: Page) -> None:
     """Dismiss transient modals, popups, and sound effects prompts."""
+    handle_weekly_target(page)
     dismiss_pendo(page)
     if (s := page.locator('div:has-text("sound effects") button').first).is_visible(timeout=400):
         s.click(force=True)
@@ -35,11 +38,7 @@ def dismiss_dialogs(page: Page) -> None:
     if (att := page.locator('[data-testid="StartAttemptModal__primary-button"]').first).is_visible(timeout=400):
         logger.info("Dismissing attempt warning modal (Continue)...")
         att.click(force=True)
-    for sel in (
-        '.ab-close-button', 'button[aria-label*="close" i]', 'button:has-text("Got it")',
-        '[data-testid="select-goal-days-btn-group"] button:has-text("Cancel")',
-        '[aria-modal="true"]:has-text("weekly learning target") button:has-text("Cancel")',
-    ):
+    for sel in ('.ab-close-button', 'button[aria-label*="close" i]', 'button:has-text("Got it")'):
         if (btn := page.locator(sel).first).is_visible(timeout=300):
             btn.click(force=True)
             break
@@ -55,5 +54,4 @@ def register_dialog_handlers(page: Page) -> None:
             loc.evaluate('(el) => { el.closest("._pendo-step-container-size")?.remove() || el.remove(); }')
 
     page.add_locator_handler(page.locator(PENDO_SEL).first, _handle_pendo)
-    target = page.locator('[data-testid="select-goal-days-step"], [aria-modal="true"]:has-text("weekly learning target")').first
-    page.add_locator_handler(target, lambda loc: loc.page.locator('[data-testid="select-goal-days-btn-group"] button:has-text("Cancel")').first.click(force=True))
+    page.add_locator_handler(page.locator(TARGET_SEL).first, lambda loc: handle_weekly_target(loc.page))

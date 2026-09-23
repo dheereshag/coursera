@@ -65,7 +65,8 @@ sequenceDiagram
 - **Navigation Subpackage (`items/navigation/`)**:
   - `resume.py`: Resume and get started course navigation with vertical scrolling and button detection.
   - `navigator.py`: Next item progression navigation checking TopBannerCTAButton when back button is visible, with direct href fallback, and graceful termination on Final Exams.
-  - `dialogs.py`: Pendo guide, Honor Code, weekly learning target (Cancel), and transient popup dialog dismissal.
+  - `dialogs.py`: Pendo guide, Honor Code, and transient popup dialog dismissal.
+  - `target.py`: Weekly learning target modal handling (checks all days, 5s delay for Save button, saves, and waits 30s for reload).
 - **Quiz Subpackage (`items/quiz/`)**:
   - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions are extracted, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
   - `json_extractor.py`: Robust JSON extraction and decoding from LLM outputs, stripping `<think>` tags, markdown code blocks, and conversational preambles.
