@@ -17,7 +17,7 @@ sequenceDiagram
     participant Dial as items.navigation.dialogs
     participant Nav as items.navigation.navigator
 
-    Main->>Inst: load_instances("instances.json")
+    Main->>Inst: load_instances("instances.py")
     Inst-->>Main: list[InstanceConfig]
     par Concurrent Execution (ThreadPoolExecutor)
         Main->>Dial: register_dialog_handlers(page)
@@ -46,7 +46,7 @@ sequenceDiagram
 ## Modular Decomposition (NASA JPL Rule 4 - Production Modules)
 
 - `coursera_automation/config.py`: Environment configuration and typed dataclass.
-- `coursera_automation/instances.py`: Multi-instance configuration loading and single-instance fallback.
+- `coursera_automation/instances.py`: Multi-instance configuration loading from typed `instances.py` and JSON.
 - `coursera_automation/keep_awake.py`: macOS sleep prevention power assertion context manager.
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
 - `coursera_automation/course.py`: Specialization navigation, resilient multi-state course entry, and dynamic CTA hydration wait (up to 40s).

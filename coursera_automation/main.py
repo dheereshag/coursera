@@ -42,7 +42,7 @@ def run_instance(inst: InstanceConfig) -> None:
             context.close()
 
 
-def run(instances_path: str = "instances.json") -> None:
+def run(instances_path: str = "instances.py") -> None:
     """Load all configured instances and execute them in parallel."""
     instances = load_instances(instances_path)
     logger.info("Executing %d automation instance(s) in parallel...", len(instances))

@@ -1,11 +1,12 @@
 """Multi-instance configuration loader for Coursera automation sessions."""
 
+import importlib.util
 import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
 
-from coursera_automation.config import Settings, config
+from coursera_automation.config import Settings
 
 logger = logging.getLogger(__name__)
 
@@ -24,35 +25,35 @@ class InstanceConfig:
     def to_settings(self) -> Settings:
         """Convert this instance configuration into a full Settings object."""
         return Settings(
-            email=self.email,
-            password=self.password,
-            course_url=self.course_url,
-            headless=self.headless,
-            max_items=self.max_items,
-            timeout_ms=self.timeout_ms,
+            email=self.email, password=self.password, course_url=self.course_url,
+            headless=self.headless, max_items=self.max_items, timeout_ms=self.timeout_ms,
         )
 
 
-def load_instances(path: str = "instances.json") -> list[InstanceConfig]:
-    """Load instance definitions from JSON, or fallback to default Settings."""
+def _load_py(p: Path) -> list[InstanceConfig]:
+    spec = importlib.util.spec_from_file_location("user_instances", p)
+    if not (spec and spec.loader):
+        return []
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return [it for it in getattr(mod, "INSTANCES", []) if isinstance(it, InstanceConfig)]
+
+
+def _load_json(p: Path) -> list[InstanceConfig]:
+    data = json.loads(p.read_text(encoding="utf-8"))
+    return [InstanceConfig(**it) for it in data] if isinstance(data, list) else []
+
+
+def load_instances(path: str = "instances.py") -> list[InstanceConfig]:
+    """Load instance definitions from Python config or JSON file."""
     p = Path(path)
+    if not p.exists() and path == "instances.py" and Path("instances.json").exists():
+        p = Path("instances.json")
     if p.exists():
         try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-            if isinstance(data, list) and data:
-                instances = [InstanceConfig(**item) for item in data]
-                logger.info("Loaded %d instances from %s", len(instances), path)
-                return instances
-        except (json.JSONDecodeError, KeyError, TypeError, OSError) as exc:
-            logger.warning("Failed to load %s (%s). Using defaults.", path, exc)
-
-    logger.info("Using default single instance configuration.")
-    return [
-        InstanceConfig(
-            email=config.email, password=config.password,
-            course_url=config.course_url, headless=config.headless,
-            max_items=config.max_items, timeout_ms=config.timeout_ms,
-        )
-    ]
-
-
+            if (insts := _load_py(p) if p.suffix == ".py" else _load_json(p)):
+                logger.info("Loaded %d instance(s) from %s", len(insts), p)
+                return insts
+        except (json.JSONDecodeError, KeyError, TypeError, OSError, AttributeError, ImportError, ValueError) as exc:
+            logger.warning("Failed to load instances from %s: %s", p, exc)
+    raise ValueError(f"No valid instances could be loaded from '{path}'.")

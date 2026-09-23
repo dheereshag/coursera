@@ -5,10 +5,12 @@ from coursera_automation.config import Settings, config
 
 def test_default_config() -> None:
     """Verify default configuration values."""
-    assert config.email == "24bai70310@cuchd.in"
-    assert config.password == "Lakshya.24AI"
-    assert "coursera.org" in config.login_url
-    assert "generative-ai" in config.course_url
+    assert config.email == ""
+    assert config.password == ""
+    assert config.login_url == "https://www.coursera.org"
+    assert config.headless is False
+    assert config.openrouter_base_url == "https://openrouter.ai/api/v1"
+    assert config.openrouter_model == "inclusionai/ling-3.0-flash-fin:free"
     assert config.post_quiz_wait_sec == 180
 
 

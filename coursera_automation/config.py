@@ -13,25 +13,16 @@ load_dotenv()
 class Settings:
     """Application settings and runtime credentials."""
 
-    login_url: str = os.getenv(
-        "COURSERA_LOGIN_URL", "https://www.coursera.org"
-    )
-    course_url: str = os.getenv(
-        "COURSERA_COURSE_URL",
-        "https://www.coursera.org/specializations/generative-ai-for-software-developers",
-    )
-    email: str = os.getenv("COURSERA_EMAIL", "24bai70310@cuchd.in")
-    password: str = os.getenv("COURSERA_PASSWORD", "Lakshya.24AI")
-    headless: bool = os.getenv("COURSERA_HEADLESS", "false").lower() == "true"
+    login_url: str = "https://www.coursera.org"
+    email: str = ""
+    password: str = ""
+    course_url: str = ""
+    headless: bool = False
     timeout_ms: int = int(os.getenv("COURSERA_TIMEOUT_MS", "40000"))
     max_items: int = int(os.getenv("COURSERA_MAX_ITEMS", "25"))
     openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
-    openrouter_base_url: str = os.getenv(
-        "OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"
-    )
-    openrouter_model: str = os.getenv(
-        "OPENROUTER_MODEL", "inclusionai/ling-3.0-flash-fin:free"
-    )
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    openrouter_model: str = "inclusionai/ling-3.0-flash-fin:free"
     openrouter_fallback_models: str = os.getenv(
         "OPENROUTER_FALLBACK_MODELS",
         "dots-studio/dots-3-note-preview:free,qwen/qwen3.8-27b:free",

@@ -19,25 +19,33 @@ Create your `.env` configuration from the example template:
 cp .env.example .env
 ```
 
-Set your credentials and course URL in `.env`:
+Configure global settings and API keys in `.env`:
 
 ```ini
-COURSERA_EMAIL="your_email@example.com"
-COURSERA_PASSWORD="your_password"
-COURSERA_COURSE_URL="https://www.coursera.org/specializations/your-course-url"
+GROQ_API_KEY="gsk_your_groq_api_key"
+GROQ_MODEL="openai/gpt-oss-120b"
 OPENROUTER_API_KEY="sk-or-v1-your-openrouter-key"
-OPENROUTER_MODEL="inclusionai/ling-3.0-flash-fin:free"
 ```
 
-### Multi-Instance Configuration (Optional)
+### Course Instances Configuration (`instances.py`)
 
-To run multiple accounts or courses concurrently in parallel, create `instances.json`:
+Define your Coursera accounts, passwords, and courses in `instances.py`:
 
-```bash
-cp instances.example.json instances.json
+```python
+from coursera_automation.instances import InstanceConfig
+
+INSTANCES: list[InstanceConfig] = [
+    InstanceConfig(
+        email="your_email@example.com",
+        password="your_password",
+        course_url="https://www.coursera.org/specializations/your-course-url",
+        headless=False,
+        max_items=50,
+    ),
+]
 ```
 
-Edit `instances.json` with the respective email, password, and course URL per instance.
+You can define multiple instances to run concurrent browser sessions in parallel, or easily comment out instances using `#`.
 
 ## 3. Run Automation
 
