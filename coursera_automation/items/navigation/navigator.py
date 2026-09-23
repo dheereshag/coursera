@@ -30,7 +30,7 @@ def click_next_item(page: Page, cfg: Settings) -> bool:
     for _ in range(1 if has_back else 8):
         dismiss_dialogs(page)
         if not btn_cand:
-            locs = page.locator('[data-testid*="next-item"], button:has-text("Next item"), a:has-text("Next item")')
+            locs = page.locator('[data-testid*="next-item"], button:has-text("Go to next item"), button:has-text("Next item"), a:has-text("Next item")')
             btn_cand = [b for b in [next((l for l in locs.all() if l.is_visible()), None) or (locs.first if locs.first.is_visible() else None)] if b]
         if btn_cand:
             btn = btn_cand[0]

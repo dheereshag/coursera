@@ -29,16 +29,27 @@ def handle_discussion(page: Page, cfg: Settings) -> None:
     if chatbox.is_visible(timeout=cfg.timeout_ms):
         chatbox.scroll_into_view_if_needed()
         chatbox.fill("ok")
-        logger.info("Typed 'ok' into discussion chatbox.")
-        page.wait_for_timeout(1000)
+        logger.info("Typed 'ok' into discussion chatbox. Waiting 3s before clicking Reply...")
+        page.wait_for_timeout(3000)
 
         reply_btn = page.get_by_role(
             "button", name=re.compile(r"^reply$", re.IGNORECASE)
         ).or_(page.get_by_text("Reply", exact=True)).first
 
+        for _ in range(10):
+            if reply_btn.is_visible() and reply_btn.is_enabled() and reply_btn.get_attribute("aria-disabled") != "true":
+                break
+            page.wait_for_timeout(500)
+
         if reply_btn.is_visible(timeout=cfg.timeout_ms):
-            reply_btn.click()
-            logger.info("Clicked 'Reply' button. Waiting 15s for post to register...")
-            page.wait_for_timeout(15000)
+            reply_btn.click(force=True)
+            logger.info("Clicked 'Reply' button. Waiting 8s for next item to mount...")
+            page.wait_for_timeout(8000)
+
+        next_btn = page.locator('button:has-text("Go to next item"), button:has-text("Next item"), a:has-text("Next item")').first
+        if next_btn.is_visible(timeout=5000):
+            next_btn.click(force=True)
+            logger.info("Clicked 'Go to next item' on discussion prompt.")
+            page.wait_for_timeout(3000)
 
 

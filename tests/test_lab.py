@@ -35,8 +35,15 @@ def test_handle_lab_scroll_and_launch() -> None:
         assert page.mouse.wheel.call_count == 4
         page.evaluate.assert_any_call("() => window.scrollTo(0, document.body.scrollHeight)")
         popup.wait_for_load_state.assert_called_once_with("domcontentloaded")
-        page.wait_for_timeout.assert_any_call(10000)
+        page.wait_for_timeout.assert_any_call(8000)
         page.bring_to_front.assert_called_once()
+
+
+def test_handle_lab_launch_lab_ungraded_button() -> None:
+    """Verify handle_lab targets Launch lab button with data-track-component."""
+    from coursera_automation.items.content.lab import LAUNCH_SEL
+    assert "Launch lab" in LAUNCH_SEL
+    assert "launch_lab" in LAUNCH_SEL
 
 
 def test_handle_lab_mark_completed() -> None:

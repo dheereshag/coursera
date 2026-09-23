@@ -28,7 +28,7 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
         handle_discussion(page, cfg)
     elif any(k in url for k in ("/lecture/", "/video/")):
         handle_video(page, cfg)
-    elif any(k in url for k in ("/lab/", "/ungradedLab/", "/programming/")):
+    elif any(k in url for k in ("/lab/", "/ungradedLab/", "/ungradedLabWidget/", "/programming/")) :
         handle_lab(page, cfg)
     elif any(k in url for k in ("/exam/", "/quiz/", "/assignment")):
         handle_quiz(page, cfg)
@@ -40,7 +40,7 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
         handle_discussion(page, cfg)
     elif page.locator("video, .rc-VideoPlayer, [data-testid*='video']").first.is_visible(timeout=3000):
         handle_video(page, cfg)
-    elif page.locator('form[data-testid="lti-launch-form"], [aria-label="Coursera Honor Code"], button:has-text("Launch App")').first.is_visible(timeout=3000):
+    elif page.locator('form[data-testid="lti-launch-form"], [aria-label="Coursera Honor Code"], button:has-text("Launch App"), button:has-text("Launch lab"), [data-track-component*="launch_lab"]').first.is_visible(timeout=3000):
         handle_lab(page, cfg)
     elif page.locator('[data-testid^="part-"], [data-testid="assignment-feedback-view"], [data-testid="tunnel-vision-back-button"], [data-testid="CoverPageActionButton"], button:has-text("Try again"), #agreement-checkbox-base').first.is_visible(timeout=3000):
         handle_quiz(page, cfg)
