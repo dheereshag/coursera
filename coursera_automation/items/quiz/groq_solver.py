@@ -23,7 +23,7 @@ def _call_groq(cfg: Settings, prompt: str) -> dict[int, list[str]]:
     headers = {"Authorization": f"Bearer {cfg.groq_api_key}", "Content-Type": "application/json"}
     payload = {
         "model": cfg.groq_model, "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.2, "max_completion_tokens": 4096, "reasoning_effort": "medium",
+        "temperature": 0.2, "max_completion_tokens": 4096, "reasoning_effort": "low",
         "response_format": {"type": "json_object"},
     }
     resp = requests.post(url, headers=headers, json=payload, timeout=60)

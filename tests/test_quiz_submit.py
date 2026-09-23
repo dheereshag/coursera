@@ -47,7 +47,8 @@ def test_submit_quiz_calls_poll_and_click_next() -> None:
     """Verify submit_quiz clicks submit, confirms modal, waits, and calls poll_and_click_next."""
     page, cfg = MagicMock(), Settings()
     sub_btn = MagicMock(is_visible=MagicMock(return_value=True))
-    modal_btn = MagicMock(is_visible=MagicMock(return_value=True))
+    modal_btn = MagicMock()
+    modal_btn.is_visible.side_effect = [True, False]
 
     def loc_mock(sel: str) -> MagicMock:
         if "dialog-submit-button" in sel or "alertdialog" in sel:

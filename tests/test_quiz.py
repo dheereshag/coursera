@@ -26,7 +26,8 @@ def test_extract_prompt_cml() -> None:
 def test_handle_quiz_flow() -> None:
     """Verify handle_quiz solves questions, checks agreement, and submits with modal."""
     page, cfg, agree, sub, modal = MagicMock(), Settings(), MagicMock(), MagicMock(), MagicMock()
-    agree.is_visible = sub.is_visible = modal.is_visible = lambda *a, **kw: True
+    agree.is_visible = sub.is_visible = lambda *a, **kw: True
+    modal.is_visible = MagicMock(side_effect=[True, False])
     q_loc = MagicMock(inner_text=lambda: "Q?", locator=lambda s: MagicMock(count=lambda: (0 if "agree" in s else 1), all=lambda: [MagicMock(inner_text=lambda: "4")], first=MagicMock(is_visible=lambda *a, **kw: False)))
 
     def loc_mock(s: str) -> MagicMock:
