@@ -99,3 +99,18 @@ def test_click_option_fallback_filter_when_index_not_found() -> None:
     click_option(q_loc, "Unknown", ["Alpha", "Beta"])
     labels_mock.filter.assert_called_once_with(has_text="Unknown")
     fallback_btn.click.assert_called_once_with(force=True)
+
+
+def test_click_option_scrolls_into_view() -> None:
+    """Verify click_option scrolls option into view before interacting."""
+    q_loc = MagicMock()
+    label = MagicMock(is_visible=lambda: True)
+    label.locator.return_value.count.return_value = 0
+    labels_mock = MagicMock(count=lambda: 1)
+    labels_mock.nth.return_value = label
+    q_loc.locator.return_value = labels_mock
+
+    click_option(q_loc, 0, ["First"])
+    label.scroll_into_view_if_needed.assert_called_once_with(timeout=1000)
+    label.click.assert_called_once_with(force=True)
+

@@ -1,9 +1,10 @@
 """Option matching and selection for Coursera quiz choices."""
 
 import re
+from contextlib import suppress
 from typing import Any
 
-from playwright.sync_api import Locator
+from playwright.sync_api import Error, Locator
 
 
 def normalize_opt(s: Any) -> str:
@@ -31,7 +32,9 @@ def click_option(q_loc: Locator, opt: Any, options: list[str]) -> None:
     idx = resolve_option_index(opt, options, labels.count())
     btn = labels.nth(idx) if idx is not None and idx < labels.count() else labels.filter(has_text=str(opt)).first
     if btn.is_visible():
-        if btn.locator('input[type="checkbox"]').count():
-            btn.locator('input[type="checkbox"]').first.check(force=True)
+        with suppress(Error):
+            btn.scroll_into_view_if_needed(timeout=1000)
+        if (inps := btn.locator('input[type="checkbox"], input[type="radio"]')).count():
+            inps.first.check(force=True)
         else:
             btn.click(force=True)

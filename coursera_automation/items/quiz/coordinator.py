@@ -44,6 +44,8 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
             q_loc.scroll_into_view_if_needed(timeout=1000)
         ans, ta = answers.get(idx, []), _find_textarea(q_loc)
         if ta.is_visible(timeout=200) and ans:
+            with suppress(Error):
+                ta.scroll_into_view_if_needed(timeout=1000)
             ta.fill(ans[0])
         else:
             opts = questions[idx].get("options", []) if idx < len(questions) else []
@@ -51,6 +53,8 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
                 click_option(q_loc, opt, opts)
         page.wait_for_timeout(300)
     if (agree := page.locator('#agreement-checkbox-base, label:has-text("understand and agree"), [aria-label*="understand and agree" i]').first).is_visible(timeout=cfg.timeout_ms):
+        with suppress(Error):
+            agree.scroll_into_view_if_needed(timeout=1000)
         agree.click(force=True)
         page.wait_for_timeout(1000)
     submit_quiz(page, cfg)

@@ -11,7 +11,7 @@ from .status import is_quiz_completed
 
 logger = logging.getLogger(__name__)
 
-ATTEMPT_READY = '[data-testid="tunnel-vision-back-button"], button[aria-label="Back"], #agreement-checkbox-base, textarea:not([disabled]), button:has-text("Save draft")'
+ATTEMPT_READY = '[data-testid^="part-"], [data-testid="tunnel-vision-back-button"], button[aria-label="Back"], #agreement-checkbox-base, textarea:not([disabled]), button:has-text("Save draft")'
 CONFIRM_MODAL = '[data-testid="StartAttemptModal__primary-button"], [role="dialog"] button:has-text("Start attempt")'
 COVER_SELECTORS = ('button[data-testid="CoverPageActionButton"], button[data-e2e="CoverPageActionButton"]', 'button:has-text("Resume"), button:has-text("Start"), button:has-text("Try again"), a:has-text("Try again")')
 

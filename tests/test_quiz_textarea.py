@@ -94,3 +94,35 @@ def test_find_textarea_ignores_shadow_textarea() -> None:
     loc.locator.side_effect = ta_mock
     assert _find_textarea(loc) == visible_ta
 
+
+def test_detect_type_and_find_text_exact_match_input() -> None:
+    """Verify _detect_type and _find_textarea identify single-line text inputs (GradedTextExactMatchQuestion)."""
+    loc, inp = MagicMock(), MagicMock()
+    loc.evaluate.return_value = "DIV"
+    loc.locator.side_effect = lambda s: MagicMock(
+        count=lambda: 1 if "not([type=" in s or "textarea" in s else 0,
+        first=inp,
+    )
+    assert _detect_type(loc) == "textarea"
+    assert _find_textarea(loc) == inp
+
+
+
+def test_handle_quiz_fill_text_exact_match() -> None:
+    """Verify handle_quiz populates single-line text input for GradedTextExactMatchQuestion."""
+    page, cfg, inp, agree, sub = MagicMock(), Settings(), MagicMock(), MagicMock(), MagicMock()
+    inp.is_visible.return_value = True
+    page.locator.side_effect = lambda s: MagicMock(first=agree) if "agree" in s else MagicMock(first=MagicMock(is_visible=lambda *a, **kw: False))
+    page.get_by_role.return_value.first = sub
+    q_loc = MagicMock()
+    q_loc.locator.side_effect = lambda s: MagicMock(first=inp, count=lambda: 1) if "input" in s or "textarea" in s else MagicMock(count=lambda: 0)
+
+    with (
+        patch("coursera_automation.items.quiz.coordinator.wait_and_extract_questions", return_value=([q_loc], [{"type": "textarea"}])),
+        patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["hypothesis"]}),
+        patch("coursera_automation.items.quiz.coordinator.submit_quiz"),
+    ):
+        handle_quiz(page, cfg)
+        inp.fill.assert_called_once_with("hypothesis")
+
+

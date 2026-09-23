@@ -68,12 +68,12 @@ sequenceDiagram
   - `dialogs.py`: Pendo guide, Honor Code, and transient popup dialog dismissal.
   - `target.py`: Weekly learning target modal handling (checks all days, 5s delay for Save button, saves, and waits 30s for reload).
 - **Quiz Subpackage (`items/quiz/`)**:
-  - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions are extracted, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
+  - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions (multiple choice, multiselect, textarea, and exact-match text inputs) are extracted and filled with auto-scrolling, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
   - `json_extractor.py`: Robust JSON extraction and decoding from LLM outputs, stripping `<think>` tags, markdown code blocks, and conversational preambles.
-  - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements over lingering cover CTAs, with explicit support for `"Try again"` retries on evaluation review screens.
+  - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements (`[data-testid^="part-"]`) over lingering cover CTAs, with explicit support for `"Try again"` retries on evaluation review screens.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
-  - `option_matcher.py`: Robust quiz option resolution and normalization, handling LaTeX/KaTeX math formatting (`*` vs `×`, braces, whitespace) and resolving index-based and text-based checkbox/radio clicks.
-  - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), excluding decorative notched outlines and shadow textareas, with classification and CML prompt retrieval.
+  - `option_matcher.py`: Robust quiz option resolution and normalization, handling LaTeX/KaTeX math formatting (`*` vs `×`, braces, whitespace), auto-scrolling options into view, and directly checking native radio/checkbox inputs alongside label clicks.
+  - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), identifying both multiline textareas and single-line exact match text inputs (`GradedTextExactMatchQuestion`), with prompt sanitization stripping adversarial AI honeypot instructions.
   - `solver.py`: OpenRouter LLM API integration with `requests` and `tenacity` retry backoff.
   - `status.py`: Completed/passed quiz and review-mode detection, plus Final Exam header recognition.
   - `submit.py`: Quiz submission, modal confirmation dialog handling, and 3-minute post-submission evaluation DOM stabilization wait.
