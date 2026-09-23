@@ -29,8 +29,7 @@ def handle_discussion(page: Page, cfg: Settings) -> None:
         chatbox.scroll_into_view_if_needed()
         chatbox.click()
         chatbox.press_sequentially("ok", delay=50)
-        logger.info("Typed 'ok' into discussion chatbox. Waiting 3s before clicking Reply...")
-        page.wait_for_timeout(3000)
+        logger.info("Typed 'ok' into discussion chatbox. Waiting for Reply button to enable...")
 
         reply_btn = page.locator(REPLY_SEL).first
         for _ in range(10):
@@ -39,6 +38,8 @@ def handle_discussion(page: Page, cfg: Settings) -> None:
             page.wait_for_timeout(500)
 
         if reply_btn.is_visible(timeout=cfg.timeout_ms):
+            logger.info("Reply button enabled. Waiting 5s before clicking...")
+            page.wait_for_timeout(5000)
             reply_btn.click(force=True)
             logger.info("Clicked 'Reply'. Dwell & scroll for 60s for completion tick...")
             for s in range(12):

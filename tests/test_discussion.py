@@ -28,7 +28,6 @@ def test_handle_discussion_fills_and_submits() -> None:
     chatbox.click.assert_called_once()
     chatbox.press_sequentially.assert_called_once_with("ok", delay=50)
     reply_btn.click.assert_called_once_with(force=True)
-    page.wait_for_timeout.assert_any_call(3000)
     page.wait_for_timeout.assert_any_call(5000)
     assert page.mouse.wheel.call_count == 12
 
