@@ -21,7 +21,7 @@ def test_solve_quiz_with_llm_json() -> None:
         mock_post.return_value = _mock_resp('{"answers": [{"index": 0, "selected": ["Option A"]}]}')
         assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(groq_api_key="")) == {0: ["Option A"]}
         payload = mock_post.call_args[1]["json"]
-        assert payload["model"] == "inclusionai/ling-3.0-flash-fin:free" and payload["reasoning"] == {"enabled": True}
+        assert payload["model"] == "dots-studio/dots-3-note-preview:free" and payload["reasoning"] == {"enabled": True}
 
 
 def test_solve_quiz_retry_on_request_error() -> None:
@@ -100,7 +100,7 @@ def test_solve_quiz_retry_on_empty_choices() -> None:
 
 
 def test_solve_quiz_fallback_to_second_model_on_429() -> None:
-    """Verify solver falls back to dots-studio model when primary hits 429."""
+    """Verify solver falls back to nex-agi model when primary hits 429."""
     resp_429 = MagicMock()
     resp_429.raise_for_status.side_effect = requests.HTTPError("429 Client Error: Too Many Requests")
 
@@ -113,12 +113,12 @@ def test_solve_quiz_fallback_to_second_model_on_429() -> None:
         res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(groq_api_key="", openrouter_api_key="single-key"))
         assert res == {0: ["Fallback 1 Ans"]}
         models_called = [call[1]["json"]["model"] for call in mock_post.call_args_list]
-        assert "inclusionai/ling-3.0-flash-fin:free" in models_called
         assert "dots-studio/dots-3-note-preview:free" in models_called
+        assert "nex-agi/nex-n2.5-mini:free" in models_called
 
 
 def test_solve_quiz_fallback_to_third_model_on_429() -> None:
-    """Verify solver falls back to qwen model when primary and secondary both hit 429."""
+    """Verify solver falls back to openrouter/free when primary and secondary both hit 429."""
     resp_429 = MagicMock()
     resp_429.raise_for_status.side_effect = requests.HTTPError("429 Client Error: Too Many Requests")
 
@@ -128,14 +128,14 @@ def test_solve_quiz_fallback_to_third_model_on_429() -> None:
             resp_429,
             resp_429,
             resp_429,
-            _mock_resp('{"answers": [{"index": 0, "selected": ["Qwen Ans"]}]}'),
+            _mock_resp('{"answers": [{"index": 0, "selected": ["Third Ans"]}]}'),
         ]
         res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(groq_api_key="", openrouter_api_key="single-key"))
-        assert res == {0: ["Qwen Ans"]}
+        assert res == {0: ["Third Ans"]}
         models_called = [call[1]["json"]["model"] for call in mock_post.call_args_list]
-        assert "inclusionai/ling-3.0-flash-fin:free" in models_called
         assert "dots-studio/dots-3-note-preview:free" in models_called
-        assert "qwen/qwen3.8-27b:free" in models_called
+        assert "nex-agi/nex-n2.5-mini:free" in models_called
+        assert "openrouter/free" in models_called
 
 
 def test_solve_quiz_uses_groq_primary() -> None:

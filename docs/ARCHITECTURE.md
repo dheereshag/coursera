@@ -13,7 +13,7 @@ sequenceDiagram
     participant Course as coursera_automation.course
     participant Disp as items.dispatcher
     participant Item as Video/Lab/Reading/Quiz/Dialogue/Discussion
-    participant LLM as OpenRouter Ling-3.0-Flash-Fin
+    participant LLM as OpenRouter Fallback
     participant Dial as items.navigation.dialogs
     participant Nav as items.navigation.navigator
 
@@ -75,7 +75,7 @@ sequenceDiagram
   - `image_extractor.py`: DOM extraction and protocol normalization of `<figure><img>` diagram URLs from question prompt viewers.
   - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), extracting prompt text and image URLs while stripping adversarial AI honeypot instructions.
   - `groq_solver.py`: Groq API solver using `qwen/qwen3.8-27b` (both text and multimodal vision, with reasoning effort omitted for multimodal) via OpenAI-compatible endpoint with tenacity exponential backoff retry.
-  - `openrouter_solver.py`: OpenRouter LLM solver with multimodal vision model routing (`nex-agi/nex-n2.5-mini:free`) and multi-model fallback chain (`inclusionai/ling-3.0-flash-fin:free` -> `dots-studio/dots-3-note-preview:free` -> `qwen/qwen3.8-27b:free` -> `openrouter/free`).
+  - `openrouter_solver.py`: OpenRouter LLM solver with multimodal vision model routing (`nex-agi/nex-n2.5-mini:free`) and multi-model fallback chain (`dots-studio/dots-3-note-preview:free` -> `nex-agi/nex-n2.5-mini:free` -> `openrouter/free` -> `qwen/qwen3.8-27b:free`).
   - `solver.py`: LLM quiz solver orchestrator coordinating batch text solving and per-question multimodal solving using Groq with OpenRouter fallback.
   - `status.py`: Completed/passed quiz and review-mode detection, plus Final Exam header recognition.
   - `submit.py`: Quiz submission, modal confirmation dialog handling, and 3-minute post-submission evaluation DOM stabilization wait.
