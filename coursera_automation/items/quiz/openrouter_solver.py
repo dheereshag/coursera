@@ -42,9 +42,9 @@ def _call_openrouter_model(cfg: Settings, prompt: str | list[dict[str, Any]], mo
 def query_openrouter(cfg: Settings, prompt: str | list[dict[str, Any]]) -> dict[int, list[str]]:
     """Query OpenRouter with key rotation and fallback across candidate models."""
     global _key_idx
-    keys = cfg.get_openrouter_keys() if hasattr(cfg, "get_openrouter_keys") else [k.strip() for k in cfg.openrouter_api_key.split(",") if k.strip()]
-    keys = keys or [""]
-    models = [cfg.openrouter_model] + [m.strip() for m in cfg.openrouter_fallback_models.split(",") if m.strip() and m.strip() != cfg.openrouter_model]
+    keys = cfg.get_openrouter_keys() or [""]
+    primary = cfg.openrouter_vision_model if isinstance(prompt, list) else cfg.openrouter_model
+    models = [primary] + [m.strip() for m in cfg.openrouter_fallback_models.split(",") if m.strip() and m.strip() != primary]
     for m in models:
         for offset in range(len(keys)):
             k = keys[(_key_idx + offset) % len(keys)]

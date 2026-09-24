@@ -23,9 +23,10 @@ class Settings:
     openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     openrouter_model: str = "inclusionai/ling-3.0-flash-fin:free"
+    openrouter_vision_model: str = os.getenv("OPENROUTER_VISION_MODEL", "nex-agi/nex-n2.5-mini:free")
     openrouter_fallback_models: str = os.getenv(
         "OPENROUTER_FALLBACK_MODELS",
-        "dots-studio/dots-3-note-preview:free,qwen/qwen3.8-27b:free",
+        "dots-studio/dots-3-note-preview:free,qwen/qwen3.8-27b:free,openrouter/free",
     )
     groq_api_key: str = os.getenv("GROQ_API_KEY", "")
     groq_model: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")

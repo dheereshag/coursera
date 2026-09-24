@@ -80,6 +80,6 @@ def test_query_groq_multimodal_uses_vision_model() -> None:
         assert call_args[1]["json"]["model"] == "qwen/qwen3.8-27b"
         assert call_args[1]["json"]["messages"][0]["content"] == multimodal_content
         assert call_args[1]["json"]["max_completion_tokens"] == 512
-        assert call_args[1]["json"]["reasoning_effort"] == "high"
+        assert "reasoning_effort" not in call_args[1]["json"]
 
 

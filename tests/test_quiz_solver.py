@@ -233,5 +233,17 @@ def test_solve_quiz_multimodal_limits_to_3_images() -> None:
         assert len(img_blocks) == 3
 
 
+def test_solve_quiz_multimodal_openrouter_uses_vision_model() -> None:
+    """Verify multimodal query routes to openrouter_vision_model when Groq is not configured."""
+    cfg = Settings(groq_api_key="", openrouter_api_key="or-key", openrouter_vision_model="nex-agi/nex-n2.5-mini:free")
+    q = {"index": 0, "question": "Diagram", "images": ["http://ex.com/1.png"]}
+    with patch("coursera_automation.items.quiz.openrouter_solver.requests.post") as mock_post:
+        mock_post.return_value = _mock_resp('{"answers": [{"index": 0, "selected": ["Vision Res"]}]}')
+        res = solve_quiz_with_llm([q], cfg)
+        assert res == {0: ["Vision Res"]}
+        assert mock_post.call_args[1]["json"]["model"] == "nex-agi/nex-n2.5-mini:free"
+
+
+
 
 

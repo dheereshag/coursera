@@ -16,7 +16,8 @@ EXC = (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, Val
 
 
 @tc.retry(
-    stop=tc.stop_after_attempt(2), wait=tc.wait_fixed(2), retry=tc.retry_if_exception_type(EXC),
+    stop=tc.stop_after_attempt(3), wait=tc.wait_exponential(multiplier=2, min=3, max=12),
+    retry=tc.retry_if_exception_type(EXC),
     before_sleep=tc.before_sleep_log(logger, logging.WARNING), reraise=True,
 )
 def _call_groq(cfg: Settings, prompt: str | list[dict[str, Any]]) -> dict[int, list[str]]:
@@ -24,11 +25,13 @@ def _call_groq(cfg: Settings, prompt: str | list[dict[str, Any]]) -> dict[int, l
     headers = {"Authorization": f"Bearer {cfg.groq_api_key}", "Content-Type": "application/json"}
     model = cfg.groq_vision_model if isinstance(prompt, list) else cfg.groq_model
     tokens = 512 if isinstance(prompt, list) else 4096
-    payload = {
+    payload: dict[str, Any] = {
         "model": model, "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.2, "max_completion_tokens": tokens, "reasoning_effort": "high",
+        "temperature": 0.2, "max_completion_tokens": tokens,
         "response_format": {"type": "json_object"},
     }
+    if not isinstance(prompt, list):
+        payload["reasoning_effort"] = "high"
     resp = requests.post(url, headers=headers, json=payload, timeout=60)
     if resp.status_code == 400:
         raise RuntimeError(f"Groq 400 Bad Request: {resp.text}")
