@@ -76,9 +76,9 @@ sequenceDiagram
   - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), extracting prompt text and image URLs while stripping adversarial AI honeypot instructions.
   - `filler.py`: Modular answer-filling utility for scrolling and filling textareas or matching and selecting multiple choice options.
   - `retry.py`: Quiz retry CTA detection (`CoverPageActionButton` with text "Retry" or reload-icon), cooldown status checking (`aria-disabled`), and attempt modal confirmation.
-  - `openrouter_solver.py`: Direct OpenRouter solver using single API key with primary (`deepseek/deepseek-v4.1-flash`) and fallback (`z-ai/glm-5.3-flash`) models and tenacity exponential retries.
-  - `solver.py`: LLM quiz solver orchestrator coordinating batch text solving and multimodal solving directly via OpenRouter.
+  - `openrouter_solver.py`: Direct OpenRouter solver using single API key supporting configurable reasoning effort (`effort: "medium"`, `effort: "high"`, or omitted) and automatic fallback to `z-ai/glm-5.3-flash` on API exceptions.
+  - `solver.py`: LLM quiz solver orchestrator coordinating batch text solving and multimodal solving directly via OpenRouter with reasoning effort propagation.
   - `status.py`: Completed/passed quiz and review-mode detection, treating Retry CTA as uncompleted, plus Final Exam header recognition.
   - `submit.py`: Quiz submission, modal confirmation dialog handling, and 3-minute post-submission evaluation DOM stabilization wait.
   - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence, short-circuiting immediately when Retry CTA appears to avoid the 180s wait.
-  - `coordinator.py`: Full quiz lifecycle coordination with primary attempt (`deepseek/deepseek-v4.1-flash`), fallback retry on failure (`z-ai/glm-5.3-flash`), and double-failure skip (Back button, 10s wait, Next Item).
+  - `coordinator.py`: Full quiz lifecycle coordination with 4-tier escalating retry progression: Tier 1 (primary, no reasoning), Tier 2 (primary, medium effort), Tier 3 (primary, high effort), Tier 4 (fallback, high effort), and failure exhaustion skip (Back button, 10s wait, Next Item).

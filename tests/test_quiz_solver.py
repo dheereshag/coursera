@@ -16,12 +16,24 @@ def _mock_resp(content: str) -> MagicMock:
 
 
 def test_solve_quiz_with_llm_json() -> None:
-    """Verify solver parses valid JSON response from OpenRouter."""
+    """Verify solver parses valid JSON response from OpenRouter without reasoning when effort is None."""
     with patch("coursera_automation.items.quiz.openrouter_solver.requests.post") as mock_post:
         mock_post.return_value = _mock_resp('{"answers": [{"index": 0, "selected": ["Option A"]}]}')
         assert solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings()) == {0: ["Option A"]}
         payload = mock_post.call_args[1]["json"]
-        assert payload["model"] == "deepseek/deepseek-v4.1-flash" and payload["reasoning"] == {"enabled": True}
+        assert payload["model"] == "deepseek/deepseek-v4.1-flash"
+        assert "reasoning" not in payload
+
+
+def test_solve_quiz_with_reasoning_effort() -> None:
+    """Verify solver sets reasoning effort in payload when specified."""
+    with patch("coursera_automation.items.quiz.openrouter_solver.requests.post") as mock_post:
+        mock_post.return_value = _mock_resp('{"answers": [{"index": 0, "selected": ["Option A"]}]}')
+        solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(), effort="medium")
+        assert mock_post.call_args[1]["json"]["reasoning"] == {"effort": "medium"}
+
+        solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(), effort="high")
+        assert mock_post.call_args[1]["json"]["reasoning"] == {"effort": "high"}
 
 
 def test_solve_quiz_with_explicit_model() -> None:
@@ -109,7 +121,7 @@ def test_solve_quiz_retry_on_empty_choices() -> None:
 
 
 def test_solve_quiz_fallback_to_fallback_model_on_error() -> None:
-    """Verify solver falls back to openrouter_fallback_model when primary model fails."""
+    """Verify solver falls back to openrouter_fallback_model when primary model fails, preserving effort."""
     resp_429 = MagicMock()
     resp_429.raise_for_status.side_effect = requests.HTTPError("429 Client Error: Too Many Requests")
 
@@ -119,11 +131,12 @@ def test_solve_quiz_fallback_to_fallback_model_on_error() -> None:
             resp_429,
             _mock_resp('{"answers": [{"index": 0, "selected": ["Fallback Ans"]}]}'),
         ]
-        res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(openrouter_api_key="key"))
+        res = solve_quiz_with_llm([{"index": 0, "text": "Q1?"}], Settings(openrouter_api_key="key"), effort="high")
         assert res == {0: ["Fallback Ans"]}
         models_called = [c[1]["json"]["model"] for c in mock_post.call_args_list]
         assert "deepseek/deepseek-v4.1-flash" in models_called
         assert "z-ai/glm-5.3-flash" in models_called
+        assert mock_post.call_args_list[-1][1]["json"]["reasoning"] == {"effort": "high"}
 
 
 def test_solve_quiz_with_mixed_text_and_image_questions() -> None:

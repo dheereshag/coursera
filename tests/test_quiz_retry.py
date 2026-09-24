@@ -76,21 +76,36 @@ def test_poll_and_click_next_clicks_retry_immediately() -> None:
         mock_click_retry.assert_called_once_with(page)
 
 
-def test_handle_quiz_retries_with_fallback_model_on_first_failure() -> None:
-    """Verify handle_quiz tries primary model, then retries with fallback model when attempt 1 fails."""
+def test_handle_quiz_4_tier_retry_progression() -> None:
+    """Verify handle_quiz follows 4-tier escalating reasoning effort progression."""
     page, cfg = MagicMock(), Settings()
     with patch("coursera_automation.items.quiz.coordinator._run_attempt") as mock_attempt:
-        # First attempt with primary fails, second attempt with fallback succeeds
-        mock_attempt.side_effect = [False, True]
+        # Fails attempts 1, 2, 3, and succeeds on attempt 4
+        mock_attempt.side_effect = [False, False, False, True]
         handle_quiz(page, cfg)
         assert mock_attempt.call_args_list == [
-            call(page, cfg, model=cfg.openrouter_model),
-            call(page, cfg, model=cfg.openrouter_fallback_model),
+            call(page, cfg, model=cfg.openrouter_model, effort=None),
+            call(page, cfg, model=cfg.openrouter_model, effort="medium"),
+            call(page, cfg, model=cfg.openrouter_model, effort="high"),
+            call(page, cfg, model=cfg.openrouter_fallback_model, effort="high"),
         ]
 
 
-def test_handle_quiz_double_failure_clicks_back_and_next() -> None:
-    """Verify handle_quiz clicks back, waits 10s, and clicks next item when both attempts fail."""
+def test_handle_quiz_early_success_stops_progression() -> None:
+    """Verify handle_quiz stops retrying as soon as an attempt succeeds."""
+    page, cfg = MagicMock(), Settings()
+    with patch("coursera_automation.items.quiz.coordinator._run_attempt") as mock_attempt:
+        # Fails attempt 1, succeeds on attempt 2 (effort="medium")
+        mock_attempt.side_effect = [False, True]
+        handle_quiz(page, cfg)
+        assert mock_attempt.call_args_list == [
+            call(page, cfg, model=cfg.openrouter_model, effort=None),
+            call(page, cfg, model=cfg.openrouter_model, effort="medium"),
+        ]
+
+
+def test_handle_quiz_all_attempts_fail_clicks_back_and_next() -> None:
+    """Verify handle_quiz clicks back, waits 10s, and clicks next item when all 4 attempts fail."""
     page, cfg = MagicMock(), Settings()
     back_btn = MagicMock()
     page.locator.return_value.first = back_btn

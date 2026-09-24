@@ -16,17 +16,16 @@ EXC = (requests.RequestException, json.JSONDecodeError, KeyError, TypeError, Val
 
 
 @tc.retry(
-    stop=tc.stop_after_attempt(2),
-    wait=tc.wait_fixed(2),
-    retry=tc.retry_if_exception_type(EXC),
-    before_sleep=tc.before_sleep_log(logger, logging.WARNING),
-    reraise=True,
+    stop=tc.stop_after_attempt(2), wait=tc.wait_fixed(2), retry=tc.retry_if_exception_type(EXC),
+    before_sleep=tc.before_sleep_log(logger, logging.WARNING), reraise=True,
 )
-def _call_openrouter_model(cfg: Settings, prompt: str | list[dict[str, Any]], model: str) -> dict[int, list[str]]:
+def _call_openrouter_model(cfg: Settings, prompt: str | list[dict[str, Any]], model: str, effort: str | None = None) -> dict[int, list[str]]:
     url = f"{cfg.openrouter_base_url.rstrip('/')}/chat/completions"
     headers = {"Authorization": f"Bearer {cfg.openrouter_api_key}", "Content-Type": "application/json"}
-    payload = {"model": model, "messages": [{"role": "user", "content": prompt}], "reasoning": {"enabled": True}}
-    resp = requests.post(url, headers=headers, json=payload, timeout=60)
+    payload: dict[str, Any] = {"model": model, "messages": [{"role": "user", "content": prompt}]}
+    if effort:
+        payload["reasoning"] = {"effort": effort}
+    resp = requests.post(url, headers=headers, json=payload, timeout=90)
     resp.raise_for_status()
     res_data = resp.json()
     if "error" in res_data:
@@ -41,18 +40,18 @@ def _call_openrouter_model(cfg: Settings, prompt: str | list[dict[str, Any]], mo
     raise ValueError(f"Empty answers in payload: {msg}")
 
 
-def query_openrouter(cfg: Settings, prompt: str | list[dict[str, Any]], model: str | None = None) -> dict[int, list[str]]:
-    """Query OpenRouter with single key using specified model or fallback."""
+def query_openrouter(cfg: Settings, prompt: str | list[dict[str, Any]], model: str | None = None, effort: str | None = None) -> dict[int, list[str]]:
+    """Query OpenRouter with single key using specified model and reasoning effort."""
     target_model = model or cfg.openrouter_model
-    logger.info("Querying OpenRouter (model=%s)...", target_model)
+    logger.info("Querying OpenRouter (model=%s, effort=%s)...", target_model, effort)
     try:
-        return _call_openrouter_model(cfg, prompt, target_model)
+        return _call_openrouter_model(cfg, prompt, target_model, effort=effort)
     except EXC as exc:
         logger.warning("OpenRouter model %s failed: %s.", target_model, exc)
         if target_model != cfg.openrouter_fallback_model:
             logger.info("Retrying with API fallback model: %s...", cfg.openrouter_fallback_model)
             try:
-                return _call_openrouter_model(cfg, prompt, cfg.openrouter_fallback_model)
+                return _call_openrouter_model(cfg, prompt, cfg.openrouter_fallback_model, effort=effort)
             except EXC as err:
                 logger.error("Fallback model %s also failed: %s.", cfg.openrouter_fallback_model, err)
     return {}
