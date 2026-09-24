@@ -43,8 +43,7 @@ def _run_attempt(page: Page, cfg: Settings, model: str) -> bool:
     fill_answers(page, q_locs, questions, answers)
     if (agree := page.locator('#agreement-checkbox-base, label:has-text("understand and agree")').first).is_visible(timeout=cfg.timeout_ms):
         with suppress(Error):
-            agree.scroll_into_view_if_needed(timeout=1000)
-            agree.click(force=True)
+            agree.scroll_into_view_if_needed(timeout=1000); agree.click(force=True)
         page.wait_for_timeout(1000)
     return submit_quiz(page, cfg)
 
