@@ -145,4 +145,36 @@ def test_choice_question_never_fills_downstream_textarea() -> None:
         mock_find_ta.assert_not_called()
 
 
+def test_detect_type_and_find_slate_richtext_editor() -> None:
+    """Verify _detect_type and _find_textarea identify Slate contenteditable editors (part-Submission_RichTextQuestion)."""
+    loc, ed = MagicMock(), MagicMock()
+    loc.evaluate.return_value = "DIV"
+    loc.locator.side_effect = lambda s: MagicMock(
+        count=lambda: 1 if "contenteditable" in s or "data-slate-editor" in s else 0,
+        first=ed,
+    )
+    assert _detect_type(loc) == "textarea"
+    assert _find_textarea(loc) == ed
+
+
+def test_handle_quiz_fill_slate_richtext() -> None:
+    """Verify handle_quiz clicks to focus and populates contenteditable editor for part-Submission_RichTextQuestion."""
+    page, cfg, ed, agree, sub = MagicMock(), Settings(), MagicMock(), MagicMock(), MagicMock()
+    ed.is_visible.return_value = True
+    page.locator.side_effect = lambda s: MagicMock(first=agree) if "agree" in s else MagicMock(first=MagicMock(is_visible=lambda *a, **kw: False))
+    page.get_by_role.return_value.first = sub
+    q_loc = MagicMock()
+    q_loc.locator.side_effect = lambda s: MagicMock(first=ed, count=lambda: 1) if "contenteditable" in s or "textarea" in s else MagicMock(count=lambda: 0)
+
+    with (
+        patch("coursera_automation.items.quiz.coordinator.wait_and_extract_questions", return_value=([q_loc], [{"type": "textarea"}])),
+        patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["My rewirement essay"]}),
+        patch("coursera_automation.items.quiz.coordinator.submit_quiz"),
+    ):
+        handle_quiz(page, cfg)
+        ed.click.assert_called_once()
+        ed.fill.assert_called_once_with("My rewirement essay")
+
+
+
 

@@ -30,7 +30,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
         return
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     logger.info("Extracted %d quiz question(s).", len(questions))
-    if not questions or not any(q.locator('input:not([disabled]), textarea:not([disabled])').count() or _is_textarea(q) for q in q_locs):
+    if not questions or not any(q.locator('input:not([disabled]), textarea:not([disabled]), [contenteditable="true"]').count() or _is_textarea(q) for q in q_locs):
         logger.info("No active questions found. Polling next item CTA.")
         poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
         return
@@ -45,7 +45,7 @@ def handle_quiz(page: Page, cfg: Settings) -> None:
             continue
         if q_meta.get("type") == "textarea":
             with suppress(Error):
-                _find_textarea(q_loc).fill(ans[0])
+                (ta := _find_textarea(q_loc)).click(); ta.fill(ans[0])
         else:
             for opt in ans:
                 click_option(q_loc, opt, q_meta.get("options", []))

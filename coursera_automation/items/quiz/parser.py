@@ -8,13 +8,13 @@ from playwright.sync_api import Error, Locator, Page
 from .image_extractor import extract_question_images
 from .loader import load_and_stabilize_questions
 
-TEXT_SEL = 'textarea:not([aria-hidden="true"]):not([readonly]), input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):not([readonly])'
+TEXT_SEL = 'textarea:not([aria-hidden="true"]):not([readonly]), input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):not([readonly]), [contenteditable="true"], [data-slate-editor="true"]'
 
 
 def _is_textarea(loc: Locator) -> bool:
     with suppress(Error, AttributeError):
         tag = loc.evaluate("el => el.tagName")
-        return tag == "TEXTAREA" or (tag == "INPUT" and str(loc.get_attribute("type") or "text").lower() not in ("radio", "checkbox", "hidden"))
+        return tag == "TEXTAREA" or loc.get_attribute("contenteditable") == "true" or (tag == "INPUT" and str(loc.get_attribute("type") or "text").lower() not in ("radio", "checkbox", "hidden"))
     return False
 
 

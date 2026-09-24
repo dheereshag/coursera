@@ -67,7 +67,7 @@ sequenceDiagram
   - `dialogs.py`: Pendo guide, Honor Code, and transient popup dialog dismissal.
   - `target.py`: Weekly learning target modal handling (checks all days, 5s delay for Save button, saves, and waits 30s for reload).
 - **Quiz Subpackage (`items/quiz/`)**:
-  - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions (multiple choice, multiselect, textarea, and exact-match text inputs) are extracted and filled with auto-scrolling, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
+  - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions (multiple choice, multiselect, textarea, Slate rich-text, and exact-match text inputs) are extracted and filled with auto-scrolling, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
   - `json_extractor.py`: Robust JSON extraction and decoding from LLM outputs, stripping `<think>` tags, markdown code blocks, and conversational preambles.
   - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements (`[data-testid^="part-"]`) over lingering cover CTAs, with explicit support for `"Try again"` retries on evaluation review screens.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
