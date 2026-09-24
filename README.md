@@ -23,7 +23,7 @@ Configure global settings and API keys in `.env`:
 
 ```ini
 GROQ_API_KEY="gsk_your_groq_api_key"
-GROQ_MODEL="openai/gpt-oss-120b"
+GROQ_MODEL="qwen/qwen3.8-27b"
 GROQ_VISION_MODEL="qwen/qwen3.8-27b"
 OPENROUTER_API_KEY="sk-or-v1-key1,sk-or-v1-key2,sk-or-v1-key3" # Comma-separated for auto-rotation
 OPENROUTER_VISION_MODEL="nex-agi/nex-n2.5-mini:free"

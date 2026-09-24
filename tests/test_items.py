@@ -17,7 +17,7 @@ def test_dispatch_item_video() -> None:
     ):
         dispatch_item(mock_page, cfg)
         mock_vid.assert_called_once_with(mock_page, cfg)
-        mock_page.wait_for_timeout.assert_any_call(7000)
+        mock_page.wait_for_timeout.assert_any_call(15000)
 
 
 def test_dispatch_item_assignment() -> None:

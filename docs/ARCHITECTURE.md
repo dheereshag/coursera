@@ -51,7 +51,7 @@ sequenceDiagram
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
 - `coursera_automation/course.py`: Specialization navigation, resilient multi-state course entry, and dynamic CTA hydration wait (up to 40s).
 - `coursera_automation/main.py`: Multi-instance orchestration with `playwright-stealth` anti-bot evasion and keep-awake integration.
-- `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop with 7s load stabilization wait.
+- `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop with 15s load stabilization wait.
 - **Content Subpackage (`items/content/`)**:
   - `video.py`: Video start, audio muting, 2x playback, 0.5s in-video question skip polling, playToggle auto-resume, and 6s post-buffer.
   - `reading.py`: Reading completion via unconditional 60s wait (12 cycles $\times$ 5s scrolling), bottom scroll, and `data-testid="mark-complete"` click.
@@ -74,7 +74,7 @@ sequenceDiagram
   - `option_matcher.py`: Robust quiz option resolution and normalization, handling LaTeX/KaTeX math formatting (`*` vs `×`, braces, whitespace), auto-scrolling options into view, and directly checking native radio/checkbox inputs alongside label clicks.
   - `image_extractor.py`: DOM extraction and protocol normalization of `<figure><img>` diagram URLs from question prompt viewers.
   - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), extracting prompt text and image URLs while stripping adversarial AI honeypot instructions.
-  - `groq_solver.py`: Groq API solver using `openai/gpt-oss-120b` (text) and `qwen/qwen3.8-27b` (multimodal vision with 512 token ceiling, reasoning effort omitted) via OpenAI-compatible endpoint with tenacity exponential backoff retry.
+  - `groq_solver.py`: Groq API solver using `qwen/qwen3.8-27b` (both text and multimodal vision, with reasoning effort omitted for multimodal) via OpenAI-compatible endpoint with tenacity exponential backoff retry.
   - `openrouter_solver.py`: OpenRouter LLM solver with multimodal vision model routing (`nex-agi/nex-n2.5-mini:free`) and multi-model fallback chain (`inclusionai/ling-3.0-flash-fin:free` -> `dots-studio/dots-3-note-preview:free` -> `qwen/qwen3.8-27b:free` -> `openrouter/free`).
   - `solver.py`: LLM quiz solver orchestrator coordinating batch text solving and per-question multimodal solving using Groq with OpenRouter fallback.
   - `status.py`: Completed/passed quiz and review-mode detection, plus Final Exam header recognition.

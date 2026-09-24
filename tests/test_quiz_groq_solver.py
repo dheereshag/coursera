@@ -19,7 +19,7 @@ def _mock_groq_resp(content_text: str) -> MagicMock:
 
 def test_query_groq_success() -> None:
     """Verify query_groq formats request correctly and parses JSON answers."""
-    cfg = Settings(groq_api_key="test-groq-key", groq_model="openai/gpt-oss-120b")
+    cfg = Settings(groq_api_key="test-groq-key", groq_model="qwen/qwen3.8-27b")
     with patch("coursera_automation.items.quiz.groq_solver.requests.post") as mock_post:
         mock_post.return_value = _mock_groq_resp('{"answers": [{"index": 0, "selected": ["Option 1"]}]}')
         answers = query_groq(cfg, "Prompt")
@@ -27,7 +27,7 @@ def test_query_groq_success() -> None:
 
         call_args = mock_post.call_args
         assert call_args[1]["headers"]["Authorization"] == "Bearer test-groq-key"
-        assert call_args[1]["json"]["model"] == "openai/gpt-oss-120b"
+        assert call_args[1]["json"]["model"] == "qwen/qwen3.8-27b"
         assert call_args[1]["json"]["reasoning_effort"] == "high"
         assert call_args[1]["json"]["max_completion_tokens"] == 4096
         assert call_args[1]["timeout"] == 60

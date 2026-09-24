@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 
 
 def dispatch_item(page: Page, cfg: Settings) -> None:
-    """Detect current item type with 7s stabilization wait and execute handler."""
-    logger.info("Stabilizing item page (7s load wait)...")
+    """Detect current item type with 15s stabilization wait and execute handler."""
+    logger.info("Stabilizing item page (15s load wait)...")
     page.wait_for_load_state("domcontentloaded")
-    page.wait_for_timeout(7000)
+    page.wait_for_timeout(15000)
     dismiss_dialogs(page)
 
     url = page.url
