@@ -72,10 +72,11 @@ sequenceDiagram
   - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements (`[data-testid^="part-"]`) over lingering cover CTAs, with explicit support for `"Try again"` retries on evaluation review screens.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
   - `option_matcher.py`: Robust quiz option resolution and normalization, handling LaTeX/KaTeX math formatting (`*` vs `×`, braces, whitespace), auto-scrolling options into view, and directly checking native radio/checkbox inputs alongside label clicks.
-  - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), identifying both multiline textareas and single-line exact match text inputs (`GradedTextExactMatchQuestion`), with prompt sanitization stripping adversarial AI honeypot instructions.
-  - `groq_solver.py`: Groq API solver using `openai/gpt-oss-120b` via OpenAI-compatible endpoint with tenacity retry.
+  - `image_extractor.py`: DOM extraction and protocol normalization of `<figure><img>` diagram URLs from question prompt viewers.
+  - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), extracting prompt text and image URLs while stripping adversarial AI honeypot instructions.
+  - `groq_solver.py`: Groq API solver using `openai/gpt-oss-120b` (text) and `qwen/qwen3.8-27b` (multimodal vision with 512 token ceiling) via OpenAI-compatible endpoint with tenacity retry.
   - `openrouter_solver.py`: OpenRouter LLM solver with multi-model fallback chain (`inclusionai/ling-3.0-flash-fin:free` -> `dots-studio/dots-3-note-preview:free` -> `qwen/qwen3.8-27b:free`).
-  - `solver.py`: LLM quiz solver orchestrator coordinating Groq as primary provider with fallback to OpenRouter.
+  - `solver.py`: LLM quiz solver orchestrator coordinating batch text solving and per-question multimodal solving using Groq with OpenRouter fallback.
   - `status.py`: Completed/passed quiz and review-mode detection, plus Final Exam header recognition.
   - `submit.py`: Quiz submission, modal confirmation dialog handling, and 3-minute post-submission evaluation DOM stabilization wait.
   - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence, skipping immediately on Final Exams.

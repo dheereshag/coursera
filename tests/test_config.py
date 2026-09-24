@@ -11,6 +11,7 @@ def test_default_config() -> None:
     assert config.headless is False
     assert config.openrouter_base_url == "https://openrouter.ai/api/v1"
     assert config.openrouter_model == "inclusionai/ling-3.0-flash-fin:free"
+    assert config.groq_vision_model == "qwen/qwen3.8-27b"
     assert config.post_quiz_wait_sec == 180
 
 

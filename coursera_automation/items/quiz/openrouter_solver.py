@@ -2,6 +2,7 @@
 
 import json
 import logging
+from typing import Any
 
 import requests
 import tenacity as tc
@@ -19,7 +20,7 @@ _key_idx = 0
     stop=tc.stop_after_attempt(2), wait=tc.wait_fixed(2), retry=tc.retry_if_exception_type(EXC),
     before_sleep=tc.before_sleep_log(logger, logging.WARNING), reraise=True,
 )
-def _call_openrouter_model(cfg: Settings, prompt: str, model: str, key: str) -> dict[int, list[str]]:
+def _call_openrouter_model(cfg: Settings, prompt: str | list[dict[str, Any]], model: str, key: str) -> dict[int, list[str]]:
     url = f"{cfg.openrouter_base_url.rstrip('/')}/chat/completions"
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
     payload = {"model": model, "messages": [{"role": "user", "content": prompt}], "reasoning": {"enabled": True}}
@@ -38,7 +39,7 @@ def _call_openrouter_model(cfg: Settings, prompt: str, model: str, key: str) -> 
     raise ValueError(f"Empty answers in payload: {msg}")
 
 
-def query_openrouter(cfg: Settings, prompt: str) -> dict[int, list[str]]:
+def query_openrouter(cfg: Settings, prompt: str | list[dict[str, Any]]) -> dict[int, list[str]]:
     """Query OpenRouter with key rotation and fallback across candidate models."""
     global _key_idx
     keys = cfg.get_openrouter_keys() if hasattr(cfg, "get_openrouter_keys") else [k.strip() for k in cfg.openrouter_api_key.split(",") if k.strip()]

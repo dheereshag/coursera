@@ -5,6 +5,7 @@ from typing import Any
 
 from playwright.sync_api import Error, Locator, Page
 
+from .image_extractor import extract_question_images
 from .loader import load_and_stabilize_questions
 
 TEXT_SEL = 'textarea:not([aria-hidden="true"]):not([readonly]), input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):not([readonly])'
@@ -54,5 +55,5 @@ def _find_question_locs(page: Page) -> list[Locator]:
 
 def wait_and_extract_questions(page: Page, timeout_ms: int) -> tuple[list[Locator], list[dict[str, Any]]]:
     q_locs = load_and_stabilize_questions(page, timeout_ms, _find_question_locs)
-    questions = [{"index": i, "question": _extract_prompt(q), "options": [o.inner_text().strip() for o in q.locator("label").all() if o.inner_text().strip()], "type": _detect_type(q)} for i, q in enumerate(q_locs)]
+    questions = [{"index": i, "question": _extract_prompt(q), "images": extract_question_images(q), "options": [o.inner_text().strip() for o in q.locator("label").all() if o.inner_text().strip()], "type": _detect_type(q)} for i, q in enumerate(q_locs)]
     return q_locs, questions

@@ -63,3 +63,23 @@ def test_query_groq_400_raises_runtime_error_without_retry() -> None:
             query_groq(cfg, "Prompt")
         assert mock_post.call_count == 1
 
+
+def test_query_groq_multimodal_uses_vision_model() -> None:
+    """Verify query_groq routes list prompt to groq_vision_model with 512 token limit."""
+    cfg = Settings(groq_api_key="test-groq-key", groq_vision_model="qwen/qwen3.8-27b")
+    multimodal_content = [
+        {"type": "text", "text": "Question?"},
+        {"type": "image_url", "image_url": {"url": "https://example.com/img.png"}},
+    ]
+    with patch("coursera_automation.items.quiz.groq_solver.requests.post") as mock_post:
+        mock_post.return_value = _mock_groq_resp('{"answers": [{"index": 1, "selected": ["Vision Answer"]}]}')
+        answers = query_groq(cfg, multimodal_content)
+        assert answers == {1: ["Vision Answer"]}
+
+        call_args = mock_post.call_args
+        assert call_args[1]["json"]["model"] == "qwen/qwen3.8-27b"
+        assert call_args[1]["json"]["messages"][0]["content"] == multimodal_content
+        assert call_args[1]["json"]["max_completion_tokens"] == 512
+        assert call_args[1]["json"]["reasoning_effort"] == "high"
+
+

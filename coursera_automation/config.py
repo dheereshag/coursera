@@ -29,6 +29,7 @@ class Settings:
     )
     groq_api_key: str = os.getenv("GROQ_API_KEY", "")
     groq_model: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+    groq_vision_model: str = os.getenv("GROQ_VISION_MODEL", "qwen/qwen3.8-27b")
     groq_base_url: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
     post_quiz_wait_sec: int = int(os.getenv("COURSERA_POST_QUIZ_WAIT_SEC", "180"))
 

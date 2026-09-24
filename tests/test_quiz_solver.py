@@ -194,4 +194,44 @@ def test_solve_quiz_openrouter_key_round_robin() -> None:
         assert auth_headers[0] != auth_headers[1]
 
 
+def test_solve_quiz_with_mixed_text_and_image_questions() -> None:
+    """Verify mixed quiz separates batch text solving and multimodal image questions, then merges."""
+    cfg = Settings(groq_api_key="groq-key")
+    questions = [
+        {"index": 0, "question": "Text Q1", "options": ["A", "B"]},
+        {"index": 1, "question": "Image Q2", "options": ["C", "D"], "images": ["https://example.com/q2.png"]},
+    ]
+    with patch("coursera_automation.items.quiz.solver.query_groq") as mock_groq:
+        mock_groq.side_effect = [
+            {0: ["A"]},
+            {1: ["C"]},
+        ]
+        answers = solve_quiz_with_llm(questions, cfg)
+        assert answers == {0: ["A"], 1: ["C"]}
+        assert mock_groq.call_count == 2
+        first_call_prompt = mock_groq.call_args_list[0][0][1]
+        second_call_prompt = mock_groq.call_args_list[1][0][1]
+        assert isinstance(first_call_prompt, str)
+        assert isinstance(second_call_prompt, list)
+        assert second_call_prompt[1] == {"type": "image_url", "image_url": {"url": "https://example.com/q2.png"}}
+
+
+def test_solve_quiz_multimodal_limits_to_3_images() -> None:
+    """Verify multimodal questions cap images to 3 per request."""
+    cfg = Settings(groq_api_key="groq-key")
+    q = {
+        "index": 0,
+        "question": "Diagrams",
+        "images": ["http://ex.com/1.png", "http://ex.com/2.png", "http://ex.com/3.png", "http://ex.com/4.png"],
+    }
+    with patch("coursera_automation.items.quiz.solver.query_groq", return_value={0: ["Ans"]}) as mock_groq:
+        res = solve_quiz_with_llm([q], cfg)
+        assert res == {0: ["Ans"]}
+        content = mock_groq.call_args[0][1]
+        assert isinstance(content, list)
+        img_blocks = [c for c in content if c["type"] == "image_url"]
+        assert len(img_blocks) == 3
+
+
+
 
