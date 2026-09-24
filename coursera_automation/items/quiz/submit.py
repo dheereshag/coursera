@@ -37,12 +37,12 @@ def _confirm_modal(page: Page) -> None:
             modal.wait_for(state="hidden", timeout=3000)
 
 
-def submit_quiz(page: Page, cfg: Settings) -> None:
+def submit_quiz(page: Page, cfg: Settings) -> bool:
     """Click submit button, confirm dialog modal, and poll next item CTA."""
     sub = page.locator(SUB_SEL).first
     if not sub.is_visible(timeout=cfg.timeout_ms):
         logger.warning("Submit button not found on quiz page.")
-        return
+        return False
     for _ in range(10):
         if sub.is_enabled() and sub.get_attribute("aria-disabled") != "true":
             break
@@ -55,6 +55,6 @@ def submit_quiz(page: Page, cfg: Settings) -> None:
     for elapsed in range(30, cfg.post_quiz_wait_sec + 1, 30):
         page.wait_for_timeout(30000)
         logger.info("Post-quiz wait: %ds / %ds elapsed...", elapsed, cfg.post_quiz_wait_sec)
-    if not is_final_exam(page):
-        poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
-
+    if is_final_exam(page):
+        return True
+    return poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)

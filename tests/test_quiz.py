@@ -40,7 +40,7 @@ def test_handle_quiz_flow() -> None:
         return MagicMock(all=lambda: [q_loc], first=MagicMock(is_visible=lambda *a, **kw: False))
 
     page.locator.side_effect = loc_mock
-    with patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["4"]}), patch("coursera_automation.items.quiz.submit.poll_and_click_next"):
+    with patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["4"]}), patch("coursera_automation.items.quiz.submit.poll_and_click_next", return_value=True):
         handle_quiz(page, cfg)
     assert agree.click.call_count == 1 and sub.click.call_count == 1 and modal.click.call_count == 1
 
@@ -97,7 +97,7 @@ def test_handle_quiz_does_not_skip_when_active_questions_present() -> None:
         patch("coursera_automation.items.quiz.coordinator.ensure_quiz_launched"),
         patch("coursera_automation.items.quiz.coordinator.wait_and_extract_questions", return_value=([q_loc], [{"index": 0, "type": "single", "question": "Q?", "options": ["Ans"]}])) as mock_extract,
         patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["Ans"]}) as mock_solve,
-        patch("coursera_automation.items.quiz.coordinator.submit_quiz") as mock_sub,
+        patch("coursera_automation.items.quiz.coordinator.submit_quiz", return_value=True) as mock_sub,
     ):
         handle_quiz(page, cfg)
         mock_extract.assert_called_once()

@@ -1,9 +1,10 @@
-"""Polling and navigation for post-quiz next item CTA."""
+"""Polling and navigation for post-quiz next item CTA or retry button."""
 
 import logging
 
 from playwright.sync_api import Error, Page
 
+from .retry import click_retry, is_retry_available
 from .status import is_final_exam
 
 logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ NEXT_BTN = '[data-testid*="next-item"], button:has-text("Go to next item"), butt
 
 
 def poll_and_click_next(page: Page, max_wait_sec: int = 180) -> bool:
-    """Poll for back button, then check and click TopBannerCTAButton to advance URL."""
+    """Poll for next item CTA or click retry if quiz was not passed."""
     if is_final_exam(page):
         logger.info("Final Exam detected; skipping 'Next item' polling as no next item exists.")
         return False
@@ -43,6 +44,10 @@ def poll_and_click_next(page: Page, max_wait_sec: int = 180) -> bool:
                     logger.info("Successfully advanced to next item: %s", page.url)
                     return True
                 logger.info("Clicked CTA but URL did not change yet (current: %s).", page.url)
+        elif is_retry_available(page):
+            logger.info("Quiz not passed; found Retry button. Clicking Retry instead of next item...")
+            click_retry(page)
+            return False
         else:
             logger.info("'Next item' CTA not visible yet (waited %ds / %ds); retrying in 5s...", elapsed, max_wait_sec)
         page.wait_for_timeout(5000)

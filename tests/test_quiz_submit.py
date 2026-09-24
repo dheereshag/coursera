@@ -29,7 +29,8 @@ def test_poll_and_click_next_without_reload() -> None:
     btn.is_visible.side_effect = [False] * 3 + [True]
     btn.get_attribute.return_value = None
     btn.click.side_effect = lambda **kw: setattr(page, "url", "https://coursera.org/learn/test/reading/2")
-    page.locator.return_value.first = btn
+    inv = MagicMock(is_visible=MagicMock(return_value=False), count=MagicMock(return_value=0))
+    page.locator.side_effect = lambda s: MagicMock(first=btn) if "next-item" in s or "TopBannerCTAButton" in s else MagicMock(first=inv)
 
     result = poll_and_click_next(page, max_wait_sec=25)
     assert result is True

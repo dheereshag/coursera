@@ -74,9 +74,11 @@ sequenceDiagram
   - `option_matcher.py`: Robust quiz option resolution and normalization, handling LaTeX/KaTeX math formatting (`*` vs `×`, braces, whitespace), auto-scrolling options into view, and directly checking native radio/checkbox inputs alongside label clicks.
   - `image_extractor.py`: DOM extraction and protocol normalization of `<figure><img>` diagram URLs from question prompt viewers.
   - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), extracting prompt text and image URLs while stripping adversarial AI honeypot instructions.
-  - `groq_solver.py`: Groq API solver using `qwen/qwen3.8-27b` (both text and multimodal vision, with reasoning effort omitted for multimodal) via OpenAI-compatible endpoint with tenacity exponential backoff retry.
-  - `openrouter_solver.py`: OpenRouter LLM solver with multimodal vision model routing (`nex-agi/nex-n2.5-mini:free`) and multi-model fallback chain (`dots-studio/dots-3-note-preview:free` -> `nex-agi/nex-n2.5-mini:free` -> `openrouter/free` -> `qwen/qwen3.8-27b:free`).
-  - `solver.py`: LLM quiz solver orchestrator coordinating batch text solving and per-question multimodal solving using Groq with OpenRouter fallback.
-  - `status.py`: Completed/passed quiz and review-mode detection, plus Final Exam header recognition.
+  - `filler.py`: Modular answer-filling utility for scrolling and filling textareas or matching and selecting multiple choice options.
+  - `retry.py`: Quiz retry CTA detection (`CoverPageActionButton` with text "Retry" or reload-icon), cooldown status checking (`aria-disabled`), and attempt modal confirmation.
+  - `openrouter_solver.py`: Direct OpenRouter solver using single API key with primary (`deepseek/deepseek-v4.1-flash`) and fallback (`z-ai/glm-5.3-flash`) models and tenacity exponential retries.
+  - `solver.py`: LLM quiz solver orchestrator coordinating batch text solving and multimodal solving directly via OpenRouter.
+  - `status.py`: Completed/passed quiz and review-mode detection, treating Retry CTA as uncompleted, plus Final Exam header recognition.
   - `submit.py`: Quiz submission, modal confirmation dialog handling, and 3-minute post-submission evaluation DOM stabilization wait.
-  - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence, skipping immediately on Final Exams.
+  - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence, short-circuiting immediately when Retry CTA appears to avoid the 180s wait.
+  - `coordinator.py`: Full quiz lifecycle coordination with primary attempt (`deepseek/deepseek-v4.1-flash`), fallback retry on failure (`z-ai/glm-5.3-flash`), and double-failure skip (Back button, 10s wait, Next Item).

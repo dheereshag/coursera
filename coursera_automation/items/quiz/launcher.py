@@ -13,17 +13,12 @@ logger = logging.getLogger(__name__)
 
 ATTEMPT_READY = '[data-testid^="part-"], [data-testid="tunnel-vision-back-button"], button[aria-label="Back"], #agreement-checkbox-base, textarea:not([disabled]), button:has-text("Save draft")'
 CONFIRM_MODAL = '[data-testid="StartAttemptModal__primary-button"], [role="dialog"] button:has-text("Start attempt")'
-COVER_SELECTORS = ('button[data-testid="CoverPageActionButton"], button[data-e2e="CoverPageActionButton"]', 'button:has-text("Resume"), button:has-text("Start"), button:has-text("Try again"), a:has-text("Try again")')
+COVER_SELECTORS = ('button[data-testid="CoverPageActionButton"], button[data-e2e="CoverPageActionButton"]', 'button:has-text("Resume"), button:has-text("Start"), button:has-text("Try again"), button:has-text("Retry"), button:has([data-testid="reload-icon"])')
 
 
 def _find_cover_cta(page: Page) -> Locator | None:
     for sel in COVER_SELECTORS:
-        if (
-            (cta := page.locator(sel).first).count()
-            and cta.is_visible()
-            and "target" not in cta.inner_text().lower()
-            and ("try again" in cta.inner_text().lower() or not page.locator(ATTEMPT_READY).first.is_visible(timeout=300))
-        ):
+        if (cta := page.locator(sel).first).count() and cta.is_visible() and "target" not in (txt := cta.inner_text().lower()) and (any(k in txt for k in ("try again", "retry")) or not page.locator(ATTEMPT_READY).first.is_visible(timeout=300)):
             return cta
     return None
 

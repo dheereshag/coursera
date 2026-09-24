@@ -22,21 +22,13 @@ class Settings:
     max_items: int = int(os.getenv("COURSERA_MAX_ITEMS", "25"))
     openrouter_api_key: str = os.getenv("OPENROUTER_API_KEY", "")
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
-    openrouter_model: str = os.getenv("OPENROUTER_MODEL", "dots-studio/dots-3-note-preview:free")
-    openrouter_vision_model: str = os.getenv("OPENROUTER_VISION_MODEL", "nex-agi/nex-n2.5-mini:free")
-    openrouter_fallback_models: str = os.getenv(
-        "OPENROUTER_FALLBACK_MODELS",
-        "nex-agi/nex-n2.5-mini:free,openrouter/free,qwen/qwen3.8-27b:free",
+    openrouter_model: str = os.getenv(
+        "OPENROUTER_MODEL", "deepseek/deepseek-v4.1-flash"
     )
-    groq_api_key: str = os.getenv("GROQ_API_KEY", "")
-    groq_model: str = "qwen/qwen3.8-27b"
-    groq_vision_model: str = os.getenv("GROQ_VISION_MODEL", "qwen/qwen3.8-27b")
-    groq_base_url: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+    openrouter_fallback_model: str = os.getenv(
+        "OPENROUTER_FALLBACK_MODEL", "z-ai/glm-5.3-flash"
+    )
     post_quiz_wait_sec: int = int(os.getenv("COURSERA_POST_QUIZ_WAIT_SEC", "180"))
-
-    def get_openrouter_keys(self) -> list[str]:
-        """Return list of parsed OpenRouter API keys for rotation."""
-        return [k.strip() for k in self.openrouter_api_key.split(",") if k.strip()]
 
 
 config = Settings()

@@ -136,9 +136,9 @@ def test_choice_question_never_fills_downstream_textarea() -> None:
     with (
         patch("coursera_automation.items.quiz.coordinator.wait_and_extract_questions", return_value=([q_loc], [{"type": "single", "options": ["Option A", "Option B"]}])),
         patch("coursera_automation.items.quiz.coordinator.solve_quiz_with_llm", return_value={0: ["Option A"]}),
-        patch("coursera_automation.items.quiz.coordinator.click_option") as mock_click,
-        patch("coursera_automation.items.quiz.coordinator._find_textarea") as mock_find_ta,
-        patch("coursera_automation.items.quiz.coordinator.submit_quiz"),
+        patch("coursera_automation.items.quiz.filler.click_option") as mock_click,
+        patch("coursera_automation.items.quiz.filler._find_textarea") as mock_find_ta,
+        patch("coursera_automation.items.quiz.coordinator.submit_quiz", return_value=True),
     ):
         handle_quiz(page, cfg)
         mock_click.assert_called_once_with(q_loc, "Option A", ["Option A", "Option B"])

@@ -10,10 +10,8 @@ def test_default_config() -> None:
     assert config.login_url == "https://www.coursera.org"
     assert config.headless is False
     assert config.openrouter_base_url == "https://openrouter.ai/api/v1"
-    assert config.openrouter_model == "dots-studio/dots-3-note-preview:free"
-    assert config.openrouter_vision_model == "nex-agi/nex-n2.5-mini:free"
-    assert config.groq_model == "qwen/qwen3.8-27b"
-    assert config.groq_vision_model == "qwen/qwen3.8-27b"
+    assert config.openrouter_model == "deepseek/deepseek-v4.1-flash"
+    assert config.openrouter_fallback_model == "z-ai/glm-5.3-flash"
     assert config.post_quiz_wait_sec == 180
 
 

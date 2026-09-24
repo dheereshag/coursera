@@ -22,10 +22,9 @@ cp .env.example .env
 Configure global settings and API keys in `.env`:
 
 ```ini
-GROQ_API_KEY="gsk_your_groq_api_key"
-GROQ_VISION_MODEL="qwen/qwen3.8-27b"
-OPENROUTER_API_KEY="sk-or-v1-key1,sk-or-v1-key2,sk-or-v1-key3" # Comma-separated for auto-rotation
-OPENROUTER_VISION_MODEL="nex-agi/nex-n2.5-mini:free"
+OPENROUTER_API_KEY="sk-or-v1-your-openrouter-key"
+OPENROUTER_MODEL="deepseek/deepseek-v4.1-flash"
+OPENROUTER_FALLBACK_MODEL="z-ai/glm-5.3-flash"
 ```
 
 ### Course Instances Configuration (`instances.py`)

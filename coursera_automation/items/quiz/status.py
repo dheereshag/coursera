@@ -20,7 +20,7 @@ def is_quiz_completed(page: Page) -> bool:
     """Check if quiz is already passed or in review mode without retry."""
     if page.locator(':text("Reviewing your submission"), :text("hang tight")').first.is_visible(timeout=500):
         return False
-    if page.locator('button:has-text("Try again")').first.is_visible(timeout=500):
+    if page.locator('button:has-text("Try again"), button:has-text("Retry"), [data-testid="reload-icon"]').first.is_visible(timeout=500):
         return False
     if page.locator('[data-testid="CoverPageActionButton"], [data-e2e="CoverPageActionButton"], button:has-text("Resume assignment"), button:has-text("Resume")').first.is_visible():
         return False
