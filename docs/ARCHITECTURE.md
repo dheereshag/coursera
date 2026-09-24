@@ -60,8 +60,7 @@ sequenceDiagram
   - `dialogue.py`: Roleplay / dialogue start, text chat selection, end, modal confirmation, and 15s post-dialogue finalization buffer.
   - `discussion.py`: Discussion response input with 15-second post-reply stabilization buffer.
 - **Peer Assignment Subpackage (`items/peer/`)**:
-  - `coordinator.py`: Peer submission coordination, title, upload wait, Honor Code, submit, and next item progression.
-  - `upload.py`: File attachment via Uppy Dashboard file chooser and direct file input fallback.
+  - `coordinator.py`: Peer-graded assignment skipping and progression navigation (identified strictly by `/peer/` in URL).
 - **Navigation Subpackage (`items/navigation/`)**:
   - `resume.py`: Resume and get started course navigation with vertical scrolling and button detection.
   - `navigator.py`: Next item progression navigation checking TopBannerCTAButton when back button is visible, with direct href fallback, and graceful termination on Final Exams.

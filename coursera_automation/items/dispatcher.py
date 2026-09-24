@@ -22,20 +22,18 @@ def dispatch_item(page: Page, cfg: Settings) -> None:
     dismiss_dialogs(page)
 
     url = page.url
-    if any(k in url for k in ("/peer/", "/peer-assignment/")):
+    if "/peer/" in url:
         handle_peer(page, cfg)
     elif any(k in url for k in ("/discussionPrompt/", "/discussion/", "/discussions/")):
         handle_discussion(page, cfg)
     elif any(k in url for k in ("/lecture/", "/video/")):
         handle_video(page, cfg)
-    elif any(k in url for k in ("/lab/", "/ungradedLab/", "/ungradedLabWidget/", "/programming/")) :
+    elif any(k in url for k in ("/lab/", "/ungradedLab/", "/ungradedLabWidget/", "/programming/")):
         handle_lab(page, cfg)
     elif any(k in url for k in ("/exam/", "/quiz/", "/assignment")):
         handle_quiz(page, cfg)
     elif "/supplement" in url:
         handle_reading(page, cfg)
-    elif page.locator('button[role="tab"]:has-text("My submission"), [data-track-page="peer_review_my_project"]').first.is_visible(timeout=5000):
-        handle_peer(page, cfg)
     elif page.locator('button:has-text("Reply")').first.is_visible(timeout=5000):
         handle_discussion(page, cfg)
     elif page.locator("video, .rc-VideoPlayer, [data-testid*='video']").first.is_visible(timeout=3000):
