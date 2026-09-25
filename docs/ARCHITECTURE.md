@@ -48,7 +48,7 @@ sequenceDiagram
 - `coursera_automation/config.py`: Environment configuration and typed dataclass.
 - `coursera_automation/session.py`: Runtime session configuration combining instance credentials with global settings.
 - `coursera_automation/instances.py`: Multi-instance configuration loading from typed `instances.py` and JSON.
-- `coursera_automation/keep_awake.py`: macOS sleep prevention power assertion context manager.
+- `coursera_automation/keep_awake.py`: Cross-platform sleep prevention context manager supporting macOS (`caffeinate -dims`) and Windows (`kernel32.SetThreadExecutionState`). Note: on macOS laptops, hardware clamshell sleep occurs when the lid is closed unless connected to AC power and an external display.
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
 - `coursera_automation/course.py`: Specialization navigation, resilient multi-state course entry, and dynamic CTA hydration wait (up to 40s).
 - `coursera_automation/main.py`: Multi-instance orchestration with `playwright-stealth` anti-bot evasion and keep-awake integration.

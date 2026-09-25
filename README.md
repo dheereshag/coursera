@@ -99,6 +99,11 @@ Execute the automation runner by running in your terminal:
 uv run python -m coursera_automation.main
 ```
 
+> [!TIP]
+> **Sleep Prevention**: The runner automatically prevents system and display sleep while running (using `caffeinate` on macOS and `kernel32.SetThreadExecutionState` with Away Mode on Windows).
+> - **macOS Laptops**: Keep the lid open (or connected to power and an external display). Closing the MacBook lid triggers hardware clamshell sleep that cannot be overridden by software assertions.
+
+
 ---
 
 For architectural details, sequence diagrams, and module breakdowns, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
