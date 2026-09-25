@@ -46,6 +46,7 @@ sequenceDiagram
 ## Modular Decomposition (NASA JPL Rule 4 - Production Modules)
 
 - `coursera_automation/config.py`: Environment configuration and typed dataclass.
+- `coursera_automation/session.py`: Runtime session configuration combining instance credentials with global settings.
 - `coursera_automation/instances.py`: Multi-instance configuration loading from typed `instances.py` and JSON.
 - `coursera_automation/keep_awake.py`: macOS sleep prevention power assertion context manager.
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
@@ -75,6 +76,7 @@ sequenceDiagram
   - `image_extractor.py`: DOM extraction and protocol normalization of `<figure><img>` diagram URLs from question prompt viewers.
   - `parser.py`: Question DOM extraction scoped to top-level question parts (`[data-testid^="part-"]`), extracting prompt text and image URLs while stripping adversarial AI honeypot instructions.
   - `filler.py`: Modular answer-filling utility for scrolling and filling textareas or matching and selecting multiple choice options.
+  - `agreement.py`: Honor Code agreement checkbox confirmation and government ID legal name entry for verified submissions.
   - `retry.py`: Quiz retry CTA detection (`CoverPageActionButton` with text "Retry" or reload-icon), cooldown status checking (`aria-disabled`), and attempt modal confirmation.
   - `openrouter_solver.py`: Direct OpenRouter solver using single API key supporting configurable reasoning effort (`effort: "medium"`, `effort: "high"`, or omitted) and automatic fallback to `z-ai/glm-5.3-flash` on API exceptions.
   - `solver.py`: LLM quiz solver orchestrator coordinating batch text solving and multimodal solving directly via OpenRouter with reasoning effort propagation.

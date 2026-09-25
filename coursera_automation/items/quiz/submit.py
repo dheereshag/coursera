@@ -17,8 +17,7 @@ MODAL_BTN = 'button[data-testid="dialog-submit-button"], [role="alertdialog"] bu
 def _click_btn(loc: Locator) -> None:
     with suppress(Error):
         loc.evaluate("el => el.scrollIntoView({block: 'center'})")
-        loc.click(timeout=3000)
-        return
+        loc.click(timeout=3000); return
     with suppress(Error):
         loc.evaluate("el => el.click()", timeout=2000)
 
@@ -41,8 +40,7 @@ def submit_quiz(page: Page, cfg: Settings) -> bool:
     """Click submit button, confirm dialog modal, and poll next item CTA."""
     sub = page.locator(SUB_SEL).first
     if not sub.is_visible(timeout=cfg.timeout_ms):
-        logger.warning("Submit button not found on quiz page.")
-        return False
+        logger.warning("Submit button not found on quiz page."); return False
     for _ in range(10):
         if sub.is_enabled() and sub.get_attribute("aria-disabled") != "true":
             break
@@ -55,6 +53,4 @@ def submit_quiz(page: Page, cfg: Settings) -> bool:
     for elapsed in range(30, cfg.post_quiz_wait_sec + 1, 30):
         page.wait_for_timeout(30000)
         logger.info("Post-quiz wait: %ds / %ds elapsed...", elapsed, cfg.post_quiz_wait_sec)
-    if is_final_exam(page):
-        return True
-    return poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
+    return True if is_final_exam(page) else poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)

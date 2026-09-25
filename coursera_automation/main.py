@@ -35,9 +35,7 @@ def run_instance(inst: InstanceConfig) -> None:
         register_dialog_handlers(page)
         context.on("page", register_dialog_handlers)
         try:
-            login(page, cfg)
-            open_course(page, cfg)
-            page.screenshot(path=f"coursera_{name}.png")
+            login(page, cfg); open_course(page, cfg); page.screenshot(path=f"coursera_{name}.png")
         finally:
             context.close()
 
@@ -45,6 +43,8 @@ def run_instance(inst: InstanceConfig) -> None:
 def run(instances_path: str = "instances.py") -> None:
     """Load all configured instances and execute them in parallel."""
     instances = load_instances(instances_path)
+    for inst in instances:
+        inst.validate()
     logger.info("Executing %d automation instance(s) in parallel...", len(instances))
     with keep_awake(), ThreadPoolExecutor(max_workers=max(1, len(instances))) as ex:
         futs = [ex.submit(run_instance, inst) for inst in instances]

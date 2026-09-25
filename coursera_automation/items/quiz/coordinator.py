@@ -7,6 +7,7 @@ from playwright.sync_api import Error, Page
 
 from coursera_automation.config import Settings
 
+from .agreement import fill_honor_code
 from .filler import fill_answers
 from .launcher import ensure_quiz_launched, is_on_cover_page
 from .parser import _is_textarea, wait_and_extract_questions
@@ -41,10 +42,7 @@ def _run_attempt(page: Page, cfg: Settings, model: str, effort: str | None = Non
     if not (answers := solve_quiz_with_llm(questions, cfg, model=model, effort=effort)):
         return False
     fill_answers(page, q_locs, questions, answers)
-    if (agree := page.locator('#agreement-checkbox-base, label:has-text("understand and agree")').first).is_visible(timeout=cfg.timeout_ms):
-        with suppress(Error):
-            agree.scroll_into_view_if_needed(timeout=1000); agree.click(force=True)
-        page.wait_for_timeout(1000)
+    fill_honor_code(page, legal_name=getattr(cfg, "legal_name", ""), timeout_ms=min(cfg.timeout_ms, 3000))
     return submit_quiz(page, cfg)
 
 

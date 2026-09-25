@@ -46,12 +46,12 @@ def login(page: Page, cfg: Settings) -> None:
     login_btn.click()
     email_in = page.locator('input[placeholder="name@email.com"]')
     email_in.wait_for(state="visible", timeout=cfg.timeout_ms)
-    email_in.fill(cfg.email)
+    email_in.fill(getattr(cfg, "email", ""))
     page.get_by_role("button", name="Continue", exact=True).first.click()
 
     pwd_in = page.locator('input[type="password"]')
     pwd_in.wait_for(state="visible", timeout=cfg.timeout_ms)
-    pwd_in.fill(cfg.password)
+    pwd_in.fill(getattr(cfg, "password", ""))
     page.get_by_role("button", name="Next", exact=True).first.click()
 
     wait_for_auth_complete(page)

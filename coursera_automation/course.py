@@ -38,8 +38,9 @@ def _wait_for_cta(page: Page, timeout_ms: int) -> Locator | None:
 
 def open_course(page: Page, cfg: Settings) -> None:
     """Navigate to specialization, click Go to course, resume, and process items."""
-    logger.info("Navigating to course page: %s", cfg.course_url)
-    page.goto(cfg.course_url, wait_until="domcontentloaded")
+    course_url = getattr(cfg, "course_url", "")
+    logger.info("Navigating to course page: %s", course_url)
+    page.goto(course_url, wait_until="domcontentloaded")
     page.wait_for_timeout(2000)
     dismiss_dialogs(page)
 

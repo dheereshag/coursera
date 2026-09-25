@@ -69,11 +69,15 @@ INSTANCES: list[InstanceConfig] = [
         email="your_email@example.com",
         password="your_password",
         course_url="https://www.coursera.org/specializations/your-course-url",
+        legal_name="Your Real Legal Name",
         headless=False,
         max_items=50,
     ),
 ]
 ```
+
+> [!NOTE]
+> **Legal Name Validation**: `legal_name` is required for Coursera Honor Code quiz submissions and must be set to your actual name (cannot be left as `"Your Legal Name"` or empty) to pass startup validation.
 
 You can define multiple instances to run concurrent browser sessions in parallel, or easily comment out instances using `#`.
 

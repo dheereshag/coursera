@@ -73,11 +73,40 @@ def test_run_parallel(tmp_path: Path) -> None:
     p.write_text(
         "from coursera_automation.instances import InstanceConfig\n"
         "INSTANCES = [\n"
-        "    InstanceConfig(email='a@x.com', password='p', course_url='https://c.org/c1'),\n"
-        "    InstanceConfig(email='b@x.com', password='p', course_url='https://c.org/c2'),\n"
+        "    InstanceConfig(email='a@x.com', password='p', course_url='https://c.org/c1', legal_name='User A'),\n"
+        "    InstanceConfig(email='b@x.com', password='p', course_url='https://c.org/c2', legal_name='User B'),\n"
         "]\n",
         encoding="utf-8",
     )
     with patch("coursera_automation.main.run_instance") as mock_run:
         run(str(p))
         assert mock_run.call_count == 2
+
+
+def test_instance_validation() -> None:
+    """Verify InstanceConfig.validate() enforces real legal_name."""
+    from coursera_automation.instances import InstanceConfig
+
+    valid = InstanceConfig(email="a@x.com", password="p", course_url="https://c.org/c1", legal_name="Palak Chandel")
+    valid.validate()
+    assert valid.to_settings().legal_name == "Palak Chandel"
+
+    with pytest.raises(ValueError, match="requires a valid 'legal_name'"):
+        InstanceConfig(email="a@x.com", password="p", course_url="https://c.org/c1", legal_name="").validate()
+
+    with pytest.raises(ValueError, match="requires a valid 'legal_name'"):
+        InstanceConfig(email="a@x.com", password="p", course_url="https://c.org/c1", legal_name="Your Legal Name").validate()
+
+
+def test_run_aborts_on_placeholder_legal_name(tmp_path: Path) -> None:
+    """Verify run() aborts before execution if legal_name is placeholder."""
+    from coursera_automation.main import run
+
+    p = tmp_path / "bad_instance.py"
+    p.write_text(
+        "from coursera_automation.instances import InstanceConfig\n"
+        "INSTANCES = [InstanceConfig(email='a@x.com', password='p', course_url='https://c.org/c1', legal_name='Your Legal Name')]\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="requires a valid 'legal_name'"):
+        run(str(p))
