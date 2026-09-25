@@ -5,7 +5,8 @@ import logging
 from playwright.sync_api import Error, Page, TimeoutError
 
 logger = logging.getLogger(__name__)
-PASSED_SEL = 'p.css-6ecy9b, :text("You passed!"), :text("You passed")'
+PASSED_SEL = 'p.css-6ecy9b:has-text("You passed!"), :text("You passed!")'
+FAILED_SEL = ':text("Did not pass"), :text("Didn\'t pass"), :text("You did not pass")'
 
 
 def is_final_exam(page: Page) -> bool:
@@ -19,6 +20,8 @@ def is_final_exam(page: Page) -> bool:
 
 def is_quiz_passed(page: Page) -> bool:
     """Check if quiz displays passed confirmation banner."""
+    if page.locator(FAILED_SEL).first.is_visible(timeout=300):
+        return False
     return bool(page.locator(PASSED_SEL).first.is_visible(timeout=500))
 
 

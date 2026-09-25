@@ -140,3 +140,5 @@ def test_poll_and_click_next_skips_retry_when_quiz_passed() -> None:
         assert result is False
         mock_click_retry.assert_not_called()
 
+
+

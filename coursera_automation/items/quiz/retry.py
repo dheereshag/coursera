@@ -11,6 +11,7 @@ RETRY_SELECTORS = (
     'button[data-testid="CoverPageActionButton"]:has-text("Retry")',
     'button[data-testid="CoverPageActionButton"]:has([data-testid="reload-icon"])',
     '[data-testid="CoverPageAction__controls"] button:has-text("Retry")',
+    '[data-testid="CoverPageAction__controls"] button:has([data-testid="reload-icon"])',
     'button:has([data-testid="reload-icon"])',
     'button:has-text("Retry")',
     'button:has-text("Try again")',

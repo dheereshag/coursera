@@ -123,6 +123,20 @@ def test_is_quiz_passed_false() -> None:
     assert is_quiz_passed(page) is False
 
 
+def test_is_quiz_passed_false_when_failed_banner_present() -> None:
+    """Verify is_quiz_passed returns False when a failure banner like 'Did not pass' is visible."""
+    page = MagicMock()
+
+    def loc_mock(s: str) -> MagicMock:
+        if "Did not pass" in s:
+            return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=True)))
+        return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=True)))
+
+    page.locator.side_effect = loc_mock
+    assert is_quiz_passed(page) is False
+
+
+
 def test_is_quiz_completed_true_when_passed_despite_try_again_and_cover_cta() -> None:
     """Verify is_quiz_completed returns True when You passed! is present, even with Try again / CoverPageActionButton."""
     page = MagicMock()
