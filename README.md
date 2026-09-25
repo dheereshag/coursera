@@ -4,7 +4,7 @@ Steps to set up and run the Coursera automation workflow.
 
 ## 1. Clone the Repository
 
-Clone the repository and enter the project directory:
+Clone the repository and enter the project directory by running the following commands in your terminal:
 
 ```bash
 git clone https://github.com/dheereshag/coursera.git
@@ -16,17 +16,17 @@ cd coursera
 > [!IMPORTANT]
 > **`uv` is required**: This project relies on [`uv`](https://docs.astral.sh/uv/) for fast package resolution and virtual environment management.
 >
-> Install `uv` before proceeding:
+> Install `uv` before proceeding by running the command for your platform in your terminal:
 > - **macOS / Linux**:
 >   ```bash
 >   curl -LsSf https://astral.sh/uv/install.sh | sh
 >   ```
-> - **Windows**:
+> - **Windows (PowerShell)**:
 >   ```powershell
 >   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 >   ```
 
-Ensure Python $\ge 3.14$ and `uv` are installed, then install dependencies and Playwright Chromium:
+Ensure Python $\ge 3.14$ and `uv` are installed, then install dependencies and Playwright Chromium by running in your terminal:
 
 ```bash
 uv sync
@@ -35,7 +35,7 @@ uv run playwright install chromium
 
 ## 3. Configuration
 
-Create your `.env` configuration from the example template:
+Create your `.env` configuration from the example template by running in your terminal:
 
 ```bash
 cp .env.example .env
@@ -61,7 +61,7 @@ OPENROUTER_FALLBACK_MODEL="z-ai/glm-5.3-flash"
 
 ### Course Instances Configuration (`instances.py`)
 
-Create your instances file from the template:
+Create your instances file from the template by running in your terminal:
 
 ```bash
 cp instances.example.py instances.py
@@ -91,7 +91,7 @@ You can define multiple instances to run concurrent browser sessions in parallel
 
 ## 4. Run Automation
 
-Execute the automation runner:
+Execute the automation runner by running in your terminal:
 
 ```bash
 uv run python -m coursera_automation.main
