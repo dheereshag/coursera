@@ -2,7 +2,16 @@
 
 Steps to set up and run the Coursera automation workflow.
 
-## 1. Install Dependencies
+## 1. Clone the Repository
+
+Clone the repository and enter the project directory:
+
+```bash
+git clone https://github.com/dheereshag/coursera.git
+cd coursera
+```
+
+## 2. Install Dependencies
 
 > [!IMPORTANT]
 > **`uv` is required**: This project relies on [`uv`](https://docs.astral.sh/uv/) for fast package resolution and virtual environment management.
@@ -16,7 +25,6 @@ Steps to set up and run the Coursera automation workflow.
 >   ```powershell
 >   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 >   ```
-> - **Homebrew / Pip**: `brew install uv` or `pip install uv`
 
 Ensure Python $\ge 3.14$ and `uv` are installed, then install dependencies and Playwright Chromium:
 
@@ -25,7 +33,7 @@ uv sync
 uv run playwright install chromium
 ```
 
-## 2. Configuration
+## 3. Configuration
 
 Create your `.env` configuration from the example template:
 
@@ -81,7 +89,7 @@ INSTANCES: list[InstanceConfig] = [
 
 You can define multiple instances to run concurrent browser sessions in parallel, or easily comment out instances using `#`.
 
-## 3. Run Automation
+## 4. Run Automation
 
 Execute the automation runner:
 
