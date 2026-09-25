@@ -85,16 +85,6 @@ Execute the automation runner:
 uv run python -m coursera_automation.main
 ```
 
-## 4. Quality & Verification Checks
-
-Run the verification loop:
-
-```bash
-uv run ruff check --fix
-uv run ty check
-uv run pytest
-```
-
 ---
 
 For architectural details, sequence diagrams, and module breakdowns, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
