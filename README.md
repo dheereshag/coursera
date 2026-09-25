@@ -33,19 +33,17 @@ Create your `.env` configuration from the example template:
 cp .env.example .env
 ```
 
-Configure global settings and API keys in `.env`.
-
-#### For Free OpenRouter Accounts (Free Tier Models)
-If you are using a free OpenRouter API key, configure free models:
+Configure global settings and API keys in `.env`. By default, `.env.example` is configured with **free tier models** so you can get started immediately with a free OpenRouter key:
 
 ```ini
 OPENROUTER_API_KEY="sk-or-v1-your-free-openrouter-key"
+# Free tier models (Default)
 OPENROUTER_MODEL="dots-studio/dots-3-note-preview:free"
 OPENROUTER_FALLBACK_MODEL="qwen/qwen3.8-27b:free"
 ```
 
-#### For Premium / Paid OpenRouter Accounts
-If you have a paid OpenRouter account with credits:
+#### Optional: For Premium / Paid OpenRouter Accounts
+If you have a paid OpenRouter account with credits and want higher performance:
 
 ```ini
 OPENROUTER_API_KEY="sk-or-v1-your-paid-openrouter-key"
