@@ -9,6 +9,7 @@ from coursera_automation.config import Settings
 from coursera_automation.items.navigation.dialogs import dismiss_dialogs
 
 logger = logging.getLogger(__name__)
+COMPLETED_SEL = '[data-testid="completed-text"], [aria-label="Reading completed" i]'
 MARK_SEL = '[data-testid="mark-complete"], button:has(span.cds-button-label:has-text("Mark as completed")), button:has-text("Mark as completed")'
 
 
@@ -17,8 +18,11 @@ def handle_reading(page: Page, cfg: Settings) -> None:
     logger.info("Handling reading item: waiting full 60s reading time before completing...")
     page.wait_for_load_state("domcontentloaded")
     dismiss_dialogs(page)
-    mark_btn = page.locator(MARK_SEL).or_(page.get_by_role("button", name=re.compile(r"mark as completed", re.IGNORECASE))).first
+    if page.locator(COMPLETED_SEL).first.is_visible(timeout=1000):
+        logger.info("Reading item already completed (completed badge detected).")
+        return
 
+    mark_btn = page.locator(MARK_SEL).or_(page.get_by_role("button", name=re.compile(r"mark as completed", re.IGNORECASE))).first
     if mark_btn.is_visible(timeout=1000):
         txt = mark_btn.inner_text().strip()
         if re.search(r"completed", txt, re.IGNORECASE) and not re.search(r"mark as", txt, re.IGNORECASE):

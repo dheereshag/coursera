@@ -10,10 +10,9 @@ from coursera_automation.items.dispatcher import dispatch_item
 def test_handle_reading_click_mark_complete() -> None:
     """Verify handle_reading clicks Mark as completed when active."""
     page, cfg = MagicMock(), Settings()
-    btn = MagicMock()
-    btn.is_visible.return_value = True
-    btn.inner_text.return_value = "Mark as completed"
-    page.locator.return_value.or_.return_value.first = btn
+    badge = MagicMock(is_visible=MagicMock(return_value=False))
+    btn = MagicMock(is_visible=MagicMock(return_value=True), inner_text=MagicMock(return_value="Mark as completed"))
+    page.locator.side_effect = lambda s: MagicMock(first=badge) if "completed-text" in s else MagicMock(or_=MagicMock(return_value=MagicMock(first=btn)), first=btn)
 
     with patch("coursera_automation.items.content.reading.dismiss_dialogs"):
         handle_reading(page, cfg)
@@ -24,17 +23,28 @@ def test_handle_reading_click_mark_complete() -> None:
 
 
 def test_handle_reading_already_completed() -> None:
-    """Verify handle_reading skips clicking when reading item is already completed."""
+    """Verify handle_reading skips clicking when reading item is already completed via button text."""
     page, cfg = MagicMock(), Settings()
-    btn = MagicMock()
-    btn.is_visible.return_value = True
-    btn.inner_text.return_value = "Completed"
-    page.locator.return_value.or_.return_value.first = btn
+    badge = MagicMock(is_visible=MagicMock(return_value=False))
+    btn = MagicMock(is_visible=MagicMock(return_value=True), inner_text=MagicMock(return_value="Completed"))
+    page.locator.side_effect = lambda s: MagicMock(first=badge) if "completed-text" in s else MagicMock(or_=MagicMock(return_value=MagicMock(first=btn)), first=btn)
 
     with patch("coursera_automation.items.content.reading.dismiss_dialogs"):
         handle_reading(page, cfg)
 
     btn.click.assert_not_called()
+
+
+def test_handle_reading_completed_badge() -> None:
+    """Verify handle_reading exits immediately without scrolling when completion badge is visible."""
+    page, cfg = MagicMock(), Settings()
+    badge = MagicMock(is_visible=MagicMock(return_value=True))
+    page.locator.side_effect = lambda s: MagicMock(first=badge) if "completed-text" in s else MagicMock()
+
+    with patch("coursera_automation.items.content.reading.dismiss_dialogs"):
+        handle_reading(page, cfg)
+
+    assert page.mouse.wheel.call_count == 0
 
 
 def test_dispatch_item_reading_supplement_url() -> None:

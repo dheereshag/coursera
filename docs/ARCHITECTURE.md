@@ -55,7 +55,7 @@ sequenceDiagram
 - `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop with 15s load stabilization wait.
 - **Content Subpackage (`items/content/`)**:
   - `video.py`: Video start, audio muting, 2x playback, 0.5s in-video question skip polling, playToggle auto-resume, and 6s post-buffer.
-  - `reading.py`: Reading completion via unconditional 60s wait (12 cycles $\times$ 5s scrolling), bottom scroll, and `data-testid="mark-complete"` click.
+  - `reading.py`: Reading completion with instant check for Coursera completed badge (`data-testid="completed-text"`, `aria-label="Reading completed"`), skipping the 60s wait (12 cycles $\times$ 5s scrolling) if already marked complete; otherwise executes bottom scroll and `data-testid="mark-complete"` click.
   - `lab.py`: Lab Honor Code agreement with bounded timeout, bottom scrolling, optional LTI launch, and "Mark as completed".
 - **Interactive Subpackage (`items/interactive/`)**:
   - `dialogue.py`: Roleplay / dialogue start, text chat selection, end, modal confirmation, and 15s post-dialogue finalization buffer.
