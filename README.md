@@ -4,7 +4,21 @@ Steps to set up and run the Coursera automation workflow.
 
 ## 1. Install Dependencies
 
-Ensure Python $\ge 3.14$ and [uv](https://docs.astral.sh/uv/) are installed, then install dependencies and Playwright Chromium:
+> [!IMPORTANT]
+> **`uv` is required**: This project relies on [`uv`](https://docs.astral.sh/uv/) for fast package resolution and virtual environment management.
+>
+> Install `uv` before proceeding:
+> - **macOS / Linux**:
+>   ```bash
+>   curl -LsSf https://astral.sh/uv/install.sh | sh
+>   ```
+> - **Windows**:
+>   ```powershell
+>   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+>   ```
+> - **Homebrew / Pip**: `brew install uv` or `pip install uv`
+
+Ensure Python $\ge 3.14$ and `uv` are installed, then install dependencies and Playwright Chromium:
 
 ```bash
 uv sync
@@ -19,10 +33,22 @@ Create your `.env` configuration from the example template:
 cp .env.example .env
 ```
 
-Configure global settings and API keys in `.env`:
+Configure global settings and API keys in `.env`.
+
+#### For Free OpenRouter Accounts (Free Tier Models)
+If you are using a free OpenRouter API key, configure free models:
 
 ```ini
-OPENROUTER_API_KEY="sk-or-v1-your-openrouter-key"
+OPENROUTER_API_KEY="sk-or-v1-your-free-openrouter-key"
+OPENROUTER_MODEL="dots-studio/dots-3-note-preview:free"
+OPENROUTER_FALLBACK_MODEL="qwen/qwen3.8-27b:free"
+```
+
+#### For Premium / Paid OpenRouter Accounts
+If you have a paid OpenRouter account with credits:
+
+```ini
+OPENROUTER_API_KEY="sk-or-v1-your-paid-openrouter-key"
 OPENROUTER_MODEL="deepseek/deepseek-v4.1-flash"
 OPENROUTER_FALLBACK_MODEL="z-ai/glm-5.3-flash"
 ```
