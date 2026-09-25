@@ -41,7 +41,9 @@ Create your `.env` configuration from the example template by running in your te
 cp .env.example .env
 ```
 
-Configure global settings and API keys in `.env`. By default, `.env.example` is configured with **free tier models** so you can get started immediately with a free OpenRouter key:
+Configure global settings and API keys in `.env`. You can create an API key on the [openrouter.ai](https://openrouter.ai) website at [openrouter.ai/keys](https://openrouter.ai/keys).
+
+By default, `.env.example` is configured with **free tier models** so you can get started immediately with a free OpenRouter key:
 
 ```ini
 OPENROUTER_API_KEY="sk-or-v1-your-free-openrouter-key"
