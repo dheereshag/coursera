@@ -70,7 +70,7 @@ sequenceDiagram
 - **Quiz Subpackage (`items/quiz/`)**:
   - `coordinator.py`: Complete quiz lifecycle coordination ensuring active questions (multiple choice, multiselect, textarea, Slate rich-text, and exact-match text inputs) are extracted and filled with auto-scrolling, Honor Code is confirmed, tunnel vision Back button is detected, and never bypassed by navigation headers.
   - `json_extractor.py`: Robust JSON extraction and decoding from LLM outputs, stripping `<think>` tags, markdown code blocks, and conversational preambles.
-  - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements (`[data-testid^="part-"]`) over lingering cover CTAs, with explicit support for `"Try again"` retries on evaluation review screens.
+  - `launcher.py`: Quiz attempt initiation with strict precedence for tunnel vision mode (`data-testid="tunnel-vision-back-button"`, `aria-label="Back"`) and active attempt elements (`[data-testid^="part-"]`) over lingering cover CTAs, bypassing launch when quiz is completed/passed unless resuming.
   - `loader.py`: Progressive scrolling, expected question count detection, and DOM hydration stabilization.
   - `option_matcher.py`: Robust quiz option resolution and normalization, handling LaTeX/KaTeX math formatting (`*` vs `×`, braces, whitespace), auto-scrolling options into view, and directly checking native radio/checkbox inputs alongside label clicks.
   - `image_extractor.py`: DOM extraction and protocol normalization of `<figure><img>` diagram URLs from question prompt viewers.
@@ -80,7 +80,7 @@ sequenceDiagram
   - `retry.py`: Quiz retry CTA detection (`CoverPageActionButton` with text "Retry" or reload-icon), cooldown status checking (`aria-disabled`), and attempt modal confirmation.
   - `openrouter_solver.py`: Direct OpenRouter solver using single API key supporting configurable reasoning effort (`effort: "medium"`, `effort: "high"`, or omitted) and automatic fallback to `z-ai/glm-5.3-flash` on API exceptions.
   - `solver.py`: LLM quiz solver orchestrator coordinating batch text solving and multimodal solving directly via OpenRouter with reasoning effort propagation.
-  - `status.py`: Completed/passed quiz and review-mode detection, treating Retry CTA as uncompleted, plus Final Exam header recognition.
+  - `status.py`: Completed/passed quiz detection recognizing confirmation banners (`<p class="css-6ecy9b">You passed!</p>`, `:text("You passed!")`) and prioritizing passed state over optional retry CTAs, review-mode detection, plus Final Exam header recognition.
   - `submit.py`: Quiz submission, modal confirmation dialog handling, and 3-minute post-submission evaluation DOM stabilization wait.
-  - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence, short-circuiting immediately when Retry CTA appears to avoid the 180s wait.
-  - `coordinator.py`: Full quiz lifecycle coordination with 4-tier escalating retry progression: Tier 1 (primary, no reasoning), Tier 2 (primary, medium effort), Tier 3 (primary, high effort), Tier 4 (fallback, high effort), and failure exhaustion skip (Back button, 10s wait, Next Item).
+  - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence, short-circuiting immediately when Retry CTA appears on unpassed quizzes while skipping retries when quiz is already passed.
+  - `coordinator.py`: Full quiz lifecycle coordination with upfront fast-path progression for completed/passed quizzes, 4-tier escalating retry progression for unpassed quizzes: Tier 1 (primary, no reasoning), Tier 2 (primary, medium effort), Tier 3 (primary, high effort), Tier 4 (fallback, high effort), and failure exhaustion skip (Back button, 10s wait, Next Item).

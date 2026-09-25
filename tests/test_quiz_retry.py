@@ -118,3 +118,25 @@ def test_handle_quiz_all_attempts_fail_clicks_back_and_next() -> None:
         back_btn.click.assert_called_once()
         page.wait_for_timeout.assert_called_with(10000)
         mock_next.assert_called_once_with(page, cfg)
+
+
+def test_poll_and_click_next_skips_retry_when_quiz_passed() -> None:
+    """Verify poll_and_click_next does not click retry when quiz is already passed."""
+    page = MagicMock(url="https://coursera.org/learn/test/quiz/1")
+    next_btn = MagicMock(is_visible=MagicMock(return_value=False))
+
+    def loc_mock(sel: str) -> MagicMock:
+        if "TopBannerCTAButton" in sel or "next-item" in sel:
+            return MagicMock(first=next_btn)
+        return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)))
+
+    page.locator.side_effect = loc_mock
+    with (
+        patch("coursera_automation.items.quiz.poll.is_quiz_passed", return_value=True),
+        patch("coursera_automation.items.quiz.poll.is_retry_available", return_value=True),
+        patch("coursera_automation.items.quiz.poll.click_retry") as mock_click_retry,
+    ):
+        result = poll_and_click_next(page, max_wait_sec=5)
+        assert result is False
+        mock_click_retry.assert_not_called()
+

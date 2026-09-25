@@ -4,7 +4,11 @@ from unittest.mock import MagicMock, patch
 
 from coursera_automation.config import Settings
 from coursera_automation.items.quiz import handle_quiz
-from coursera_automation.items.quiz.status import is_final_exam, is_quiz_completed
+from coursera_automation.items.quiz.status import (
+    is_final_exam,
+    is_quiz_completed,
+    is_quiz_passed,
+)
 
 
 def test_is_quiz_completed_under_review() -> None:
@@ -99,5 +103,64 @@ def test_is_final_exam_false() -> None:
     page = MagicMock()
     page.locator.return_value.first.inner_text.return_value = "Week 1 Practice Quiz"
     assert is_final_exam(page) is False
+
+
+def test_is_quiz_passed_true_with_css_and_text() -> None:
+    """Verify is_quiz_passed returns True when <p class='css-6ecy9b'>You passed!</p> matches."""
+    page = MagicMock()
+    page.locator.side_effect = lambda s: MagicMock(
+        first=MagicMock(is_visible=MagicMock(return_value="css-6ecy9b" in s or "You passed!" in s))
+    )
+    assert is_quiz_passed(page) is True
+
+
+def test_is_quiz_passed_false() -> None:
+    """Verify is_quiz_passed returns False when passed text is not visible."""
+    page = MagicMock()
+    page.locator.side_effect = lambda s: MagicMock(
+        first=MagicMock(is_visible=MagicMock(return_value=False))
+    )
+    assert is_quiz_passed(page) is False
+
+
+def test_is_quiz_completed_true_when_passed_despite_try_again_and_cover_cta() -> None:
+    """Verify is_quiz_completed returns True when You passed! is present, even with Try again / CoverPageActionButton."""
+    page = MagicMock()
+
+    def loc_mock(s: str) -> MagicMock:
+        if "Reviewing" in s or "Resume" in s:
+            return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)))
+        if "disabled" in s and "not([disabled])" not in s:
+            return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)))
+        if "not([disabled])" in s:
+            # No active inputs
+            return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)))
+        if any(k in s for k in ("fieldset", "radiogroup", "rc-Option")):
+            return MagicMock(count=MagicMock(return_value=0))
+        if "css-6ecy9b" in s or "You passed!" in s:
+            return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=True)))
+        if "Try again" in s or "CoverPageActionButton" in s:
+            return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=True)))
+        return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)), count=MagicMock(return_value=0))
+
+    page.locator.side_effect = loc_mock
+    assert is_quiz_completed(page) is True
+
+
+def test_is_quiz_completed_false_when_passed_but_active_inputs_present() -> None:
+    """Verify is_quiz_completed returns False if active question inputs are present."""
+    page = MagicMock()
+
+    def loc_mock(s: str) -> MagicMock:
+        if "not([disabled])" in s:
+            # Active inputs present
+            return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=True)))
+        if "css-6ecy9b" in s or "You passed!" in s:
+            return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=True)))
+        return MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)), count=MagicMock(return_value=0))
+
+    page.locator.side_effect = loc_mock
+    assert is_quiz_completed(page) is False
+
 
 

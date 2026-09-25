@@ -35,17 +35,19 @@ def ensure_quiz_launched(page: Page, timeout_ms: int = 15000) -> bool:
     for _ in range(max(1, timeout_ms // 500)):
         dismiss_dialogs(page)
         if (cta := _find_cover_cta(page)) and cta.get_attribute("aria-disabled") != "true":
-            logger.info("Clicking quiz cover page CTA: '%s'", cta.inner_text().strip())
-            with suppress(Error):
-                cta.scroll_into_view_if_needed(timeout=1000)
-                cta.click(force=True, timeout=5000)
-            page.wait_for_load_state("domcontentloaded")
-            dismiss_dialogs(page)
-            if (m := page.locator(CONFIRM_MODAL).first).is_visible():
-                m.click(force=True)
-            with suppress(Error):
-                page.locator(ATTEMPT_READY).first.wait_for(state="visible", timeout=8000)
-            return True
+            txt = cta.inner_text().strip().lower()
+            if not is_quiz_completed(page) or "resume" in txt:
+                logger.info("Clicking quiz cover page CTA: '%s'", txt)
+                with suppress(Error):
+                    cta.scroll_into_view_if_needed(timeout=1000)
+                    cta.click(force=True, timeout=5000)
+                page.wait_for_load_state("domcontentloaded")
+                dismiss_dialogs(page)
+                if (m := page.locator(CONFIRM_MODAL).first).is_visible():
+                    m.click(force=True)
+                with suppress(Error):
+                    page.locator(ATTEMPT_READY).first.wait_for(state="visible", timeout=8000)
+                return True
         if page.locator(ATTEMPT_READY).first.is_visible(timeout=300):
             return True
         if is_quiz_completed(page):

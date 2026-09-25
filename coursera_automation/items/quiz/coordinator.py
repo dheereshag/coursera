@@ -37,10 +37,8 @@ def _run_attempt(page: Page, cfg: Settings, model: str, effort: str | None = Non
         return poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
     q_locs, questions = wait_and_extract_questions(page, cfg.timeout_ms)
     has_active = any(q.locator('input:not([disabled]), textarea:not([disabled]), [contenteditable="true"]').count() or _is_textarea(q) for q in q_locs)
-    if not questions or not has_active:
-        return poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
-    if not (answers := solve_quiz_with_llm(questions, cfg, model=model, effort=effort)):
-        return False
+    if not questions or not has_active or not (answers := solve_quiz_with_llm(questions, cfg, model=model, effort=effort)):
+        return poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec) if not questions or not has_active else False
     fill_answers(page, q_locs, questions, answers)
     fill_honor_code(page, legal_name=getattr(cfg, "legal_name", ""), timeout_ms=min(cfg.timeout_ms, 3000))
     return submit_quiz(page, cfg)
@@ -48,6 +46,10 @@ def _run_attempt(page: Page, cfg: Settings, model: str, effort: str | None = Non
 
 def handle_quiz(page: Page, cfg: Settings) -> None:
     """Handle complete quiz lifecycle with tiered reasoning effort and fallback."""
+    if is_quiz_completed(page):
+        logger.info("Quiz already completed/passed. Skipping attempts.")
+        poll_and_click_next(page, max_wait_sec=cfg.post_quiz_wait_sec)
+        return
     tiers = ((cfg.openrouter_model, None), (cfg.openrouter_model, "medium"), (cfg.openrouter_model, "high"), (cfg.openrouter_fallback_model, "high"))
     for idx, (m, eff) in enumerate(tiers, 1):
         logger.info("Quiz attempt %d/4 (model=%s, effort=%s)...", idx, m, eff)

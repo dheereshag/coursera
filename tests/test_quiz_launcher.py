@@ -112,6 +112,28 @@ def test_ensure_quiz_launched_prioritizes_cover_cta_over_completed_status() -> N
     cta.click.assert_called_once_with(force=True, timeout=5000)
 
 
+def test_ensure_quiz_launched_does_not_click_try_again_when_quiz_completed() -> None:
+    """Verify ensure_quiz_launched ignores Try again / CoverPageActionButton when quiz is completed."""
+    page = MagicMock()
+    cta = MagicMock()
+    cta.count.return_value = 1
+    cta.is_visible.side_effect = lambda *a, **k: True
+    cta.get_attribute.return_value = "false"
+    cta.inner_text.return_value = "Try again to improve your score"
+
+    page.locator.side_effect = lambda sel: MagicMock(
+        first=cta if "CoverPageActionButton" in sel else MagicMock(is_visible=lambda *a, **k: False, count=lambda: 0)
+    )
+
+    with patch("coursera_automation.items.quiz.launcher.dismiss_dialogs"), patch(
+        "coursera_automation.items.quiz.launcher.is_quiz_completed", return_value=True
+    ):
+        result = ensure_quiz_launched(page, timeout_ms=500)
+
+    assert result is False
+    cta.click.assert_not_called()
+
+
 def test_ensure_quiz_launched_skips_when_attempt_ready() -> None:
     """Verify ensure_quiz_launched returns True if active attempt is already rendered, ignoring cover CTA."""
     page = MagicMock()

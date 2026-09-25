@@ -5,7 +5,7 @@ import logging
 from playwright.sync_api import Error, Page
 
 from .retry import click_retry, is_retry_available
-from .status import is_final_exam
+from .status import is_final_exam, is_quiz_passed
 
 logger = logging.getLogger(__name__)
 BACK_BTN = '[data-testid="tunnel-vision-back-button"], button[aria-label="Back"]'
@@ -44,7 +44,7 @@ def poll_and_click_next(page: Page, max_wait_sec: int = 180) -> bool:
                     logger.info("Successfully advanced to next item: %s", page.url)
                     return True
                 logger.info("Clicked CTA but URL did not change yet (current: %s).", page.url)
-        elif is_retry_available(page):
+        elif not is_quiz_passed(page) and is_retry_available(page):
             logger.info("Quiz not passed; found Retry button. Clicking Retry instead of next item...")
             click_retry(page)
             return False
