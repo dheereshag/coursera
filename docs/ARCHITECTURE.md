@@ -84,3 +84,11 @@ sequenceDiagram
   - `submit.py`: Quiz submission, modal confirmation dialog handling, and 3-minute post-submission evaluation DOM stabilization wait.
   - `poll.py`: 'TopBannerCTAButton' polling conditional on tunnel vision back button presence, short-circuiting immediately when Retry CTA appears on unpassed quizzes while skipping retries when quiz is already passed.
   - `coordinator.py`: Full quiz lifecycle coordination with upfront fast-path progression for completed/passed quizzes, 4-tier escalating retry progression for unpassed quizzes: Tier 1 (primary, no reasoning), Tier 2 (primary, medium effort), Tier 3 (primary, high effort), Tier 4 (fallback, high effort), and failure exhaustion skip (Back button, 10s wait, Next Item).
+
+## Wellfound Automation Modular Decomposition (NASA JPL Rule 4)
+
+- `wellfound_automation/config.py`: Environment configuration and typed dataclass supporting `WELLFOUND_EMAIL`, `WELLFOUND_PASSWORD`, and default credentials.
+- `wellfound_automation/browser.py`: Persistent browser context setup with stealth (`.browser_data/wellfound`) and Singleton lock cleanup.
+- `wellfound_automation/auth.py`: Authentication lifecycle, login state detection (5s check), login page navigation (3s delay), form filling, submission, and error validation.
+- `wellfound_automation/main.py`: Wellfound workflow orchestrator executing the browser session and authentication routine.
+- `wellfound_main.py`: Top-level CLI entrypoint for running Wellfound automation.

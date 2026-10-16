@@ -91,18 +91,28 @@ INSTANCES: list[InstanceConfig] = [
 
 You can define multiple instances to run concurrent browser sessions in parallel, or easily comment out instances using `#`.
 
-## 4. Run Automation
+### Coursera Automation
 
-Execute the automation runner by running in your terminal:
+Execute the Coursera automation runner:
 
 ```bash
 uv run python -m coursera_automation.main
 ```
 
+### Wellfound Automation
+
+Execute the Wellfound automation runner:
+
+```bash
+uv run python wellfound_main.py
+```
+
+> [!NOTE]
+> Wellfound uses persistent browser session caching under `.browser_data/wellfound`. Credentials can be configured in `.env` (`WELLFOUND_EMAIL` and `WELLFOUND_PASSWORD`).
+
 > [!TIP]
 > **Sleep Prevention**: The runner automatically prevents system and display sleep while running (using `caffeinate` on macOS and `kernel32.SetThreadExecutionState` with Away Mode on Windows).
 > - **macOS Laptops**: Keep the lid open (or connected to power and an external display). Closing the MacBook lid triggers hardware clamshell sleep that cannot be overridden by software assertions.
-
 
 ---
 
