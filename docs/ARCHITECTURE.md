@@ -47,16 +47,17 @@ sequenceDiagram
 
 - `coursera_automation/config.py`: Environment configuration and typed dataclass.
 - `coursera_automation/session.py`: Runtime session configuration combining instance credentials with global settings.
-- `coursera_automation/instances.py`: Multi-instance configuration loading from typed `instances.py` and JSON.
+- `coursera_automation/instances/`: Multi-instance configuration subpackage (`config.py` for `InstanceConfig`, `loader.py` for Python and JSON instance file loading).
 - `coursera_automation/keep_awake.py`: Cross-platform sleep prevention context manager supporting macOS (`caffeinate -dims`) and Windows (`kernel32.SetThreadExecutionState`). Note: on macOS laptops, hardware clamshell sleep occurs when the lid is closed unless connected to AC power and an external display.
 - `coursera_automation/auth.py`: Authentication interactions with Arkose puzzle manual solve window.
-- `coursera_automation/course.py`: Specialization navigation, resilient multi-state course entry, and dynamic CTA hydration wait (up to 40s).
-- `coursera_automation/main.py`: Multi-instance orchestration with `playwright-stealth` anti-bot evasion and keep-awake integration.
+- `coursera_automation/course/`: Course entry and specialization navigation subpackage (`cta.py` for dynamic CTA hydration wait, `open.py` for course entry and resume navigation).
+- `coursera_automation/runner.py`: Single-instance browser launching, stealth evasion context management, and workflow execution.
+- `coursera_automation/main.py`: Multi-instance parallel orchestration with `ThreadPoolExecutor` and keep-awake integration.
 - `coursera_automation/items/dispatcher.py`: Top-level item detection and progression iteration loop with 15s load stabilization wait.
 - **Content Subpackage (`items/content/`)**:
-  - `video.py`: Video start, audio muting, 2x playback, 0.5s in-video question skip polling, playToggle auto-resume, and 6s post-buffer.
+  - `video/`: Video playback subpackage (`waiter.py` for duration polling and 2x playback wait, `handler.py` for player start, muting, and speed control).
   - `reading.py`: Reading completion with instant check for Coursera completed badge (`data-testid="completed-text"`, `aria-label="Reading completed"`), skipping the 60s wait (12 cycles $\times$ 5s scrolling) if already marked complete; otherwise executes bottom scroll and `data-testid="mark-complete"` click.
-  - `lab.py`: Lab Honor Code agreement with bounded timeout, bottom scrolling, optional LTI launch, and "Mark as completed".
+  - `lab/`: Lab automation subpackage (`agreement.py` for Honor Code agreement checkbox interaction, `handler.py` for bottom scrolling, optional LTI launch, and "Mark as completed").
 - **Interactive Subpackage (`items/interactive/`)**:
   - `dialogue.py`: Roleplay / dialogue start, text chat selection, end, modal confirmation, and 15s post-dialogue finalization buffer.
   - `discussion.py`: Discussion response input with 15-second post-reply stabilization buffer.

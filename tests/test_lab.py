@@ -25,8 +25,8 @@ def test_handle_lab_scroll_and_launch() -> None:
     popup = MagicMock()
     page.expect_popup.return_value.__enter__.return_value.value = popup
     with (
-        patch("coursera_automation.items.content.lab._check_agreement") as mock_agree,
-        patch("coursera_automation.items.content.lab.dismiss_dialogs"),
+        patch("coursera_automation.items.content.lab.handler.check_lab_agreement") as mock_agree,
+        patch("coursera_automation.items.content.lab.handler.dismiss_dialogs"),
     ):
         handle_lab(page, cfg)
         assert mock_agree.call_count >= 1
@@ -56,8 +56,8 @@ def test_handle_lab_mark_completed() -> None:
         or_=MagicMock(return_value=MagicMock(first=btn)),
     )
     with (
-        patch("coursera_automation.items.content.lab._check_agreement"),
-        patch("coursera_automation.items.content.lab.dismiss_dialogs"),
+        patch("coursera_automation.items.content.lab.handler.check_lab_agreement"),
+        patch("coursera_automation.items.content.lab.handler.dismiss_dialogs"),
     ):
         handle_lab(page, cfg)
         mark.click.assert_called_once_with(force=True)

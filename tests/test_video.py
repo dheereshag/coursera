@@ -43,7 +43,7 @@ def test_handle_video_flow_and_mute() -> None:
         MagicMock(first=mute_btn) if "Mute" in s else MagicMock(first=speed_btn) if "playback rate" in s
         else MagicMock(first=play_btn) if any(k in s for k in ("Play", "play")) else MagicMock(first=MagicMock(is_visible=lambda: False))
     )
-    with patch("coursera_automation.items.content.video._wait_video") as mock_wait:
+    with patch("coursera_automation.items.content.video.handler.wait_video") as mock_wait:
         handle_video(page, cfg)
         mock_wait.assert_called_once()
     play_btn.click.assert_called_once_with(force=True)
@@ -54,6 +54,6 @@ def test_handle_video_already_muted() -> None:
     """Verify handle_video does not click mute when button is not visible."""
     page, cfg = MagicMock(), Settings()
     page.locator.side_effect = lambda s: MagicMock(first=MagicMock(is_visible=MagicMock(return_value=False)))
-    with patch("coursera_automation.items.content.video._wait_video"):
+    with patch("coursera_automation.items.content.video.handler.wait_video"):
         handle_video(page, cfg)
     page.locator.assert_any_call('button[aria-label="Mute"]')
